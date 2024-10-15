@@ -1,10 +1,12 @@
 #ifndef GUI_H
 #define GUI_H
 
-#include <gtk/gtk.h>
-#include "confparser.h"
+//#include <gtk/gtk.h>
+//#include "confparser.h"
 
 extern int useGUI;
+
+#ifdef COMMENT
 
 /* GtkWidget is the storage type for widgets */
    GtkWidget *window;
@@ -67,4 +69,5 @@ extern int useGUI;
    void scrollTextViewToLine(long line);
    void printErrorMessage(char * message, int lineNumber);
 
+#endif
 #endif

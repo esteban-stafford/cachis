@@ -1,6 +1,6 @@
 
 
-MODULES = gui.c datainterface.c datamanipulation.c confparser.c iniparser.c datastore.c callbacks.c traceparser.c dictionary.c simulator.c
+MODULES = gui.c dictionary.c confparser.c iniparser.c datamanipulation.c
 
 DEBUG=0
 COVER=0

@@ -6,6 +6,19 @@
 
 #include "datamanipulation.h"
 
+#define N_TRUES 3
+char* str_true[]= {"1", "yes", "true"};
+#define N_FALSES 3
+char* str_false[]= {"0","no","false"};
+
+#define N_REPLACEMENT 4
+char* str_replacementPolicy[]= {"lru", "lfu", "rnd", "fifo"};
+char* replacementPolicyStr(enum replacement replacement) { return str_replacementPolicy[replacement]; }
+
+#define N_WRITE 2
+char* str_writePolicy[]= {"wt", "wb"};
+char* writePolicyStr(enum write_policy write_policy) { return str_writePolicy[write_policy]; }
+
 /*
  * convert string into long. It can have a multiplier G for 10^9, M for 10^6 o K for 10^3. Any other char will result in error.
  * @param  String to be converted into long

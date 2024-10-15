@@ -1,11 +1,12 @@
 ﻿#include <math.h>
 #include "gui.h"
-#include "datainterface.h"
-#include "datastore.h"
-#include "callbacks.h"
+//#include "datainterface.h"
+//#include "datastore.h"
+//#include "callbacks.h"
 
 int useGUI=1;
 
+#ifdef COMMENT
 /**
  * Function to create the GUI. Data structures for the gui tables must have been created previously.
  */
@@ -769,3 +770,4 @@ void printErrorMessage(char * message, int lineNumber){
         gtk_widget_destroy (dialog);
    }
 }
+#endif

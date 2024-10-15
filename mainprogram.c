@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <getopt.h>
+#include <stdlib.h>
 
+#include "dictionary.h"
 #include "confparser.h"
-#include "traceparser.h"
-#include "datainterface.h"
+#include "computer.h"
+//#include "traceparser.h"
+//#include "datainterface.h"
 #include "gui.h"
-#include "simulator.h"
+//#include "simulator.h"
 
 #define PROGRAM_NAME "cache_simulator"
 #define VERSION "0.1"
@@ -77,18 +80,19 @@ int main(int argc, char *argv[]) {
        return 1;
     }
 
+    struct structComputer computer;
     // Parse read configuration and populate global configuration variables.
-    if(parseConfiguration(ini) != 0) {
+    if(parseConfiguration(ini, &computer) != 0) {
        return 1;
     }
 
     // Override trace file if there is a filename on the command line.
     if(optind+1 < argc) {
-       cpu.trace_file = argv[optind +1];
+       computer.cpu.trace_file = argv[optind +1];
     }
-
+/*
     // Load trace file specified in the configuration file
-    if(readTraceFile((char *)cpu.trace_file) != 0) {
+    if(readTraceFile((char *)computer.cpu.trace_file) != 0) {
        return 1;
     }
 
@@ -107,6 +111,6 @@ int main(int argc, char *argv[]) {
 
     // Free memory allocated by readTraceFile()
     freeMemory();
-
+*/
     return 0;
 }
