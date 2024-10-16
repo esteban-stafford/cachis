@@ -12,7 +12,7 @@ unsigned long cycle = 0;
 void incrementDoubleStatistics(char *component, char *property, double value);
 void incrementIntegerStatistics(char *component, char *property, int value);
 void calculateRateStatistics(char *component, char *property, char *partial, char *total);
-int selectVia(struct structComputer *computer, int instructionOrData, int cacheLevel, int set);
+int selectVia(Computer *computer, int instructionOrData, int cacheLevel, int set);
 
 struct response_type {
    double time;
@@ -22,13 +22,13 @@ struct response_type {
    unsigned *data;
 };
 
-void simulate(struct structComputer *computer) {
+void simulate(Computer *computer) {
    for(int i=0; i<numberOfOperations; i++){
       simulate_step(computer, &memoryOperations[i]);
    }
 }
 
-void simulate_step(struct structComputer *computer, struct memOperation *operation) {
+void simulate_step(Computer *computer, struct memOperation *operation) {
    struct response_type response;
    char cacheName[20];
    response.size = operation->size/4;
@@ -43,12 +43,12 @@ void simulate_step(struct structComputer *computer, struct memOperation *operati
    incrementIntegerStatistics("CPU", "Accesses", 1);
  
    // Iterate through all the cache levels
-   for(int cacheLevel = 0; cacheLevel < computer->numCaches; cacheLevel++){
+   for(int cacheLevel = 0; cacheLevel < computer->num_caches; cacheLevel++){
       sprintf(cacheName,"Cache L%d",cacheLevel+1);
       // Calculate the different fields from the address
-      unsigned tag = response.address >> (computer->cache[cacheLevel].offsetBits+computer->cache[cacheLevel].setBits);
-      unsigned set = (response.address >> computer->cache[cacheLevel].offsetBits) & ((1 << computer->cache[cacheLevel].setBits)-1);
-      unsigned offset = ( response.address & ((1 << computer->cache[cacheLevel].offsetBits)-1) ) >> 2;
+      unsigned tag = response.address >> (computer->cache[cacheLevel].offset_bits+computer->cache[cacheLevel].set_bits);
+      unsigned set = (response.address >> computer->cache[cacheLevel].offset_bits) & ((1 << computer->cache[cacheLevel].set_bits)-1);
+      unsigned offset = ( response.address & ((1 << computer->cache[cacheLevel].offset_bits)-1) ) >> 2;
       long line;
       // Timming: access
       response.time += computer->cache[cacheLevel].access_time;
@@ -64,7 +64,7 @@ void simulate_step(struct structComputer *computer, struct memOperation *operati
          calculateRateStatistics(cacheName, "Miss Rate", "Misses", "Accesses");
          // Prepare response 
          struct cacheLine cacheData;
-         cacheData.content = malloc((sizeof(long))*computer->cache[cacheLevel].numWords);
+         cacheData.content = malloc((sizeof(long))*computer->cache[cacheLevel].num_words);
          // Read data from cache into response
          readLineFromCache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
          if(response.size == 1) {
@@ -78,7 +78,7 @@ void simulate_step(struct structComputer *computer, struct memOperation *operati
          break;
       } else {
          // Miss
-         printf(">   %s: Miss 2^%d-1 = %f\n", cacheName,computer->cache[cacheLevel].offsetBits, pow(2,computer->cache[cacheLevel].offsetBits)-1);
+         printf(">   %s: Miss 2^%d-1 = %f\n", cacheName,computer->cache[cacheLevel].offset_bits, pow(2,computer->cache[cacheLevel].offset_bits)-1);
          // Statistics: miss
          incrementIntegerStatistics(cacheName, "Misses", 1);
          calculateRateStatistics(cacheName, "Hit Rate", "Hits", "Accesses");
@@ -86,10 +86,10 @@ void simulate_step(struct structComputer *computer, struct memOperation *operati
          if(operation->operation == LOAD) {
             // Load operation
             // Upgrade request to a full cache line
-            response.size = computer->cache[cacheLevel].numWords;
-            response.address &= -1 << computer->cache[cacheLevel].offsetBits;
+            response.size = computer->cache[cacheLevel].num_words;
+            response.address &= -1 << computer->cache[cacheLevel].offset_bits;
             free(response.data);
-            response.data = malloc((sizeof(unsigned))*computer->cache[cacheLevel].numWords);
+            response.data = malloc((sizeof(unsigned))*computer->cache[cacheLevel].num_words);
          } else {
             // Write operation
             // Assuming WriteThrough and WriteNoAllocate do nothing
@@ -100,7 +100,7 @@ void simulate_step(struct structComputer *computer, struct memOperation *operati
    // Access memory if no cache level has resolved the request
    if(response.resolved < 0) {
       // Remember that the memory resolved the request
-      response.resolved = computer->numCaches;
+      response.resolved = computer->num_caches;
       // Statistics: memory
       incrementIntegerStatistics("Memory", "Accesses", response.size);
       if(operation->operation == LOAD) {
@@ -138,8 +138,8 @@ void simulate_step(struct structComputer *computer, struct memOperation *operati
    for(int cacheLevel = response.resolved-1; cacheLevel >= 0; cacheLevel--){
       sprintf(cacheName,"Cache L%d",cacheLevel+1);
       // Calculate the different fields from the address
-      unsigned tag = response.address >> (computer->cache[cacheLevel].offsetBits+computer->cache[cacheLevel].setBits);
-      unsigned set = (response.address >> computer->cache[cacheLevel].offsetBits) & ((1 << computer->cache[cacheLevel].setBits)-1);
+      unsigned tag = response.address >> (computer->cache[cacheLevel].offset_bits+computer->cache[cacheLevel].set_bits);
+      unsigned set = (response.address >> computer->cache[cacheLevel].offset_bits) & ((1 << computer->cache[cacheLevel].set_bits)-1);
       long line;
       // Find tag in cache
       if((line = findTagInCache(computer, operation->instructionOrData, cacheLevel, tag, set)) > 0) {
@@ -170,17 +170,17 @@ void simulate_step(struct structComputer *computer, struct memOperation *operati
    cycle++;
 }
 
-int selectVia(struct structComputer *computer, int instructionOrData, int cacheLevel, int set) {
+int selectVia(Computer *computer, int instructionOrData, int cacheLevel, int set) {
    struct cacheLine cacheData;
-   struct structCache *cache = &computer->cache[cacheLevel];
+   Cache *cache = &computer->cache[cacheLevel];
    int lruLine = -1;
    int lruTime = -1;
    int lfuLine = -1;
    int lfuCount = -1;
    int fifoLine = -1;
    int fifoTime = -1;
-   int firstLine = set*cache->asociativity;
-   for(int i = 0, via = rand() % cache->asociativity; i < cache->asociativity; i++, via=(via+1) % cache->asociativity) {
+   int firstLine = set*cache->associativity;
+   for(int i = 0, via = rand() % cache->associativity; i < cache->associativity; i++, via=(via+1) % cache->associativity) {
       int line = firstLine + via;
       readFlagsFromCache(computer, instructionOrData, cacheLevel, &cacheData, line);
       if(cacheData.valid == 0)
@@ -199,21 +199,21 @@ int selectVia(struct structComputer *computer, int instructionOrData, int cacheL
       }
    }
    // LRU=0, LFU=1, RANDOM=2, FIFO=3
-   if(cache->replacement == RANDOM) {
-      return set * cache->asociativity
-             + rand() % cache->asociativity;
+   if(cache->replacement_policy == RANDOM) {
+      return set * cache->associativity
+             + rand() % cache->associativity;
    }
-   else if(cache->replacement == LRU) {
+   else if(cache->replacement_policy == LRU) {
       return lruLine;
    }
-   else if(cache->replacement == LFU) {
+   else if(cache->replacement_policy == LFU) {
       return lfuLine;
    }
-   else if(cache->replacement == FIFO) {
+   else if(cache->replacement_policy == FIFO) {
       return fifoLine;
    }
    else
-      return set * cache->asociativity;
+      return set * cache->associativity;
 }
 
 void incrementDoubleStatistics(char *component, char *property, double value) {

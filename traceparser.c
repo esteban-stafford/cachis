@@ -16,7 +16,7 @@ int countLines(FILE* fp);
  * Parse a trace line. It receives a string with the trace line and its line number in the trace file.
  * It returns by reference a structure with the parsed information.
  */
-int parseLine(char* line, int lineNumber, struct memOperation *result, int defaultSize, struct structMemory *memory){
+int parseLine(char* line, int lineNumber, struct memOperation *result, int defaultSize, Memory *memory){
 #if DEBUG
    fprintf(stderr,"Parsing trace line --%s--\n", line);
 #endif
@@ -145,7 +145,7 @@ void printMemOperation(FILE *fp, struct memOperation *operation, int cpu_address
 /**
  * function for showing all values loaded from tracefile
  */
-void showOperations(struct structCpu *cpu){
+void showOperations(Cpu *cpu){
    for(int i=0; i<numberOfOperations; i++){
       printMemOperation(stderr,&memoryOperations[i], cpu->address_width);
    }
@@ -179,7 +179,7 @@ int preprocessTraceLine(char *currentLine) {
  * Function to load the trace file information in the program. It returns -1 when it encounters errors.
  * It allocates memory, freeMemory() should be called when the memory operations read are no longer necessary.
  */
-int readTraceFile(struct structComputer *computer){
+int readTraceFile(Computer *computer){
    numberOfOperations = 0;
    int errors = 0;
    FILE *file;

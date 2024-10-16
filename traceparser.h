@@ -25,10 +25,10 @@ struct memOperation {
 //array que almacena las operations de memory leidas del file de trace
 extern struct memOperation* memoryOperations;
 
-int readTraceFile(struct structComputer *computer);
+int readTraceFile(Computer *computer);
 void freeMemory();
-void showOperations(struct structCpu *cpu);
+void showOperations(Cpu *cpu);
 int preprocessTraceLine(char *currentLine);
-int parseLine(char* line, int lineNumber, struct memOperation *result, int defaultSize, struct structMemory *memory);
+int parseLine(char* line, int lineNumber, struct memOperation *result, int defaultSize, Memory *memory);
 void printMemOperation(FILE *fp, struct memOperation *operation, int cpu_address_width);
 #endif

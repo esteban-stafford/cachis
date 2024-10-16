@@ -5,7 +5,7 @@
 
 extern unsigned long cycle;
 
-void simulate(struct structComputer *computer);
-void simulate_step(struct structComputer *computer, struct memOperation *operation);
+void simulate(Computer *computer);
+void simulate_step(Computer *computer, struct memOperation *operation);
 
 #endif

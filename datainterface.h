@@ -42,18 +42,18 @@ struct memoryPosition{
 
 extern char *interfaceError;
 
-void resetMemory(struct structComputer *computer);
-void resetCache(struct structComputer *computer, int level);
+void resetMemory(Computer *computer);
+void resetCache(Computer *computer, int level);
 
-void showLineFromCache(struct structComputer *computer, int instructionOrData, int level, int i);
-long findTagInCache(struct structComputer *computer, int instructionOrData, int level, unsigned requestSet, unsigned requestTag);
-void readLineFromCache(struct structComputer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber);
-void readFlagsFromCache(struct structComputer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber);
-void writeLineToCache(struct structComputer *computer, int instructionOrData, int level, struct cacheLine *line, unsigned lineNumber);
+void showLineFromCache(Computer *computer, int instructionOrData, int level, int i);
+long findTagInCache(Computer *computer, int instructionOrData, int level, unsigned requestSet, unsigned requestTag);
+void readLineFromCache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber);
+void readFlagsFromCache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber);
+void writeLineToCache(Computer *computer, int instructionOrData, int level, struct cacheLine *line, unsigned lineNumber);
 
-int showMemoryAddress(struct structComputer *computer, long address);
-int readFromMemoryAddress(struct structComputer *computer, struct memoryPosition *pos, long address);
-int writeToMemoryAddress(struct structComputer *computer, struct memoryPosition *pos, long address);
+int showMemoryAddress(Computer *computer, long address);
+int readFromMemoryAddress(Computer *computer, struct memoryPosition *pos, long address);
+int writeToMemoryAddress(Computer *computer, struct memoryPosition *pos, long address);
 
 void setStatistics(char* component, char* property, char* value);
 char* getStatistics(char* component, char* property);

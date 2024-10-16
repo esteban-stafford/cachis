@@ -32,11 +32,11 @@ enum {
   NUM_COLS=2
 };
 
-void createMemoryModel(struct structComputer *computer);
-void createCacheModel(struct structCache *cache, int level);
+void createMemoryModel(Computer *computer);
+void createCacheModel(Cache *cache, int level);
 void writeBlankLine(int level, long line);
 void insertTextInBuffer(char* text, GtkTextBuffer *buffer);
-GtkTreeModel *create_model_statistics(struct structComputer *computer);
-void generateDataStorage(struct structComputer *computer);
+GtkTreeModel *create_model_statistics(Computer *computer);
+void generateDataStorage(Computer *computer);
 
 #endif

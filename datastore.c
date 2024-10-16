@@ -9,7 +9,7 @@
  * Funcntion that creates the data structures for memory data storage.
  *
  */
-void createMemoryModel(struct structComputer *computer){
+void createMemoryModel(Computer *computer){
    computer->memory.model = gtk_list_store_new(N_COLUMNS,
          G_TYPE_UINT,   /* ADDRESS */
          G_TYPE_UINT,    /* CONTENT */
@@ -31,11 +31,11 @@ void createMemoryModel(struct structComputer *computer){
  * Function that creates the data structures for a cache level.
  * @level whose data structure will be created.
  */
-void createCacheModel(struct structCache *cache, int level){
+void createCacheModel(Cache *cache, int level){
    //Creo la cache. en caso de que sea dividia esta será la parte de data
-   GtkListStore *modelData;
-   GtkListStore *modelInstruction;
-   modelData= gtk_list_store_new(N_COLUMNS_CACHE,
+   GtkListStore *model_data;
+   GtkListStore *model_instruction;
+   model_data= gtk_list_store_new(N_COLUMNS_CACHE,
          G_TYPE_UINT,     /* LINE=0, */
          G_TYPE_UINT,     /* SET=1, */
          G_TYPE_UINT,     /* VALID=2, */
@@ -48,12 +48,12 @@ void createCacheModel(struct structCache *cache, int level){
          G_TYPE_STRING,   /* COLOR_CACHE=9, */
          G_TYPE_POINTER   /* USER_CONTENT_CACHE=10, */
          );               
-   cache->modelData=modelData;
-   for(int i=0; i<cache->numLines; i++)
-      gtk_list_store_append(modelData, &iter);
+   cache->model_data=model_data;
+   for(int i=0; i<cache->num_lines; i++)
+      gtk_list_store_append(model_data, &iter);
 
    if(cache->separated){
-      modelInstruction= gtk_list_store_new(N_COLUMNS_CACHE,
+      model_instruction= gtk_list_store_new(N_COLUMNS_CACHE,
             G_TYPE_UINT,   /* LINE=0, */
             G_TYPE_UINT,   /* SET=1, */
             G_TYPE_UINT,   /* VALID=2, */
@@ -66,12 +66,12 @@ void createCacheModel(struct structCache *cache, int level){
             G_TYPE_STRING, /* COLOR_CACHE=9, */
             G_TYPE_POINTER /* USER_CONTENT_CACHE=10, */
             );             
-      cache->modelInstruction=modelInstruction;
-      for(int i=0; i<cache->numLines; i++)
-         gtk_list_store_append(modelInstruction, &iter);
+      cache->model_instruction=model_instruction;
+      for(int i=0; i<cache->num_lines; i++)
+         gtk_list_store_append(model_instruction, &iter);
    }
 #if DEBUG
-         fprintf(stderr,"cache level %d: lines: %d, asociativity: %ld, sets: %d, words line: %d\n", level+1, cache->numLines, cache->asociativity, cache->numSets, cache->numWords);
+         fprintf(stderr,"cache level %d: lines: %d, associativity: %ld, sets: %d, words line: %d\n", level+1, cache->num_lines, cache->associativity, cache->num_sets, cache->num_words);
 #endif
       }
 
@@ -79,9 +79,9 @@ void createCacheModel(struct structCache *cache, int level){
  * Function that generates all data structures for the program.
  *
  */
-void generateDataStorage(struct structComputer *computer){
+void generateDataStorage(Computer *computer){
    createMemoryModel(computer);
-   for(int i=0; i< computer->numCaches; i++){
+   for(int i=0; i< computer->num_caches; i++){
       createCacheModel(&computer->cache[i], i);
       //resetCache(i);
    }
@@ -104,7 +104,7 @@ void insertTextInBuffer(char* text, GtkTextBuffer *buffer){
 /**
  * Function that creates the data structure for simulation statistics.
  */
-GtkTreeModel *create_model_statistics(struct structComputer *computer){
+GtkTreeModel *create_model_statistics(Computer *computer){
    GtkTreeIter    toplevel, child;
    GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(NUM_COLS,
             G_TYPE_STRING,
@@ -132,7 +132,7 @@ GtkTreeModel *create_model_statistics(struct structComputer *computer){
          COMPONET_OR_PROPERTY, "Accesses",
          VALUE, "",
          -1);
-   for(int i=0; i<computer->numCaches; i++){
+   for(int i=0; i<computer->num_caches; i++){
       char currentCache[100];
       sprintf(currentCache, "Cache L%d", i+1);
       gtk_tree_store_append(GTK_TREE_STORE(model), &toplevel, NULL);

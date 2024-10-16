@@ -11,7 +11,7 @@
 char* keysCACHE[NCLAVES_CACHE];
 char* keysCPU[]= {"word_width", "address_width", "frequency", "trace_file"};
 char* keysMEMORY[]= {"size", "access_time_1","access_time_burst", "page_size", "page_base_address"};
-char* keysCACHE[]= {"line_size", "size","asociativity", "write_policy", "replacement","separated","column_bit_mask", "access_time"};
+char* keysCACHE[]= {"line_size", "size","associativity", "write_policy", "replacement_policy","separated","column_bit_mask", "access_time"};
 
 // This global variable communicates the number of caches found in the readConfigurationFile function to the parseConfiguration function.
 int numberCaches;
@@ -241,11 +241,11 @@ dictionary *readConfigurationFile(char * ini_name) {
  * This function parses all the configuration.
  * @param ini dictionary from read ini file.
  */
-int parseConfiguration(dictionary *ini, struct structComputer *computer) {
+int parseConfiguration(dictionary *ini, Computer *computer) {
     int errors = 0;
 
     // Get the number of caches from the readConfigurationFile function
-    computer->numCaches=numberCaches;
+    computer->num_caches=numberCaches;
 
     // READING CPU CONFIGURATION///////////////////////////////////////////////
 
@@ -306,12 +306,12 @@ int parseConfiguration(dictionary *ini, struct structComputer *computer) {
     // READING ALL THE CACHES CONFIGURATION /////////////////////////////////////////
     // Browse the cache array and check the configuration of each cache.
 
-    for(int cacheNumber=0; cacheNumber < computer->numCaches; cacheNumber++) {
+    for(int cacheNumber=0; cacheNumber < computer->num_caches; cacheNumber++) {
 
         // This is for creating the string format in which the ini library receives the params.
         // Each value must be refered as section:key
-        computer->cache[cacheNumber].modelData=NULL;
-        computer->cache[cacheNumber].modelInstruction=NULL;
+        computer->cache[cacheNumber].model_data=NULL;
+        computer->cache[cacheNumber].model_instruction=NULL;
 
         // reading key cache:line_size
         char param[50];
@@ -366,32 +366,32 @@ int parseConfiguration(dictionary *ini, struct structComputer *computer) {
 
 
         // reading key cache:asocitivity
-        sprintf(param, "cache%d:asociativity", cacheNumber+1);
+        sprintf(param, "cache%d:associativity", cacheNumber+1);
         //this is the number of lines. For error check
-        int numLines=computer->cache[cacheNumber].size/computer->cache[cacheNumber].line_size;
+        int num_lines=computer->cache[cacheNumber].size/computer->cache[cacheNumber].line_size;
         if(computer->cache[cacheNumber].separated){
-             numLines/=2;
+             num_lines/=2;
 	}
         const char * cache_asociativity=iniparser_getstring(ini, param, NULL);
         // si es F es de compleatamente asociativa. Un solo set. Tantas lines/set como lines totales.
         if(cache_asociativity!=NULL&&strcmp(cache_asociativity, "F")==0) {
-            computer->cache[cacheNumber].asociativity=computer->cache[cacheNumber].size/computer->cache[cacheNumber].line_size;
+            computer->cache[cacheNumber].associativity=computer->cache[cacheNumber].size/computer->cache[cacheNumber].line_size;
         } else {
             long long_asociativity=parseInt(cache_asociativity);
             if(long_asociativity==-1) {
-                fprintf(stderr,"Error: cache%d:asociativity value is not valid\n", cacheNumber+1);
+                fprintf(stderr,"Error: cache%d:associativity value is not valid\n", cacheNumber+1);
                 errors++;
             } else if(long_asociativity==-2) {
-                fprintf(stderr,"Error: Missing value cache%d:asociativity\n", cacheNumber+1);
+                fprintf(stderr,"Error: Missing value cache%d:associativity\n", cacheNumber+1);
                 errors++;
             } else if(!isPowerOf2(long_asociativity)) {
-                fprintf(stderr,"Error: The value of cache%d:asociativity must be power of 2\n", cacheNumber+1);
+                fprintf(stderr,"Error: The value of cache%d:associativity must be power of 2\n", cacheNumber+1);
                 errors++;
-            } else if(long_asociativity>numLines){
-                fprintf(stderr,"Error: The value of cache%d:asociativity can't be bigger than the number of lines\n", cacheNumber+1);
+            } else if(long_asociativity>num_lines){
+                fprintf(stderr,"Error: The value of cache%d:associativity can't be bigger than the number of lines\n", cacheNumber+1);
                 errors++;
             }else {
-                computer->cache[cacheNumber].asociativity=long_asociativity;
+                computer->cache[cacheNumber].associativity=long_asociativity;
             }
         }
 
@@ -409,19 +409,19 @@ int parseConfiguration(dictionary *ini, struct structComputer *computer) {
             computer->cache[cacheNumber].write_policy=long_write_policy;
         }
 
-        // reading key cache:replacement
-        sprintf(param, "cache%d:replacement", cacheNumber+1);
+        // reading key cache:replacement_policy
+        sprintf(param, "cache%d:replacement_policy", cacheNumber+1);
 
         const char * cache_replacement=iniparser_getstring(ini, param, NULL);
         long long_replacement=parseReplacementPolicy(cache_replacement);
         if(long_replacement==-1) {
-            fprintf(stderr,"Error: replacement value for cache%d is not valid.\n", cacheNumber+1);
+            fprintf(stderr,"Error: replacement_policy value for cache%d is not valid.\n", cacheNumber+1);
             errors++;
         } else if(long_replacement==-2) {
-            fprintf(stderr,"Error: Missing replacement value for cache%d.\n", cacheNumber+1);
+            fprintf(stderr,"Error: Missing replacement_policy value for cache%d.\n", cacheNumber+1);
             errors++;
         } else {
-            computer->cache[cacheNumber].replacement=long_replacement;
+            computer->cache[cacheNumber].replacement_policy=long_replacement;
         }
 
 
@@ -434,9 +434,9 @@ int parseConfiguration(dictionary *ini, struct structComputer *computer) {
     }
 
     // checking all the caches have the same line_size
-    if(computer->numCaches>0){
+    if(computer->num_caches>0){
        int previous=computer->cache[0].line_size;
-       for(int cacheNumber=1; cacheNumber<computer->numCaches; cacheNumber++) {
+       for(int cacheNumber=1; cacheNumber<computer->num_caches; cacheNumber++) {
           if(computer->cache[cacheNumber].line_size!=previous){
              fprintf(stderr,"Error: All the caches must have the same line_size.\n");
              errors++;
@@ -446,17 +446,17 @@ int parseConfiguration(dictionary *ini, struct structComputer *computer) {
     }
 
     // Precalculate some useful values of the cache configuration
-    for(int cacheNumber=0; cacheNumber<computer->numCaches; cacheNumber++) {
-       computer->cache[cacheNumber].numLines    = computer->cache[cacheNumber].size / computer->cache[cacheNumber].line_size;
-       computer->cache[cacheNumber].numSets     = computer->cache[cacheNumber].numLines / computer->cache[cacheNumber].asociativity;
-       computer->cache[cacheNumber].numWords    = computer->cache[cacheNumber].line_size*8/computer->cpu.word_width;
-       computer->cache[cacheNumber].hexDigsSet  = ceil(log(computer->cache[cacheNumber].numSets)/log(16));
-       computer->cache[cacheNumber].hexDigsLine = ceil(log(computer->cache[cacheNumber].numLines)/log(16));
-       computer->cache[cacheNumber].hexDigsTag  = (computer->cpu.address_width/4)-computer->cache[cacheNumber].hexDigsSet-ceil(log(computer->cache[cacheNumber].line_size)/log(16));
-       computer->cache[cacheNumber].offsetBits  = log(computer->cache[cacheNumber].line_size)/log(2);
-       computer->cache[cacheNumber].setBits     = log(computer->cache[cacheNumber].numSets)/log(2);
+    for(int cacheNumber=0; cacheNumber<computer->num_caches; cacheNumber++) {
+       computer->cache[cacheNumber].num_lines    = computer->cache[cacheNumber].size / computer->cache[cacheNumber].line_size;
+       computer->cache[cacheNumber].num_sets     = computer->cache[cacheNumber].num_lines / computer->cache[cacheNumber].associativity;
+       computer->cache[cacheNumber].num_words    = computer->cache[cacheNumber].line_size*8/computer->cpu.word_width;
+       computer->cache[cacheNumber].hex_digs_set  = ceil(log(computer->cache[cacheNumber].num_sets)/log(16));
+       computer->cache[cacheNumber].hex_digs_line = ceil(log(computer->cache[cacheNumber].num_lines)/log(16));
+       computer->cache[cacheNumber].hex_digs_tag  = (computer->cpu.address_width/4)-computer->cache[cacheNumber].hex_digs_set-ceil(log(computer->cache[cacheNumber].line_size)/log(16));
+       computer->cache[cacheNumber].offset_bits  = log(computer->cache[cacheNumber].line_size)/log(2);
+       computer->cache[cacheNumber].set_bits     = log(computer->cache[cacheNumber].num_sets)/log(2);
        if(computer->cache[cacheNumber].separated){
-             computer->cache[cacheNumber].numLines=(computer->cache[cacheNumber].numLines)/2;
+             computer->cache[cacheNumber].num_lines=(computer->cache[cacheNumber].num_lines)/2;
        }
     }
 
@@ -501,7 +501,7 @@ void checkSectionKeys(dictionary *ini, const char *section, int numberOfValidKey
 /*
  * shows the current state of read data
  */
-void showConfiguration(struct structComputer *computer){
+void showConfiguration(Computer *computer){
 
     // show cpu info 
     fprintf(stderr,"\nCPU\n");
@@ -526,15 +526,15 @@ void showConfiguration(struct structComputer *computer){
 
 
     // show each cache info
-    for(long i=0; i<computer->numCaches; i++) {
+    for(long i=0; i<computer->num_caches; i++) {
         fprintf(stderr,"\nCACHE L%ld\n", i+1);
 
         fprintf(stderr,"line_size:          [%ld bits] \n",  computer->cache[i].line_size);
         fprintf(stderr,"size:               [%ld bytes] \n",  computer->cache[i].size);
         fprintf(stderr,"access_time:        [%lf ns]\n",   computer->cache[i].access_time*1000000000);
-        fprintf(stderr,"asociativity:       [%ld]\n",  computer->cache[i].asociativity);
+        fprintf(stderr,"associativity:       [%ld]\n",  computer->cache[i].associativity);
         fprintf(stderr,"write_policy:       [%s]\n",   writePolicyStr(computer->cache[i].write_policy));
-        fprintf(stderr,"replacement:        [%s]\n",   replacementPolicyStr(computer->cache[i].replacement));
+        fprintf(stderr,"replacement_policy:        [%s]\n",   replacementPolicyStr(computer->cache[i].replacement_policy));
         fprintf(stderr,"separated:          [%d]\n",   computer->cache[i].separated);
 
     }

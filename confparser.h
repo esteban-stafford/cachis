@@ -7,8 +7,8 @@
 #define N_BITS_MASK 9
 
 dictionary *readConfigurationFile(char * file);
-int parseConfiguration(dictionary *ini, struct structComputer *computer);
+int parseConfiguration(dictionary *ini, Computer *computer);
 void checkSectionKeys(dictionary *ini, const char *section, int numberOfValidKeys, char *validKeys[], int *errors);
-void showConfiguration(struct structComputer *computer);
+void showConfiguration(Computer *computer);
 
 #endif

@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
        return 1;
     }
 
-    struct structComputer computer;
+    Computer computer;
     // Parse read configuration and populate global configuration variables.
     if(parseConfiguration(ini, &computer) != 0) {
        return 1;
