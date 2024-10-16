@@ -6,7 +6,7 @@
 #include "dictionary.h"
 #include "confparser.h"
 #include "computer.h"
-//#include "traceparser.h"
+#include "traceparser.h"
 //#include "datainterface.h"
 #include "gui.h"
 //#include "simulator.h"
@@ -90,12 +90,12 @@ int main(int argc, char *argv[]) {
     if(optind+1 < argc) {
        computer.cpu.trace_file = argv[optind +1];
     }
-/*
+
     // Load trace file specified in the configuration file
-    if(readTraceFile((char *)computer.cpu.trace_file) != 0) {
+    if(readTraceFile(&computer) != 0) {
        return 1;
     }
-
+/*
     // Create simulator data structures
     generateDataStorage();
 
