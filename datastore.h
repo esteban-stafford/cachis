@@ -1,18 +1,6 @@
 #ifndef DATASTORE_H
 #define DATASTORE_H
 
-//#include "confparser.h"
-// #include <gtk/gtk.h>
-
-struct cacheLEVEL {
-  GtkListStore *modelData;
-  GtkListStore *modelInstruction;
-};
-
-GtkListStore *modelMEMORY; 
-
-struct cacheLEVEL cacheLevels[MAX_CACHES];
-
 GtkTreeModel *statistics_model;
 
 enum {

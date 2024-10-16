@@ -20,6 +20,8 @@ struct structMemory
     double access_time_burst;
     long page_size;
     long page_base_address;
+
+    GtkListStore *model; 
 };
 
 struct structCache
@@ -41,6 +43,9 @@ struct structCache
     int hexDigsTag;
     int offsetBits;
     int setBits;
+
+    GtkListStore *modelData;
+    GtkListStore *modelInstruction;
 };
 
 #define MAX_CACHES 10

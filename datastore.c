@@ -10,16 +10,16 @@
  *
  */
 void createMemoryModel(struct structComputer *computer){
-   modelMEMORY = gtk_list_store_new(N_COLUMNS,
+   computer->memory.model = gtk_list_store_new(N_COLUMNS,
          G_TYPE_UINT,   /* ADDRESS */
          G_TYPE_UINT,    /* CONTENT */
          G_TYPE_STRING,   /* COLOR */
          G_TYPE_POINTER
          );
    for(unsigned long i=computer->memory.page_base_address; i<computer->memory.page_base_address+computer->memory.page_size; i+=(computer->cpu.word_width/8)){
-      gtk_list_store_append(modelMEMORY, &iter);
+      gtk_list_store_append(computer->memory.model, &iter);
       /* Fill fields with some data */
-      gtk_list_store_set (modelMEMORY, &iter,
+      gtk_list_store_set (computer->memory.model, &iter,
             ADDRESS, i,
             CONTENT, 0,
             //COLOR, "blue",
@@ -48,7 +48,7 @@ void createCacheModel(struct structCache *cache, int level){
          G_TYPE_STRING,   /* COLOR_CACHE=9, */
          G_TYPE_POINTER   /* USER_CONTENT_CACHE=10, */
          );               
-   cacheLevels[level].modelData=modelData;
+   cache->modelData=modelData;
    for(int i=0; i<cache->numLines; i++)
       gtk_list_store_append(modelData, &iter);
 
@@ -66,7 +66,7 @@ void createCacheModel(struct structCache *cache, int level){
             G_TYPE_STRING, /* COLOR_CACHE=9, */
             G_TYPE_POINTER /* USER_CONTENT_CACHE=10, */
             );             
-      cacheLevels[level].modelInstruction=modelInstruction;
+      cache->modelInstruction=modelInstruction;
       for(int i=0; i<cache->numLines; i++)
          gtk_list_store_append(modelInstruction, &iter);
    }

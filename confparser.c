@@ -243,6 +243,7 @@ dictionary *readConfigurationFile(char * ini_name) {
  */
 int parseConfiguration(dictionary *ini, struct structComputer *computer) {
     int errors = 0;
+
     // Get the number of caches from the readConfigurationFile function
     computer->numCaches=numberCaches;
 
@@ -273,6 +274,7 @@ int parseConfiguration(dictionary *ini, struct structComputer *computer) {
 
     // READING MEMORY CONFIGURATION//////////////////////////////////////
 
+    computer->memory.model=NULL;
     parseConfLongK1024(ini,"memory:size",&computer->memory.size,&errors);
     parseConfDouble(ini,"memory:access_time_1",&computer->memory.access_time_1,&errors);
     parseConfDouble(ini,"memory:access_time_burst",&computer->memory.access_time_burst, &errors);
@@ -308,6 +310,8 @@ int parseConfiguration(dictionary *ini, struct structComputer *computer) {
 
         // This is for creating the string format in which the ini library receives the params.
         // Each value must be refered as section:key
+        computer->cache[cacheNumber].modelData=NULL;
+        computer->cache[cacheNumber].modelInstruction=NULL;
 
         // reading key cache:line_size
         char param[50];
