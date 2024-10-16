@@ -7,9 +7,10 @@
 #include "confparser.h"
 #include "computer.h"
 #include "traceparser.h"
-//#include "datainterface.h"
+#include "datainterface.h"
+#include "datastore.h"
 #include "gui.h"
-//#include "simulator.h"
+#include "simulator.h"
 
 #define PROGRAM_NAME "cache_simulator"
 #define VERSION "0.1"
@@ -95,22 +96,22 @@ int main(int argc, char *argv[]) {
     if(readTraceFile(&computer) != 0) {
        return 1;
     }
-/*
+
     // Create simulator data structures
-    generateDataStorage();
+    generateDataStorage(&computer);
 
     // Start GUI...
     if(useGUI) {
        generateGUI(argc, argv);
     // ... or run batch simulation
     } else {
-       simulate();
+       simulate(&computer);
        printStatistics(stdout);
     }
 
 
     // Free memory allocated by readTraceFile()
     freeMemory();
-*/
+
     return 0;
 }

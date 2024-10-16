@@ -54,6 +54,7 @@ extern int useGUI;
 
    GtkWidget *estatistics_view;
 
+#endif
    int generateGUI();
    GtkWidget * createPanelMemory();
    void createPanelCache(int level);
@@ -69,5 +70,4 @@ extern int useGUI;
    void scrollTextViewToLine(long line);
    void printErrorMessage(char * message, int lineNumber);
 
-#endif
 #endif

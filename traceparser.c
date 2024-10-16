@@ -132,10 +132,10 @@ int parseLine(char* line, int lineNumber, struct memOperation *result, int defau
    return 0;
 }
 
-void printMemOperation(FILE *fp, struct memOperation *operation, struct structCpu *cpu){
+void printMemOperation(FILE *fp, struct memOperation *operation, int cpu_address_width){
    fprintf(fp, operation->hasBreakPoint ? "! " : "  ");
    fprintf(fp, operation->operation==LOAD ? "L " : "S ");
-   fprintf(fp, "%0*lx ", (int)cpu->address_width/4, operation->address);
+   fprintf(fp, "%0*lx ", (int)cpu_address_width/4, operation->address);
    fprintf(fp, operation->instructionOrData==INSTRUCTION ? "I " : "D ");
    fprintf(fp, "% d ", operation->size);
    fprintf(fp, "%ld", operation->data);
@@ -147,7 +147,7 @@ void printMemOperation(FILE *fp, struct memOperation *operation, struct structCp
  */
 void showOperations(struct structCpu *cpu){
    for(int i=0; i<numberOfOperations; i++){
-      printMemOperation(stderr,&memoryOperations[i], cpu);
+      printMemOperation(stderr,&memoryOperations[i], cpu->address_width);
    }
 }
 

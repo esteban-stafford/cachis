@@ -30,5 +30,5 @@ void freeMemory();
 void showOperations(struct structCpu *cpu);
 int preprocessTraceLine(char *currentLine);
 int parseLine(char* line, int lineNumber, struct memOperation *result, int defaultSize, struct structMemory *memory);
-void printMemOperation(FILE *fp, struct memOperation *operation, struct structCpu *cpu);
+void printMemOperation(FILE *fp, struct memOperation *operation, int cpu_address_width);
 #endif
