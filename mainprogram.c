@@ -34,6 +34,7 @@ void printUsage() {
 
 int main(int argc, char *argv[]) {
    int c;
+   int useGUI = 1;
 
    // Parse command line arguments
    opterr = 0;

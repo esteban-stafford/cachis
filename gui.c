@@ -4,16 +4,13 @@
 //#include "datastore.h"
 //#include "callbacks.h"
 
-int useGUI=1;
+GUI gui;
 
 #ifdef COMMENT
 /**
  * Function to create the GUI. Data structures for the gui tables must have been created previously.
  */
 int generateGUI(int argc, char *argv[]) {
-   if(!useGUI) {
-      return 0;
-   }
    //esto se usara mas adelante. Es para colorear texts.
    tagBlue = gtk_text_buffer_create_tag (buffer, "blue_foreground", "foreground", "blue", NULL);
    tagBlack = gtk_text_buffer_create_tag (buffer, "black_foreground", "foreground", "black", NULL);
@@ -132,10 +129,10 @@ int generateGUI(int argc, char *argv[]) {
    gtk_table_attach_defaults (GTK_TABLE (table), vboxMEMORY, numberCaches+1, numberCaches+2, 0, 2);
    for(int i=0; i<numberCaches; i++) {
       if(!caches[i].separated) {
-         gtk_table_attach_defaults (GTK_TABLE (table), cacheLevelPanels[i].vboxData, 1+i, 2+i, 0, 2);
+         gtk_table_attach_defaults (GTK_TABLE (table), gui.cachePanel[i].vboxData, 1+i, 2+i, 0, 2);
       } else {
-         gtk_table_attach_defaults (GTK_TABLE (table), cacheLevelPanels[i].vboxData, 1+i, 2+i, 0, 1);
-         gtk_table_attach_defaults (GTK_TABLE (table), cacheLevelPanels[i].vboxInstruction, 1+i, 2+i, 1, 2);
+         gtk_table_attach_defaults (GTK_TABLE (table), gui.cachePanel[i].vboxData, 1+i, 2+i, 0, 1);
+         gtk_table_attach_defaults (GTK_TABLE (table), gui.cachePanel[i].vboxInstruction, 1+i, 2+i, 1, 2);
       }
    }
    //gtk_table_attach_defaults (GTK_TABLE (table), button2, 1, 2, 0, 2);
@@ -496,8 +493,8 @@ void createPanelCache(int level) {
       gtk_box_pack_start(GTK_BOX(vboxData), label, FALSE, FALSE, 1);
       gtk_box_pack_start(GTK_BOX(vboxData), scwin, TRUE, TRUE, 1);
       cacheLevels[level].modelData=modelData;
-      cacheLevelPanels[level].vboxData=vboxData;
-      cacheLevelPanels[level].viewData=viewData;
+      gui.cachePanel[level].vboxData=vboxData;
+      gui.cachePanel[level].viewData=viewData;
       return;
       //si es dividida lo titulo como cache de data y creo la parte correspondiente a instructions
    } else {
@@ -507,8 +504,8 @@ void createPanelCache(int level) {
       gtk_box_pack_start(GTK_BOX(vboxData), label, FALSE, FALSE, 1);
       gtk_box_pack_start(GTK_BOX(vboxData), scwin, TRUE, TRUE, 1);
       cacheLevels[level].modelData=modelData;
-      cacheLevelPanels[level].vboxData=vboxData;
-      cacheLevelPanels[level].viewData=viewData;
+      gui.cachePanel[level].vboxData=vboxData;
+      gui.cachePanel[level].viewData=viewData;
       GtkTreeIter   iterInstruction;
       GtkTreeViewColumn* columnInstruction;
       GtkListStore *modelInstruction;
@@ -611,8 +608,8 @@ void createPanelCache(int level) {
       gtk_box_pack_start(GTK_BOX(vboxInstruction), labelInstruction, FALSE, FALSE, 1);
       gtk_box_pack_start(GTK_BOX(vboxInstruction), scwinInstruction, TRUE, TRUE, 1);
       cacheLevels[level].modelInstruction=modelInstruction;
-      cacheLevelPanels[level].vboxInstruction=vboxInstruction;
-      cacheLevelPanels[level].viewInstruction=viewInstruction;
+      gui.cachePanel[level].vboxInstruction=vboxInstruction;
+      gui.cachePanel[level].viewInstruction=viewInstruction;
       return;
    }
 }
@@ -735,7 +732,7 @@ void scrollDataCacheToRow(int level, long row) {
    char rowChar[50];
    sprintf(rowChar, "%ld", row);
    GtkTreePath * path=gtk_tree_path_new_from_string (rowChar);
-   gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW(cacheLevelPanels[level].viewData),
+   gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW(gui.cachePanel[level].viewData),
          path, NULL, TRUE, 0.5, 0);
 }
 
@@ -748,7 +745,7 @@ void scrollInstructionCacheToRow(int level, long row) {
    char rowChar[50];
    sprintf(rowChar, "%ld", row);
    GtkTreePath * path=gtk_tree_path_new_from_string (rowChar);
-   gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW(cacheLevelPanels[level].viewInstruction),
+   gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW(gui.cachePanel[level].viewInstruction),
          path, NULL, TRUE, 0.5, 0);
 }
 

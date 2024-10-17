@@ -1,5 +1,6 @@
 #include <math.h>
 #include "datamanipulation.h"
+#include "gui.h"
 #include "datainterface.h"
 #include "simulator.h"
 
@@ -8,65 +9,60 @@ const char* const colors[] = { "green", "red", "yellow", "green", "red", "grey",
 
 char *interfaceError = NULL;
 
-/**
- * This function sets memory to its initial state.
- */
-void resetMemory(Computer *computer ) {
-   GtkTreeIter iter;   
-   //get iterator at position 0
-   gtk_tree_model_get_iter_from_string (GTK_TREE_MODEL(computer->memory.model),
-         &iter,
-         "0");
-   //this is the number of words in the whole memory
-   int num_words=computer->memory.size/(computer->cpu.word_width/8);
-   //for the n words in the mory
-   for(unsigned long i=computer->memory.page_base_address; i<computer->memory.page_base_address+computer->memory.page_size; i+=(computer->cpu.word_width/8)){
-      /* Fill fields with data */
-      gtk_list_store_set (computer->memory.model, &iter,
-            CONTENT, 0,
-            ADDRESS, i,
-            COLOR, "white",
-            USER_CONTENT, NULL,
-            -1);
-      //move iter to next position to write the next memory word
-      gtk_tree_model_iter_next (GTK_TREE_MODEL(computer->memory.model),
-            &iter);
+void resetMemory(Computer *computer) {
+   GListStore *model = G_LIST_STORE(computer->memory.model);
+   guint n_items = g_list_model_get_n_items(G_LIST_MODEL(model));
+    
+   for (guint i = 0; i < n_items; i++) {
+      MemoryLine *memory_line = g_list_model_get_item(G_LIST_MODEL(model), i);
+      g_object_set(memory_line, "content", 0, "color", "white", "user_data", NULL, NULL);
+      g_object_unref(memory_line);
    }
 }
 
-void resetCacheModel(GtkTreeModel *model,int level){
-   //this is for filling each field with the correct amount of bits it must be represented with.
-   struct cacheLine* line;
-   GtkTreeIter iter;
-   //get iter at first position
-   gtk_tree_model_get_iter_first (model, &iter);
-   //set each field to its initial value
-   unsigned cache_content[computer->cache[level].num_words];
-   for(int i=0; i<computer->cache[level].num_words; i++){
-      cache_content[i]=0;
-   }
-   //this converts form long array to string representation.
-   char cache_content_char[2000];
-   contentArrayToString(cache_content, cache_content_char, (computer->cache[level].line_size*8)/computer->cpu.word_width, computer->cpu.word_width/4);
-   //I write all the reseted fields in each cache line
-   for(int i=0; i<computer->cache[level].num_lines; i++){ 
-      gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-            LINE, i,
-            TAG, 0,
-            SET, i/computer->cache[level].associativity,
-            CONTENT_CACHE, cache_content_char,
-            USER_CONTENT_CACHE, NULL,
-            VALID, 0,
-            DIRTY, 0,
-            TIMES_ACCESSED, 0,
-            LAST_ACCESSED, 0,
-            FIRST_ACCESSED, 0,
-            COLOR_CACHE, colors[WHITE],
-            -1);
-      //move iter to next position
-      gtk_tree_model_iter_next (GTK_TREE_MODEL(model), &iter);
-   }
-} 
+void resetCacheModel(Computer *computer, int level, int instructionOrData) {
+    GListStore *model;
+
+    if (instructionOrData == DATA) {
+        model = G_LIST_STORE(computer->cache[level].model_data);
+    } else {
+        model = G_LIST_STORE(computer->cache[level].model_instruction);
+    }
+
+    guint n_items = g_list_model_get_n_items(G_LIST_MODEL(model));
+    
+    // Prepare cache content
+    unsigned cache_content[computer->cache[level].num_words];
+    memset(cache_content, 0, sizeof(cache_content));
+    
+    // Convert cache content to string representation
+    char cache_content_char[2000];
+    contentArrayToString(cache_content, cache_content_char, 
+                         (computer->cache[level].line_size * 8) / computer->cpu.word_width, 
+                         computer->cpu.word_width / 4);
+
+    for (guint i = 0; i < n_items; i++) {
+        CacheLine *cache_line = g_list_model_get_item(G_LIST_MODEL(model), i);
+        
+        // Reset all fields of the cache line
+        g_object_set(cache_line,
+            "line", i,
+            "tag", 0,
+            "set", i / computer->cache[level].associativity,
+            "content", cache_content_char,
+            "user_content", NULL,
+            "valid", 0,
+            "dirty", 0,
+            "times_accessed", 0,
+            "last_accessed", 0,
+            "first_accessed", 0,
+            "color", "white",
+            NULL);
+        
+        // Unref the cache line
+        g_object_unref(cache_line);
+    }
+}
 
 /**
  * This function resets a Data cache. Sets the data cache to its initial state.
@@ -74,9 +70,9 @@ void resetCacheModel(GtkTreeModel *model,int level){
  */
 void resetCache(Computer *computer, int level){
    if(computer->cache[level].model_data) 
-      resetCacheModel(GTK_TREE_MODEL(computer->cache[level].model_data),level);
+      resetCacheModel(computer, level, DATA);
    if(computer->cache[level].model_instruction) 
-      resetCacheModel(GTK_TREE_MODEL(computer->cache[level].model_instruction),level);
+      resetCacheModel(computer, level, INSTRUCTION);
 }
 
 /**
@@ -143,11 +139,11 @@ void readLineFromCache(Computer *computer, int instructionOrData, int level, str
 
    if(!computer->cache[level].separated || instructionOrData == DATA) {
       model = GTK_TREE_MODEL(computer->cache[level].model_data);
-      view = GTK_TREE_VIEW(cacheLevelPanels[level].viewData);
+      view = GTK_TREE_VIEW(gui.cachePanel[level].viewData);
    }
    else {
       model= GTK_TREE_MODEL(computer->cache[level].model_instruction);
-      view = GTK_TREE_VIEW(cacheLevelPanels[level].viewInstruction);
+      view = GTK_TREE_VIEW(gui.cachePanel[level].viewInstruction);
    }
    gtk_tree_model_iter_nth_child (model, &iter, NULL, lineNumber);
 
@@ -215,11 +211,11 @@ void writeLineToCache(Computer *computer, int instructionOrData, int level, stru
 
    if(!computer->cache[level].separated || instructionOrData == DATA) {
       model = GTK_TREE_MODEL(computer->cache[level].model_data);
-      view = GTK_TREE_VIEW(cacheLevelPanels[level].viewData);
+      view = GTK_TREE_VIEW(gui.cachePanel[level].viewData);
    }
    else {
       model= GTK_TREE_MODEL(computer->cache[level].model_instruction);
-      view = GTK_TREE_VIEW(cacheLevelPanels[level].viewInstruction);
+      view = GTK_TREE_VIEW(gui.cachePanel[level].viewInstruction);
    }
    contentArrayToString(line->content, contentString, (computer->cache[level].line_size*8)/computer->cpu.word_width, computer->cpu.word_width/4);
    printf("Write Content: ");
@@ -271,7 +267,7 @@ int showMemoryAddress(Computer *computer, long address){
  */
 int readFromMemoryAddress(Computer *computer, struct memoryPosition *pos, long address){
    GtkTreeModel *model = GTK_TREE_MODEL(computer->memory.model);
-   GtkTreeView *view = GTK_TREE_VIEW(viewMEMORY);
+   GtkTreeView *view = GTK_TREE_VIEW(gui.viewMEMORY);
    GtkTreeIter iter;
    // if not word address return error
    if(address % (computer->cpu.word_width/8)!=0){
@@ -309,7 +305,7 @@ int readFromMemoryAddress(Computer *computer, struct memoryPosition *pos, long a
  */
 int writeToMemoryAddress(Computer *computer, struct memoryPosition *pos, long address){
    GtkTreeModel *model= GTK_TREE_MODEL(computer->memory.model);
-   GtkTreeView *view = GTK_TREE_VIEW(viewMEMORY);
+   GtkTreeView *view = GTK_TREE_VIEW(gui.viewMEMORY);
    GtkTreeIter iter;
    // if not word address return error
    if(address % (computer->cpu.word_width/8)!=0){

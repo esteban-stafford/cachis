@@ -1,14 +1,18 @@
 #ifndef GUI_H
 #define GUI_H
 
-//#include <gtk/gtk.h>
-//#include "confparser.h"
+#include <gtk/gtk.h>
+#include "computer.h"
 
-extern int useGUI;
 
-#ifdef COMMENT
+typedef struct {
+  GtkWidget *vboxData;//container de la tabla
+  GtkWidget *viewData;//widget tabla
+  GtkWidget *vboxInstruction;//container de la tabla
+  GtkWidget *viewInstruction;//widget tabla
+} CachePanel;
 
-/* GtkWidget is the storage type for widgets */
+typedef struct {
    GtkWidget *window;
 
    GtkWidget *text_view;
@@ -40,34 +44,29 @@ extern int useGUI;
 
    GtkTreeIter iter;
 
-   struct cacheLevelPanel{
-     GtkWidget *vboxData;//container de la tabla
-     GtkWidget *viewData;//widget tabla
-     GtkWidget *vboxInstruction;//container de la tabla
-     GtkWidget *viewInstruction;//widget tabla
-   };
-
    GtkWidget *vboxMEMORY;//container de la tabla
    GtkWidget *viewMEMORY;//widget tabla
 
-   struct cacheLevelPanel cacheLevelPanels[MAX_CACHES];
+   CachePanel cachePanel[MAX_CACHES];
 
    GtkWidget *estatistics_view;
+} GUI;
 
-#endif
-   int generateGUI();
-   GtkWidget * createPanelMemory();
-   void createPanelCache(int level);
-   GtkWidget *create_view_statistics(void);
-   void insertTextInPanel(char* text);
-   char *getCurrentLineTrace();
-   char *goToNextLineTrace();
-   char *goToPreviousLineTrace();
-   int scrollMemoryToPos(long address);
-   void scrollCacheToRow(int level, long row);
-   void scrollDataCacheToRow(int level, long row);
-   void scrollInstructionCacheToRow(int level, long row);
-   void scrollTextViewToLine(long line);
-   void printErrorMessage(char * message, int lineNumber);
+extern GUI gui;
+
+int generateGUI();
+GtkWidget * createPanelMemory();
+void createPanelCache(int level);
+GtkWidget *create_view_statistics(void);
+void insertTextInPanel(char* text);
+char *getCurrentLineTrace();
+char *goToNextLineTrace();
+char *goToPreviousLineTrace();
+int scrollMemoryToPos(long address);
+void scrollCacheToRow(int level, long row);
+void scrollDataCacheToRow(int level, long row);
+void scrollInstructionCacheToRow(int level, long row);
+void scrollTextViewToLine(long line);
+void printErrorMessage(char * message, int lineNumber);
 
 #endif

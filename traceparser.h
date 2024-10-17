@@ -1,7 +1,6 @@
 #ifndef TRACEPARSER_H
 #define TRACEPARSER_H
 
-int numberOfOperations;
 
 enum instructionOrData { DATA=1, INSTRUCTION=2 };
 enum loadOrStore { LOAD=3, STORE=4 };
@@ -24,6 +23,7 @@ struct memOperation {
 
 //array que almacena las operations de memory leidas del file de trace
 extern struct memOperation* memoryOperations;
+extern int numberOfOperations;
 
 int readTraceFile(Computer *computer);
 void freeMemory();

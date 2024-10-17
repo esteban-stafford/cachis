@@ -5,70 +5,139 @@
 //#include "gui.h"
 //#include "datainterface.h"
 
+GtkTreeModel *statistics_model;
+
+G_DEFINE_TYPE(MemoryLine, memory_line, G_TYPE_OBJECT)
+
+static void memory_line_init(MemoryLine *memory_line) {
+    memory_line->address = 0;
+    memory_line->content = 0;
+    memory_line->color = NULL;
+    memory_line->user_data = NULL;
+}
+
+static void memory_line_class_init(MemoryLineClass *class) {
+    // No class initialization needed
+}
+
+G_DEFINE_TYPE(CacheLine, cache_line, G_TYPE_OBJECT)
+
+static void cache_line_init(CacheLine *cache_line) {
+    cache_line->line = 0;
+    cache_line->set = 0;
+    cache_line->valid = 0;
+    cache_line->dirty = 0;
+    cache_line->times_accessed = 0;
+    cache_line->last_accessed = 0;
+    cache_line->first_accessed = 0;
+    cache_line->tag = 0;
+    cache_line->content_cache = NULL;
+    cache_line->color_cache = NULL;
+    cache_line->user_data = NULL;
+}
+
+static void cache_line_class_init(CacheLineClass *class) {
+    // No class initialization needed
+}
+
 /**
  * Funcntion that creates the data structures for memory data storage.
  *
  */
-void createMemoryModel(Computer *computer){
-   computer->memory.model = gtk_list_store_new(N_COLUMNS,
-         G_TYPE_UINT,   /* ADDRESS */
-         G_TYPE_UINT,    /* CONTENT */
-         G_TYPE_STRING,   /* COLOR */
-         G_TYPE_POINTER
-         );
-   for(unsigned long i=computer->memory.page_base_address; i<computer->memory.page_base_address+computer->memory.page_size; i+=(computer->cpu.word_width/8)){
-      gtk_list_store_append(computer->memory.model, &iter);
-      /* Fill fields with some data */
-      gtk_list_store_set (computer->memory.model, &iter,
-            ADDRESS, i,
-            CONTENT, 0,
-            //COLOR, "blue",
-            -1);
-   }
+void createMemoryModel(Computer *computer) {
+    // Create a GListStore for memory lines
+    GListStore *model = g_list_store_new(MEMORY_TYPE_LINE);
+
+    // Populate the GListStore with memory data
+    for (unsigned long i = computer->memory.page_base_address; 
+         i < computer->memory.page_base_address + computer->memory.page_size; 
+         i += (computer->cpu.word_width / 8)) {
+        
+        MemoryLine *memory_line = g_object_new(MEMORY_TYPE_LINE,
+            "address", i,
+            "content", 0,
+            "color", "blue",
+            "user_data", NULL,
+            NULL);
+        
+        // Append the memory line to the GListStore
+        g_list_store_append(model, memory_line);
+
+        // Unref the memory line to avoid memory leaks
+        g_object_unref(memory_line);
+    }
+
+    // Assign the GListStore to the computer memory model
+    computer->memory.model = model;
+
+    // Unref the model if needed to manage memory properly
+    g_object_unref(model);
 }
+
 
 /**
  * Function that creates the data structures for a cache level.
  * @level whose data structure will be created.
  */
 void createCacheModel(Cache *cache, int level){
-   //Creo la cache. en caso de que sea dividia esta será la parte de data
-   GtkListStore *model_data;
-   GtkListStore *model_instruction;
-   model_data= gtk_list_store_new(N_COLUMNS_CACHE,
-         G_TYPE_UINT,     /* LINE=0, */
-         G_TYPE_UINT,     /* SET=1, */
-         G_TYPE_UINT,     /* VALID=2, */
-         G_TYPE_UINT,     /* DIRTY=3, */
-         G_TYPE_UINT,     /* TIMES_ACCESSED=4, */
-         G_TYPE_UINT,     /* LAST_ACCESSED=5, */
-         G_TYPE_UINT,     /* FIRST_ACCESSED=6, */
-         G_TYPE_UINT,     /* TAG=7, */
-         G_TYPE_STRING,   /* CONTENT_CACHE=8, */
-         G_TYPE_STRING,   /* COLOR_CACHE=9, */
-         G_TYPE_POINTER   /* USER_CONTENT_CACHE=10, */
-         );               
-   cache->model_data=model_data;
-   for(int i=0; i<cache->num_lines; i++)
-      gtk_list_store_append(model_data, &iter);
+    // Create a GListStore to hold cache line items
+    GListStore *model_data = g_list_store_new(CACHE_LINE_TYPE);
+
+    // Populate the GListStore with cache line data
+    for (int i = 0; i < cache->num_lines; i++) {
+        CacheLine *cache_line = g_object_new(CACHE_LINE_TYPE,
+            "line", i,
+            "set", 0,
+            "valid", 0,
+            "dirty", 0,
+            "times_accessed", 0,
+            "last_accessed", 0,
+            "first_accessed", 0,
+            "tag", 0,
+            "content_cache", 0,
+            "color_cache", 0,
+            "user_content_cache", NULL,
+            NULL);
+
+        // Append the cache line to the GListStore
+        g_list_store_append(model_data, cache_line);
+    }
+
+    // Assign the model to your cache structure
+    cache->model_data = model_data;
+
+    // Make sure to manage the memory for the GListStore
+    g_object_unref(model_data);
 
    if(cache->separated){
-      model_instruction= gtk_list_store_new(N_COLUMNS_CACHE,
-            G_TYPE_UINT,   /* LINE=0, */
-            G_TYPE_UINT,   /* SET=1, */
-            G_TYPE_UINT,   /* VALID=2, */
-            G_TYPE_UINT,   /* DIRTY=3, */                    
-            G_TYPE_UINT,   /* TIMES_ACCESSED=4, */
-            G_TYPE_UINT,   /* LAST_ACCESSED=5, */
-            G_TYPE_UINT,   /* FIRST_ACCESSED=6, */
-            G_TYPE_UINT,   /* TAG=7, */
-            G_TYPE_STRING, /* CONTENT_CACHE=8, */
-            G_TYPE_STRING, /* COLOR_CACHE=9, */
-            G_TYPE_POINTER /* USER_CONTENT_CACHE=10, */
-            );             
-      cache->model_instruction=model_instruction;
-      for(int i=0; i<cache->num_lines; i++)
-         gtk_list_store_append(model_instruction, &iter);
+    // Create a GListStore to hold cache line items
+    GListStore *model_instruction = g_list_store_new(CACHE_LINE_TYPE);
+
+    // Populate the GListStore with cache line data
+    for (int i = 0; i < cache->num_lines; i++) {
+        CacheLine *cache_line = g_object_new(CACHE_LINE_TYPE,
+            "line", i,
+            "set", 0,
+            "valid", 0,
+            "dirty", 0,
+            "times_accessed", 0,
+            "last_accessed", 0,
+            "first_accessed", 0,
+            "tag", 0,
+            "content_cache", 0,
+            "color_cache", 0,
+            "user_content_cache", NULL,
+            NULL);
+
+        // Append the cache line to the GListStore
+        g_list_store_append(model_instruction, cache_line);
+    }
+
+    // Assign the model to your cache structure
+    cache->model_instruction = model_instruction;
+
+    // Make sure to manage the memory for the GListStore
+    g_object_unref(model_instruction);
    }
 #if DEBUG
          fprintf(stderr,"cache level %d: lines: %d, associativity: %ld, sets: %d, words line: %d\n", level+1, cache->num_lines, cache->associativity, cache->num_sets, cache->num_words);

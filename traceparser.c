@@ -2,12 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-//#include "gui.h"
+#include "gui.h"
 #include "datamanipulation.h"
 #include "traceparser.h"
 //#include "datastore.h"
 
 struct memOperation* memoryOperations = NULL;
+int numberOfOperations = 0;
 
 // Private functions
 int countLines(FILE* fp);

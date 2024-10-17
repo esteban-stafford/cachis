@@ -5,8 +5,8 @@ MODULES = gui.c dictionary.c confparser.c iniparser.c datamanipulation.c tracepa
 DEBUG=0
 COVER=0
 
-LIBS = $(shell pkg-config --libs gtk+-2.0) -lm
-CFLAGS += -g -Wreturn-type -DDEBUG=${DEBUG}  $(shell pkg-config --cflags gtk+-2.0)
+LIBS = $(shell pkg-config --libs gtk4) -lm
+CFLAGS += -g -Wreturn-type -DDEBUG=${DEBUG}  $(shell pkg-config --cflags gtk4)
 
 ifeq ($(COVER),1)
 CFLAGS += --coverage

@@ -1,6 +1,8 @@
 #ifndef COMPUTER_H
 #define COMPUTER_H
 
+#include <gtk/gtk.h>
+
 typedef struct
 {
     long address_width;
@@ -21,7 +23,7 @@ typedef struct
     long page_size;
     long page_base_address;
 
-    GtkListStore *model; 
+    GListStore *model; 
 } Memory;
 
 typedef struct
@@ -44,8 +46,8 @@ typedef struct
     int offset_bits;
     int set_bits;
 
-    GtkListStore *model_data;
-    GtkListStore *model_instruction;
+    GListStore *model_data;
+    GListStore *model_instruction;
 } Cache;
 
 #define MAX_CACHES 10
