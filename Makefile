@@ -12,7 +12,7 @@ ifeq ($(COVER),1)
 CFLAGS += --coverage
 endif
 
-cachis: mainprogram.c ${MODULES}
+cachis: cachis.c ${MODULES}
 	gcc -o $@ ${CFLAGS} $< ${MODULES} ${LIBS}
 
 clean:

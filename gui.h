@@ -54,7 +54,7 @@ typedef struct {
 
 extern GUI gui;
 
-int generateGUI();
+int launch_gui();
 GtkWidget * createPanelMemory();
 void createPanelCache(int level);
 GtkWidget *create_view_statistics(void);

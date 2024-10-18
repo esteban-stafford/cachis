@@ -78,9 +78,7 @@ void createCacheModel(Cache *cache, int level) {
 void generateDataStorage(Computer *computer){
    createMemoryModel(computer);
    for(int i=0; i< computer->num_caches; i++){
-      printf("Creating cache %d\n", i);
       createCacheModel(&computer->cache[i], i);
-      printf("Cache %d created\n", i);
       //resetCache(i);
    }
    create_model_statistics(computer);

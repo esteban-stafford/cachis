@@ -7,10 +7,7 @@
 GUI gui;
 int done;
 
-/**
- * Function to create the GUI. Data structures for the gui tables must have been created previously.
- */
-int generateGUI() {
+void create_gui() {
    done = 0;
    //esto se usara mas adelante. Es para colorear texts.
    gui.tagBlue = gtk_text_buffer_create_tag (gui.buffer, "blue_foreground", "foreground", "blue", NULL);
@@ -142,8 +139,13 @@ int generateGUI() {
    //insertTextInPanel("holamundo");
    /* and the window */
 #endif
+}
+
+int launch_gui() {
+
+   create_gui();
    // Show the application window
-   gtk_window_present (GTK_WINDOW (gui.window));
+   gtk_window_present(GTK_WINDOW (gui.window));
 
    // Enter the main event loop, and wait for user interaction
    while (!done)
