@@ -61,11 +61,9 @@ static GListStore* create_cache_list_store(int num_lines) {
 
 void createCacheModel(Cache *cache, int level) {
     cache->model_data = create_cache_list_store(cache->num_lines);
-    g_object_unref(cache->model_data);
 
     if (cache->separated) {
         cache->model_instruction = create_cache_list_store(cache->num_lines);
-        g_object_unref(cache->model_instruction);
     }
 
 #if DEBUG

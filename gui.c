@@ -2,6 +2,73 @@
 
 static GtkApplication *app = NULL;
 
+static GtkWidget *create_memory_table(Computer *computer) {
+    GtkWidget *scrolled_window = gtk_scrolled_window_new();
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+    GtkWidget *tree_view = gtk_tree_view_new();
+    gtk_tree_view_set_model(GTK_TREE_VIEW(tree_view), GTK_TREE_MODEL(computer->memory.model));
+
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+
+    GtkTreeViewColumn *address_column = gtk_tree_view_column_new_with_attributes("Address", renderer, "text", 0, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), address_column);
+
+    GtkTreeViewColumn *content_column = gtk_tree_view_column_new_with_attributes("Content", renderer, "text", 1, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), content_column);
+
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), tree_view);
+    return scrolled_window;
+}
+
+static GtkWidget *create_cache_table(GListStore *model, const char *title) {
+    printf(" ----> Creating cache table with title: %s\n", title);
+    GtkWidget *scrolled_window = gtk_scrolled_window_new();
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+    GtkWidget *tree_view = gtk_tree_view_new();
+    gtk_tree_view_set_model(GTK_TREE_VIEW(tree_view), GTK_TREE_MODEL(model));
+
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Line", renderer, "text", 0, NULL));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Set", renderer, "text", 1, NULL));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Valid", renderer, "text", 2, NULL));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Dirty", renderer, "text", 3, NULL));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Accessed", renderer, "text", 4, NULL));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Last Access", renderer, "text", 5, NULL));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("First Access", renderer, "text", 6, NULL));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Tag", renderer, "text", 7, NULL));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Content", renderer, "text", 8, NULL));
+
+    g_object_set(renderer, "foreground", "color_cache", NULL);  // Set color from color_cache field
+
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), tree_view);
+    return scrolled_window;
+}
+
+static GtkWidget *create_cache_widget(Cache *cache, int level) {
+    char title[50];
+
+    if (cache->separated) {
+        GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+
+        snprintf(title, 50, "Cache L%d Data", level);
+        GtkWidget *data_table = create_cache_table(G_LIST_STORE(cache->model_data), title);
+        gtk_box_append(GTK_BOX(box), data_table);
+
+        snprintf(title, 50, "Cache L%d Instruction", level);
+        GtkWidget *instruction_table = create_cache_table(G_LIST_STORE(cache->model_instruction), title);
+        gtk_box_append(GTK_BOX(box), instruction_table);
+
+        return box;
+    } else {
+        snprintf(title, 50, "Cache L%d", level);
+        return create_cache_table(G_LIST_STORE(cache->model_data), title);
+    }
+}
+
+
 static void activate(GtkApplication *app, gpointer user_data) {
     Computer *computer = (Computer *)user_data;
 
@@ -12,7 +79,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *grid = gtk_grid_new();
     gtk_window_set_child(GTK_WINDOW(window), grid);
 
-    // Trace File and Simulation Stats (Left Column)
+    // Left Column
     GtkWidget *trace_label = gtk_label_new("trace file: filename.vca");
     gtk_grid_attach(GTK_GRID(grid), trace_label, 0, 0, 1, 1);
 
@@ -27,33 +94,27 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_size_request(stats_text, 200, 200);
     gtk_grid_attach(GTK_GRID(grid), stats_text, 0, 7, 1, 5);
 
-    // Middle section (L1 and L2 Cache Tables)
+    // Middle Section
     for (int i = 0; i < computer->num_caches; i++) {
-        if (computer->cache[i].separated) {
-            GtkWidget *l1_table = gtk_label_new("Cache L1"); // Placeholder for L1 Table
-            gtk_widget_set_size_request(l1_table, 150, 200);
-            gtk_grid_attach(GTK_GRID(grid), l1_table, i + 1, 1, 1, 1);
-
-            GtkWidget *l2_table = gtk_label_new("Cache L2"); // Placeholder for L2 Table
-            gtk_widget_set_size_request(l2_table, 150, 200);
-            gtk_grid_attach(GTK_GRID(grid), l2_table, i + 1, 2, 1, 1);
-        } else {
-            GtkWidget *cache_table = gtk_label_new("Unified Cache"); // Placeholder for Unified Cache Table
-            gtk_widget_set_size_request(cache_table, 150, 400);
-            gtk_grid_attach(GTK_GRID(grid), cache_table, i + 1, 1, 1, 2);
-        }
+       GtkWidget *cache_widget = create_cache_widget(&computer->cache[i], i + 1);
+       gtk_widget_set_size_request(cache_widget, 150, 400);
+       gtk_grid_attach(GTK_GRID(grid), cache_widget, i + 1, 1, 1, computer->cache[i].separated ? 2 : 1);
     }
 
-    // Memory (Right Column)
+    // Right Column (Memory Table)
     GtkWidget *memory_label = gtk_label_new("Memory");
     gtk_grid_attach(GTK_GRID(grid), memory_label, computer->num_caches + 1, 0, 1, 1);
 
-    GtkWidget *memory_text = gtk_text_view_new();
-    gtk_widget_set_size_request(memory_text, 200, 400);
-    gtk_grid_attach(GTK_GRID(grid), memory_text, computer->num_caches + 1, 1, 1, 5);
+    GtkWidget *memory_table = create_memory_table(computer);
+    gtk_grid_attach(GTK_GRID(grid), memory_table, computer->num_caches + 1, 1, 1, 5);
+
+    for (int i = 0; i <= computer->num_caches + 1; i++) {
+        gtk_widget_set_hexpand(gtk_grid_get_child_at(GTK_GRID(grid), i, 1), TRUE);
+    }
 
     gtk_window_present(GTK_WINDOW(window));
 }
+
 
 int launch_gui(int argc, char **argv, Computer *computer) {
     GtkApplication *app = gtk_application_new("org.gtk.example", G_APPLICATION_FLAGS_NONE);
