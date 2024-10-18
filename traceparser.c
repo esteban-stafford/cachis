@@ -46,69 +46,69 @@ int parseLine(char* line, int lineNumber, struct memOperation *result, int defau
       switch(fieldId) {
          case 0:// Load/Fetch or Store (One character)
             if(strlen(pch) != 1 || ( *pch != 'L' && *pch != 'S')) {
-               printErrorMessage("memory operation must be Load/Fetch (L) or Store (S).", lineNumber);
+               print_error_message("memory operation must be Load/Fetch (L) or Store (S).", lineNumber);
                return -1;
             }
             operation = *pch == 'L' ? LOAD : STORE;
             break; 
          case 1: // Address (Must be hexadecimal)
             if(!isCorrectHexadecimal(pch)){
-               printErrorMessage("invalid address.", lineNumber);
+               print_error_message("invalid address.", lineNumber);
                return -1;
             }
             address = strtol(pch, NULL, 16);
 
             if(address<memory->page_base_address||address>=memory->page_base_address+memory->page_size){
-               printErrorMessage("address out of page range.", lineNumber);
+               print_error_message("address out of page range.", lineNumber);
                return -1;
 	    }
             break;
          case 2: // Instruction or Data (One character)
             if(strlen(pch) != 1 || ( *pch != 'I' && *pch != 'D')) {
-               printErrorMessage("memory operation must be Intruction (I) or Data (D).", lineNumber);
+               print_error_message("memory operation must be Intruction (I) or Data (D).", lineNumber);
                return -1;
             }
             instructionOrData = *pch == 'I' ? INSTRUCTION : DATA;
             if(operation==STORE && instructionOrData==INSTRUCTION){
-               printErrorMessage("You can not store (S) an Instruction (I).", lineNumber);
+               print_error_message("You can not store (S) an Instruction (I).", lineNumber);
                return -1;
             }
             break;
          case 3: // Size (Must be number of bytes and power of two)
             if(!isCorrectDecimal(pch)){
-               printErrorMessage("invalid size.", lineNumber);
+               print_error_message("invalid size.", lineNumber);
                return -1;
             }
             size = atoi(pch);
             if(!isPowerOf2(size)){
-               printErrorMessage("size must be power of 2.", lineNumber);
+               print_error_message("size must be power of 2.", lineNumber);
                return -1;
             }
             if(size!=(defaultSize)){
                sprintf(message,"Only word size access is already implemented. Please, use %d bytes size.", defaultSize);
-               printErrorMessage(message, lineNumber);
+               print_error_message(message, lineNumber);
                return -1;
             }
             break;
          case 4: // Data (Must be a number)
             if(!isCorrectDecimal(pch)){
-               printErrorMessage("invalid data.", lineNumber);
+               print_error_message("invalid data.", lineNumber);
                return -1;					
             }
             data = atol(pch);
             if(operation==LOAD){
-               printErrorMessage("you can not use the data field in load (L) operations.", lineNumber);
+               print_error_message("you can not use the data field in load (L) operations.", lineNumber);
                return -1;		
             }
             if(ceil(log(data+1)/log(2))>(size*8)){
 	       
                sprintf(message,"data value is too large to be stored in %d bytes.", defaultSize);
-               printErrorMessage(message, lineNumber);
+               print_error_message(message, lineNumber);
                return -1;
             }
             break;
          default: // Too many fields
-            printErrorMessage("too many fields.", lineNumber);
+            print_error_message("too many fields.", lineNumber);
             return -1;
       }
       // Get next field
@@ -116,7 +116,7 @@ int parseLine(char* line, int lineNumber, struct memOperation *result, int defau
       pch = strtok (NULL, " ");
    }
    if(fieldId < 3) {
-      printErrorMessage("too few fields.", lineNumber);
+      print_error_message("too few fields.", lineNumber);
       return -1;
    }
 

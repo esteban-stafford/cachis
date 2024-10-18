@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 
     // Start GUI...
     if(useGUI) {
-       launch_gui(argc, argv);
+       launch_gui(1, argv, &computer);
     // ... or run batch simulation
     } else {
        simulate(&computer);

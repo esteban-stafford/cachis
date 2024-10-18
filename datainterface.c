@@ -10,18 +10,18 @@ const char* const colors[] = { "green", "red", "yellow", "green", "red", "grey",
 char *interfaceError = NULL;
 
 void resetMemory(Computer *computer) {
-   GListStore *model = G_LIST_STORE(computer->memory.model);
+/*   GListStore *model = G_LIST_STORE(computer->memory.model);
    guint n_items = g_list_model_get_n_items(G_LIST_MODEL(model));
     
    for (guint i = 0; i < n_items; i++) {
       MemoryLine *memory_line = g_list_model_get_item(G_LIST_MODEL(model), i);
       g_object_set(memory_line, "content", 0, "color", "white", "user_data", NULL, NULL);
       g_object_unref(memory_line);
-   }
+   } */
 }
 
 void resetCacheModel(Computer *computer, int level, int instructionOrData) {
-    GListStore *model;
+/*    GListStore *model;
 
     if (instructionOrData == DATA) {
         model = G_LIST_STORE(computer->cache[level].model_data);
@@ -61,7 +61,7 @@ void resetCacheModel(Computer *computer, int level, int instructionOrData) {
         
         // Unref the cache line
         g_object_unref(cache_line);
-    }
+    }*/
 }
 
 /**
@@ -69,10 +69,10 @@ void resetCacheModel(Computer *computer, int level, int instructionOrData) {
  * @param cache level where the cache is located. 
  */
 void resetCache(Computer *computer, int level){
-   if(computer->cache[level].model_data) 
+   /*if(computer->cache[level].model_data) 
       resetCacheModel(computer, level, DATA);
    if(computer->cache[level].model_instruction) 
-      resetCacheModel(computer, level, INSTRUCTION);
+      resetCacheModel(computer, level, INSTRUCTION);*/
 }
 
 /**
@@ -81,7 +81,7 @@ void resetCache(Computer *computer, int level){
  * @param i line index
  */
 void showLineFromCache(Computer *computer, int instructionOrData, int level, int i){
-   struct cacheLine line;
+   /*struct cacheLine line;
    //first I read it
    readLineFromCache(computer, instructionOrData, level, &line, i);
    char contentString[2000];
@@ -94,11 +94,11 @@ void showLineFromCache(Computer *computer, int instructionOrData, int level, int
    printf("valid: %d   dirty: %d   last accessed: %d  times accessed: %d  first accessed: %d\n",
             line.valid, line.dirty, line.lastAccess, line.accessCount, line.firstAccess);
    printf("------------------------------------------------------\n");
-   free(line.content);
+   free(line.content); */
 }
 
 long findTagInCache(Computer *computer, int instructionOrData, int level, unsigned requestSet, unsigned requestTag) {
-   GtkTreeModel *model;
+   /* GtkTreeModel *model;
    GtkTreeIter iter;
 
    if(computer->cache[level].separated == 0 || instructionOrData == DATA) {
@@ -121,7 +121,7 @@ long findTagInCache(Computer *computer, int instructionOrData, int level, unsign
       // Get next via
       via++;
       more = gtk_tree_model_iter_next(GTK_TREE_MODEL(model), &iter);
-   } 
+   } */
    return -1;
 }
 
@@ -132,7 +132,7 @@ long findTagInCache(Computer *computer, int instructionOrData, int level, unsign
  * @param i line index
  */
 void readLineFromCache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber){
-   GtkTreeModel *model;
+   /*GtkTreeModel *model;
    GtkTreeView *view;
    GtkTreeIter iter;
    char *contentString;
@@ -171,11 +171,11 @@ void readLineFromCache(Computer *computer, int instructionOrData, int level, str
    line->content = malloc((sizeof(long))*computer->cache[level].num_words);
    //turn String format to long array.
    contentStringToArray(line->content, contentString, computer->cache[level].num_words);
-   g_free(contentString);
+   g_free(contentString); */
 }
 
 void readFlagsFromCache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber){
-   GtkTreeModel *model;
+   /* GtkTreeModel *model;
    GtkTreeIter iter;
    char *contentString;
 
@@ -195,7 +195,7 @@ void readFlagsFromCache(Computer *computer, int instructionOrData, int level, st
          TIMES_ACCESSED, &line->accessCount,
          LAST_ACCESSED, &line->lastAccess,
          FIRST_ACCESSED, &line->firstAccess,
-         -1);
+         -1); */
 }
 /**
  * This function writes a cache line.
@@ -204,7 +204,7 @@ void readFlagsFromCache(Computer *computer, int instructionOrData, int level, st
  * @param i line index
  */
 void writeLineToCache(Computer *computer, int instructionOrData, int level, struct cacheLine *line, unsigned lineNumber) {
-   GtkTreeModel *model;
+   /* GtkTreeModel *model;
    GtkTreeView *view;
    GtkTreeIter iter;
    char contentString[2000];
@@ -236,7 +236,7 @@ void writeLineToCache(Computer *computer, int instructionOrData, int level, stru
          -1);
    char rowString[50];
    sprintf(rowString, "%d", lineNumber);
-   gtk_tree_view_scroll_to_cell (view, gtk_tree_path_new_from_string(rowString), NULL, TRUE, 0.5, 0);
+   gtk_tree_view_scroll_to_cell (view, gtk_tree_path_new_from_string(rowString), NULL, TRUE, 0.5, 0); */
 }
 
 /**
@@ -245,7 +245,7 @@ void writeLineToCache(Computer *computer, int instructionOrData, int level, stru
  * @return 0 if correct -1 if not word address error, -2 if out of page error
  */
 int showMemoryAddress(Computer *computer, long address){
-   struct memoryPosition pos;
+   /* struct memoryPosition pos;
    //I read the memory position
    int returned=readFromMemoryAddress(computer, &pos, address);
    if(returned!=0){
@@ -255,7 +255,7 @@ int showMemoryAddress(Computer *computer, long address){
    printf("------------------------------------------------------\n");
    printf("address: %lx     content: %lx\n", pos.address, pos.content);
    printf("user content: %s\n", (char*)pos.user_content);
-   printf("------------------------------------------------------\n");
+   printf("------------------------------------------------------\n"); */
    return 0;
 }
 
@@ -266,7 +266,7 @@ int showMemoryAddress(Computer *computer, long address){
  * @return 0 if correct -1 if not word address error, -2 if out of page error
  */
 int readFromMemoryAddress(Computer *computer, struct memoryPosition *pos, long address){
-   GtkTreeModel *model = GTK_TREE_MODEL(computer->memory.model);
+   /* GtkTreeModel *model = GTK_TREE_MODEL(computer->memory.model);
    GtkTreeView *view = GTK_TREE_VIEW(gui.viewMEMORY);
    GtkTreeIter iter;
    // if not word address return error
@@ -294,7 +294,7 @@ int readFromMemoryAddress(Computer *computer, struct memoryPosition *pos, long a
          -1);
    char rowString[50];
    sprintf(rowString, "%ld", (address-computer->memory.page_base_address)/(computer->cpu.word_width/8));
-   gtk_tree_view_scroll_to_cell (view, gtk_tree_path_new_from_string(rowString), NULL, TRUE, 0.5, 0);
+   gtk_tree_view_scroll_to_cell (view, gtk_tree_path_new_from_string(rowString), NULL, TRUE, 0.5, 0); */
    return 0;
 }
 /**
@@ -304,7 +304,7 @@ int readFromMemoryAddress(Computer *computer, struct memoryPosition *pos, long a
  * @return 0 if correct -1 if not word address error, -2 if out of page error
  */
 int writeToMemoryAddress(Computer *computer, struct memoryPosition *pos, long address){
-   GtkTreeModel *model= GTK_TREE_MODEL(computer->memory.model);
+   /* GtkTreeModel *model= GTK_TREE_MODEL(computer->memory.model);
    GtkTreeView *view = GTK_TREE_VIEW(gui.viewMEMORY);
    GtkTreeIter iter;
    // if not word address return error
@@ -330,7 +330,7 @@ int writeToMemoryAddress(Computer *computer, struct memoryPosition *pos, long ad
          -1);
    char rowString[50];
    sprintf(rowString, "%ld", (address-computer->memory.page_base_address)/(computer->cpu.word_width/8));
-   gtk_tree_view_scroll_to_cell (view, gtk_tree_path_new_from_string(rowString), NULL, TRUE, 0.5, 0);
+   gtk_tree_view_scroll_to_cell (view, gtk_tree_path_new_from_string(rowString), NULL, TRUE, 0.5, 0); */
    return 0;
 }
 /**
@@ -340,7 +340,7 @@ int writeToMemoryAddress(Computer *computer, struct memoryPosition *pos, long ad
  * @param value String containing the value which that property will be setted to.
  */
 void setStatistics(char* component, char* property, char* value){
-   GtkTreeModel *tree_model=statistics_model;
+   /* GtkTreeModel *tree_model=statistics_model;
    GtkTreeIter iter;
    int isntEmpty=gtk_tree_model_get_iter_first (tree_model, &iter);
    int hasNext=1;
@@ -406,7 +406,7 @@ void setStatistics(char* component, char* property, char* value){
             COMPONET_OR_PROPERTY, property,
             VALUE, value,
             -1);
-   }
+   } */
 }
 /**
  * This function is used to read a value from the simulation statistics panel
@@ -415,7 +415,7 @@ void setStatistics(char* component, char* property, char* value){
  * @return String containing th value
  */
 char* getStatistics(char* component, char* property){
-   GtkTreeModel *tree_model=statistics_model;
+   /* GtkTreeModel *tree_model=statistics_model;
    GtkTreeIter iter;
    gtk_tree_model_get_iter_first (tree_model, &iter);
    int hasNext=1;
@@ -461,9 +461,9 @@ char* getStatistics(char* component, char* property){
                -1);
          return value;
       }
-   }
+   } */
    //If the componet or the property don't exist I create the componet and the property and I set the value return param to NULL
-   return NULL;
+   return NULL; 
 }
 
 /**
@@ -471,7 +471,7 @@ char* getStatistics(char* component, char* property){
  * @param fp file to where it will be printed
  */
 void printStatistics(FILE* fp) {
-   fprintf(fp, "\n------SIMULATION STATISTICS------\n\n");   
+   /* fprintf(fp, "\n------SIMULATION STATISTICS------\n\n");   
    GtkTreeModel *tree_model=statistics_model;
    GtkTreeIter iter;
    gtk_tree_model_get_iter_first (tree_model, &iter);
@@ -507,7 +507,7 @@ void printStatistics(FILE* fp) {
       hasNext=gtk_tree_model_iter_next (tree_model, &iter);
    }
    //If the componet or the property don't exist I create the componet and the property and I set the value return param to NULL
-   
+   */
 }
 
 
@@ -515,6 +515,7 @@ void printStatistics(FILE* fp) {
  * This function is used to remove all the colors from the cache and memory tables
  */
 void removeAllColors(Computer *computer){
+   /*
    //remove colors from all caches
    for(int i=0; i<computer->num_caches; i++){
        GtkTreeModel *model= GTK_TREE_MODEL(computer->cache[i].model_data);
@@ -542,6 +543,6 @@ void removeAllColors(Computer *computer){
    while(hasNext){
       gtk_list_store_set (GTK_LIST_STORE(computer->memory.model), &iter, COLOR, colors[WHITE], -1);
       hasNext=gtk_tree_model_iter_next (GTK_TREE_MODEL(computer->memory.model), &iter);
-   }
+   } */
 }
 
