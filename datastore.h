@@ -9,14 +9,14 @@ struct _MemoryLine {
    GObject parent_instance;
     unsigned int address;
     unsigned int content;
-    char *color;
-    gpointer user_data;  // For user-defined data
+    const char *color;
+    gpointer user_data;
 };
-
 
 #define CACHE_LINE_TYPE (cache_line_get_type())
 G_DECLARE_FINAL_TYPE(CacheLine, cache_line, CACHE, LINE, GObject)
 struct _CacheLine {
+   GObject parent_instance;
     unsigned int line;
     unsigned int set;
     unsigned int valid;
@@ -25,11 +25,14 @@ struct _CacheLine {
     unsigned int last_accessed;
     unsigned int first_accessed;
     unsigned int tag;
-    char *content_cache;
-    char *color_cache;
-    gpointer user_data;  // Use gpointer for user-defined pointers
+    const char *content_cache;
+    const char *color_cache; 
+    gpointer user_data;
 };
 
+struct _CacheLineClass {
+    GObjectClass parent_class;
+};
 
 enum {
     ADDRESS=0,

@@ -5,32 +5,34 @@
 //#include "callbacks.h"
 
 GUI gui;
+int done;
 
-#ifdef COMMENT
 /**
  * Function to create the GUI. Data structures for the gui tables must have been created previously.
  */
-int generateGUI(int argc, char *argv[]) {
+int generateGUI() {
+   done = 0;
    //esto se usara mas adelante. Es para colorear texts.
-   tagBlue = gtk_text_buffer_create_tag (buffer, "blue_foreground", "foreground", "blue", NULL);
-   tagBlack = gtk_text_buffer_create_tag (buffer, "black_foreground", "foreground", "black", NULL);
+   gui.tagBlue = gtk_text_buffer_create_tag (gui.buffer, "blue_foreground", "foreground", "blue", NULL);
+   gui.tagBlack = gtk_text_buffer_create_tag (gui.buffer, "black_foreground", "foreground", "black", NULL);
    //Esto tabién se usara mas adelante es para recorrer el buffer de text del file trace
-   gtk_text_buffer_get_iter_at_offset (buffer, &lineIterInicial, 0);
-   marcaLineCurrent= gtk_text_mark_new (NULL, 1);
-   gtk_text_buffer_add_mark (buffer,
-         marcaLineCurrent,
-         &lineIterInicial);
+   gtk_text_buffer_get_iter_at_offset (gui.buffer, &gui.lineIterInicial, 0);
+   gui.marcaLineCurrent= gtk_text_mark_new (NULL, 1);
+   gtk_text_buffer_add_mark (gui.buffer,
+         gui.marcaLineCurrent,
+         &gui.lineIterInicial);
    /* This is called in all GTK applications. Arguments are parsed
     * from the command line and are returned, to the application. */
-   gtk_init (&argc, &argv);
+   gtk_init();
    /* create a new window */
-   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_default_size(GTK_WINDOW(window), 700, 400);
+   gui.window = gtk_window_new ();
+   gtk_window_set_default_size(GTK_WINDOW(gui.window), 700, 400);
    /* When the window is given the "delete_event" signal (this is given
     * by the window manager, usually by the "close" option, or on the
     * titlebar), we ask it to call the delete_event () function
     * as defined above. The data passed to the callback
     * function is NULL and is ignored in the callback function. */
+#ifdef COMMENT
    g_signal_connect (G_OBJECT (window), "delete_event",
          G_CALLBACK (delete_event), NULL);
    /* Here we connect the "destroy" event to a signal handler.
@@ -139,14 +141,17 @@ int generateGUI(int argc, char *argv[]) {
    //gtk_table_attach_defaults (GTK_TABLE (table), button3, 2, 3, 0, 2);
    //insertTextInPanel("holamundo");
    /* and the window */
-   gtk_widget_show_all(window);
-   /* All GTK applications must have a gtk_main(). Control ends here
-    * and waits for an event to occur (like a key press or
-    * mouse event). */
-   gtk_main();
+#endif
+   // Show the application window
+   gtk_window_present (GTK_WINDOW (gui.window));
+
+   // Enter the main event loop, and wait for user interaction
+   while (!done)
+      g_main_context_iteration (NULL, TRUE);
    return 1;
 }
 
+#ifdef COMMENT
 /*
  *  Get the next line from the trace file stored in the text widget without going to the next line.
  *  
@@ -748,23 +753,27 @@ void scrollInstructionCacheToRow(int level, long row) {
    gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW(gui.cachePanel[level].viewInstruction),
          path, NULL, TRUE, 0.5, 0);
 }
+#endif
 
 /**
  * Function for printing error messages. If gui mode it shows error dialog.
  * @param message to print
  */
-void printErrorMessage(char * message, int lineNumber){
+void printErrorMessage(char *message, int lineNumber) {
+    if (gui.window == NULL) {
+        fprintf(stderr, "%s Line %d\n", message, lineNumber);
+    } else {
+        GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(gui.window),
+                                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                   GTK_MESSAGE_ERROR,
+                                                   GTK_BUTTONS_CLOSE,
+                                                   "%s\nLine %d", message, lineNumber);
 
-   if(window==NULL){
-       fprintf(stderr, "%s Line %d\n", message, lineNumber);
-   }else{
-        GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window),
-                                  GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  GTK_MESSAGE_ERROR,
-                                  GTK_BUTTONS_CLOSE,
-                                  "%s", message);
-        gtk_dialog_run (GTK_DIALOG (dialog));
-        gtk_widget_destroy (dialog);
-   }
+        g_signal_connect(dialog, "response",
+                         G_CALLBACK(gtk_window_destroy),
+                         NULL);
+
+        gtk_widget_show(dialog);
+    }
 }
-#endif
+

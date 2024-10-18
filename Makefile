@@ -18,5 +18,5 @@ cachis: mainprogram.c ${MODULES}
 clean:
 	rm -fr *~
 	rm -fr *.g*
-	rm cache_simulator
+	rm -f cachis
 
