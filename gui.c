@@ -279,17 +279,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_vexpand(memory_table, TRUE);
     gtk_grid_attach(GTK_GRID(grid), memory_table, computer->num_caches + 1, 1, 1, 12);
 
-    // Make sure all children expand to fill the available space
-    for (int i = 0; i <= computer->num_caches + 1; i++) {
-        for (int j = 0; j <= 7; j++) {
-            GtkWidget *child = gtk_grid_get_child_at(GTK_GRID(grid), i, j);
-            if (child != NULL) {
-                gtk_widget_set_hexpand(child, TRUE);
-                gtk_widget_set_vexpand(child, TRUE);
-            }
-        }
-    }
-
     gtk_window_present(GTK_WINDOW(window));
 }
 
