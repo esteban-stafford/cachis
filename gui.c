@@ -117,7 +117,7 @@ static void bind_cache_content_cb(GtkSignalListItemFactory *factory, GtkListItem
     gtk_label_set_text(GTK_LABEL(label), item->content_cache);
 }
 
-static GtkWidget *create_cache_table(GListStore *model, const char *title) {
+static GtkWidget *create_cache_table(GListStore *model) {
     GtkWidget *scrolled_window = gtk_scrolled_window_new();
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
@@ -203,23 +203,22 @@ static GtkWidget *create_cache_table(GListStore *model, const char *title) {
 }
 
 static GtkWidget *create_cache_widget(Cache *cache, int level) {
-    char title[50];
-
     if (cache->separated) {
         GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
-        snprintf(title, 50, "Cache L%d Data", level);
-        GtkWidget *data_table = create_cache_table(G_LIST_STORE(cache->model_data), title);
+        GtkWidget *data_table = create_cache_table(G_LIST_STORE(cache->model_data));
+        gtk_widget_set_vexpand(data_table, TRUE); // Ensure vertical expansion for data_table
         gtk_box_append(GTK_BOX(box), data_table);
 
-        snprintf(title, 50, "Cache L%d Instruction", level);
-        GtkWidget *instruction_table = create_cache_table(G_LIST_STORE(cache->model_instruction), title);
+        GtkWidget *instruction_table = create_cache_table(G_LIST_STORE(cache->model_instruction));
+        gtk_widget_set_vexpand(instruction_table, TRUE); // Ensure vertical expansion for instruction_table
         gtk_box_append(GTK_BOX(box), instruction_table);
 
         return box;
     } else {
-        snprintf(title, 50, "Cache L%d", level);
-        return create_cache_table(G_LIST_STORE(cache->model_data), title);
+        GtkWidget *unified_table = create_cache_table(G_LIST_STORE(cache->model_data));
+        gtk_widget_set_vexpand(unified_table, TRUE); // Ensure vertical expansion for unified cache
+        return unified_table;
     }
 }
 
@@ -233,12 +232,18 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *grid = gtk_grid_new();
     gtk_window_set_child(GTK_WINDOW(window), grid);
 
+    // Ensure grid stretches with the window
+    gtk_widget_set_hexpand(grid, TRUE);
+    gtk_widget_set_vexpand(grid, TRUE);
+
     // Left Column
     GtkWidget *trace_label = gtk_label_new("trace file: filename.vca");
     gtk_grid_attach(GTK_GRID(grid), trace_label, 0, 0, 1, 1);
 
     GtkWidget *trace_text = gtk_text_view_new();
     gtk_widget_set_size_request(trace_text, 200, 400);
+    gtk_widget_set_hexpand(trace_text, TRUE);
+    gtk_widget_set_vexpand(trace_text, TRUE);
     gtk_grid_attach(GTK_GRID(grid), trace_text, 0, 1, 1, 5);
 
     GtkWidget *stats_label = gtk_label_new("simulation statistics");
@@ -246,13 +251,22 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *stats_text = gtk_text_view_new();
     gtk_widget_set_size_request(stats_text, 200, 200);
+    gtk_widget_set_hexpand(stats_text, TRUE);
+    gtk_widget_set_vexpand(stats_text, TRUE);
     gtk_grid_attach(GTK_GRID(grid), stats_text, 0, 7, 1, 5);
 
-    // Middle Section
+    // Middle Section (Caches)
     for (int i = 0; i < computer->num_caches; i++) {
-       GtkWidget *cache_widget = create_cache_widget(&computer->cache[i], i + 1);
-       gtk_widget_set_size_request(cache_widget, 150, 400);
-       gtk_grid_attach(GTK_GRID(grid), cache_widget, i + 1, 1, 1, computer->cache[i].separated ? 2 : 1);
+       char title[50];
+       snprintf(title, 50, "Cache L%d", i + 1);
+        GtkWidget *cache_label = gtk_label_new(title);
+        gtk_grid_attach(GTK_GRID(grid), cache_label, i + 1, 0, 1, 1);
+
+        GtkWidget *cache_widget = create_cache_widget(&computer->cache[i], i + 1);
+        gtk_widget_set_size_request(cache_widget, 150, 400);
+        gtk_widget_set_hexpand(cache_widget, TRUE);
+        gtk_widget_set_vexpand(cache_widget, TRUE);
+        gtk_grid_attach(GTK_GRID(grid), cache_widget, i + 1, 1, 1, 12);
     }
 
     // Right Column (Memory Table)
@@ -260,10 +274,20 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_grid_attach(GTK_GRID(grid), memory_label, computer->num_caches + 1, 0, 1, 1);
 
     GtkWidget *memory_table = create_memory_table(computer);
-    gtk_grid_attach(GTK_GRID(grid), memory_table, computer->num_caches + 1, 1, 1, 5);
+    gtk_widget_set_size_request(memory_table, 200, 400);
+    gtk_widget_set_hexpand(memory_table, TRUE);
+    gtk_widget_set_vexpand(memory_table, TRUE);
+    gtk_grid_attach(GTK_GRID(grid), memory_table, computer->num_caches + 1, 1, 1, 12);
 
+    // Make sure all children expand to fill the available space
     for (int i = 0; i <= computer->num_caches + 1; i++) {
-        gtk_widget_set_hexpand(gtk_grid_get_child_at(GTK_GRID(grid), i, 1), TRUE);
+        for (int j = 0; j <= 7; j++) {
+            GtkWidget *child = gtk_grid_get_child_at(GTK_GRID(grid), i, j);
+            if (child != NULL) {
+                gtk_widget_set_hexpand(child, TRUE);
+                gtk_widget_set_vexpand(child, TRUE);
+            }
+        }
     }
 
     gtk_window_present(GTK_WINDOW(window));
