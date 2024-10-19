@@ -1,20 +1,57 @@
 #include "gui.h"
+#include "datastore.h"
 
 static GtkApplication *app = NULL;
+
+static void setup_cb(GtkSignalListItemFactory *factory,GObject  *listitem) {
+    GtkWidget *label =gtk_label_new(NULL);
+    gtk_list_item_set_child(GTK_LIST_ITEM(listitem),label);
+}
+
+static void bind_address_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem)
+{
+    GtkWidget *label = gtk_list_item_get_child(listitem);
+    MemoryLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
+    char *string = g_strdup_printf("%d", item->address);
+    gtk_label_set_text(GTK_LABEL (label), string);
+}
+
+static void bind_content_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem)
+{
+    GtkWidget *label = gtk_list_item_get_child(listitem);
+    MemoryLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
+    char *string = g_strdup_printf("%d", item->content);
+    gtk_label_set_text(GTK_LABEL (label), string);
+}
 
 static GtkWidget *create_memory_table(Computer *computer) {
     GtkWidget *scrolled_window = gtk_scrolled_window_new();
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-    GtkWidget *tree_view = gtk_tree_view_new();
-    gtk_tree_view_set_model(GTK_TREE_VIEW(tree_view), GTK_TREE_MODEL(computer->memory.model));
+    GtkSingleSelection *selection = gtk_single_selection_new(G_LIST_MODEL(computer->memory.model));
+    gtk_single_selection_set_autoselect(selection,TRUE);
+    GtkWidget *column_view = gtk_column_view_new(GTK_SELECTION_MODEL (selection));
 
-    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
+    g_signal_connect(factory, "setup", G_CALLBACK(setup_cb),NULL);
+    g_signal_connect(factory, "bind", G_CALLBACK(bind_address_cb),NULL);
+    GtkColumnViewColumn *column = gtk_column_view_column_new("Address", factory);
+    gtk_column_view_append_column (GTK_COLUMN_VIEW (column_view), column);
+    g_object_unref (column);
 
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Address", renderer, "text", 0, NULL));
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Content", renderer, "text", 1, NULL));
+    factory = gtk_signal_list_item_factory_new();
+    g_signal_connect(factory, "setup", G_CALLBACK(setup_cb),NULL);
+    g_signal_connect(factory, "bind", G_CALLBACK(bind_content_cb),NULL);
+    column = gtk_column_view_column_new("Content", factory);
+    gtk_column_view_append_column (GTK_COLUMN_VIEW (column_view), column);
+    g_object_unref (column);
 
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), tree_view);
+//    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+
+//    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Address", renderer, "text", 0, NULL));
+//    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Content", renderer, "text", 1, NULL));
+
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), column_view);
     return scrolled_window;
 }
 
