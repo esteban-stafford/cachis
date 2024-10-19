@@ -222,6 +222,92 @@ static GtkWidget *create_cache_widget(Cache *cache, int level) {
     }
 }
 
+static GtkWidget *create_left_column(void) {
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+
+    GtkWidget *trace_label = gtk_label_new("trace file: filename.vca");
+    gtk_box_append(GTK_BOX(box), trace_label);
+
+    GtkWidget *trace_text = gtk_text_view_new();
+    gtk_widget_set_size_request(trace_text, 200, 400);
+    gtk_widget_set_hexpand(trace_text, TRUE);
+    gtk_widget_set_vexpand(trace_text, TRUE);
+    gtk_box_append(GTK_BOX(box), trace_text);
+
+    GtkWidget *stats_label = gtk_label_new("simulation statistics");
+    gtk_box_append(GTK_BOX(box), stats_label);
+
+    GtkWidget *stats_text = gtk_text_view_new();
+    gtk_widget_set_size_request(stats_text, 200, 200);
+    gtk_widget_set_hexpand(stats_text, TRUE);
+    gtk_widget_set_vexpand(stats_text, TRUE);
+    gtk_box_append(GTK_BOX(box), stats_text);
+
+    return box;
+}
+
+static GtkWidget *create_middle_section(Computer *computer) {
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+
+    for (int i = 0; i < computer->num_caches; i++) {
+        GtkWidget *cache_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+
+        char title[50];
+        snprintf(title, 50, "Cache L%d", i + 1);
+        GtkWidget *cache_label = gtk_label_new(title);
+        gtk_box_append(GTK_BOX(cache_box), cache_label);
+
+        GtkWidget *cache_widget = create_cache_widget(&computer->cache[i], i + 1);
+        gtk_widget_set_size_request(cache_widget, 150, 400);
+        gtk_widget_set_hexpand(cache_widget, TRUE);
+        gtk_widget_set_vexpand(cache_widget, TRUE);
+        gtk_box_append(GTK_BOX(cache_box), cache_widget);
+
+        gtk_box_append(GTK_BOX(box), cache_box);
+    }
+
+    return box;
+}
+
+static GtkWidget *create_right_column(Computer *computer) {
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+
+    GtkWidget *memory_label = gtk_label_new("Memory");
+    gtk_box_append(GTK_BOX(box), memory_label);
+
+    GtkWidget *memory_table = create_memory_table(computer);
+    gtk_widget_set_size_request(memory_table, 200, 400);
+    gtk_widget_set_hexpand(memory_table, TRUE);
+    gtk_widget_set_vexpand(memory_table, TRUE);
+    gtk_box_append(GTK_BOX(box), memory_table);
+
+    return box;
+}
+
+
+static GtkWidget *create_toolbar(void) {
+    GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    gtk_widget_add_css_class(toolbar, "toolbar");
+
+    GtkWidget *open_button = gtk_button_new_from_icon_name("document-open");
+    gtk_widget_set_tooltip_text(open_button, "Open Trace File");
+    gtk_box_append(GTK_BOX(toolbar), open_button);
+
+    GtkWidget *run_button = gtk_button_new_from_icon_name("media-playback-start");
+    gtk_widget_set_tooltip_text(run_button, "Run Simulation");
+    gtk_box_append(GTK_BOX(toolbar), run_button);
+
+    GtkWidget *step_button = gtk_button_new_from_icon_name("media-skip-forward");
+    gtk_widget_set_tooltip_text(step_button, "Step Simulation");
+    gtk_box_append(GTK_BOX(toolbar), step_button);
+
+    GtkWidget *reset_button = gtk_button_new_from_icon_name("view-refresh");
+    gtk_widget_set_tooltip_text(reset_button, "Reset Simulation");
+    gtk_box_append(GTK_BOX(toolbar), reset_button);
+
+    return toolbar;
+}
+
 static void activate(GtkApplication *app, gpointer user_data) {
     Computer *computer = (Computer *)user_data;
 
@@ -229,58 +315,30 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_title(GTK_WINDOW(window), "Cache Simulation");
     gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
 
-    GtkWidget *grid = gtk_grid_new();
-    gtk_window_set_child(GTK_WINDOW(window), grid);
+    GtkWidget *outer_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_window_set_child(GTK_WINDOW(window), outer_box);
 
-    // Ensure grid stretches with the window
-    gtk_widget_set_hexpand(grid, TRUE);
-    gtk_widget_set_vexpand(grid, TRUE);
+    // Create and add toolbar
+    GtkWidget *toolbar = create_toolbar();
+    gtk_box_append(GTK_BOX(outer_box), toolbar);
 
-    // Left Column
-    GtkWidget *trace_label = gtk_label_new("trace file: filename.vca");
-    gtk_grid_attach(GTK_GRID(grid), trace_label, 0, 0, 1, 1);
+    GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_box_append(GTK_BOX(outer_box), main_box);
+    gtk_widget_set_hexpand(main_box, TRUE);
+    gtk_widget_set_vexpand(main_box, TRUE);
 
-    GtkWidget *trace_text = gtk_text_view_new();
-    gtk_widget_set_size_request(trace_text, 200, 400);
-    gtk_widget_set_hexpand(trace_text, TRUE);
-    gtk_widget_set_vexpand(trace_text, TRUE);
-    gtk_grid_attach(GTK_GRID(grid), trace_text, 0, 1, 1, 5);
+    GtkWidget *left_column = create_left_column();
+    gtk_box_append(GTK_BOX(main_box), left_column);
 
-    GtkWidget *stats_label = gtk_label_new("simulation statistics");
-    gtk_grid_attach(GTK_GRID(grid), stats_label, 0, 6, 1, 1);
+    GtkWidget *middle_section = create_middle_section(computer);
+    gtk_box_append(GTK_BOX(main_box), middle_section);
 
-    GtkWidget *stats_text = gtk_text_view_new();
-    gtk_widget_set_size_request(stats_text, 200, 200);
-    gtk_widget_set_hexpand(stats_text, TRUE);
-    gtk_widget_set_vexpand(stats_text, TRUE);
-    gtk_grid_attach(GTK_GRID(grid), stats_text, 0, 7, 1, 5);
-
-    // Middle Section (Caches)
-    for (int i = 0; i < computer->num_caches; i++) {
-       char title[50];
-       snprintf(title, 50, "Cache L%d", i + 1);
-        GtkWidget *cache_label = gtk_label_new(title);
-        gtk_grid_attach(GTK_GRID(grid), cache_label, i + 1, 0, 1, 1);
-
-        GtkWidget *cache_widget = create_cache_widget(&computer->cache[i], i + 1);
-        gtk_widget_set_size_request(cache_widget, 150, 400);
-        gtk_widget_set_hexpand(cache_widget, TRUE);
-        gtk_widget_set_vexpand(cache_widget, TRUE);
-        gtk_grid_attach(GTK_GRID(grid), cache_widget, i + 1, 1, 1, 12);
-    }
-
-    // Right Column (Memory Table)
-    GtkWidget *memory_label = gtk_label_new("Memory");
-    gtk_grid_attach(GTK_GRID(grid), memory_label, computer->num_caches + 1, 0, 1, 1);
-
-    GtkWidget *memory_table = create_memory_table(computer);
-    gtk_widget_set_size_request(memory_table, 200, 400);
-    gtk_widget_set_hexpand(memory_table, TRUE);
-    gtk_widget_set_vexpand(memory_table, TRUE);
-    gtk_grid_attach(GTK_GRID(grid), memory_table, computer->num_caches + 1, 1, 1, 12);
+    GtkWidget *right_column = create_right_column(computer);
+    gtk_box_append(GTK_BOX(main_box), right_column);
 
     gtk_window_present(GTK_WINDOW(window));
 }
+
 
 
 int launch_gui(int argc, char **argv, Computer *computer) {
