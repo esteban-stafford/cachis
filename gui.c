@@ -11,18 +11,14 @@ static GtkWidget *create_memory_table(Computer *computer) {
 
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
 
-    GtkTreeViewColumn *address_column = gtk_tree_view_column_new_with_attributes("Address", renderer, "text", 0, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), address_column);
-
-    GtkTreeViewColumn *content_column = gtk_tree_view_column_new_with_attributes("Content", renderer, "text", 1, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), content_column);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Address", renderer, "text", 0, NULL));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), gtk_tree_view_column_new_with_attributes("Content", renderer, "text", 1, NULL));
 
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), tree_view);
     return scrolled_window;
 }
 
 static GtkWidget *create_cache_table(GListStore *model, const char *title) {
-    printf(" ----> Creating cache table with title: %s\n", title);
     GtkWidget *scrolled_window = gtk_scrolled_window_new();
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 

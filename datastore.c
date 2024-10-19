@@ -29,7 +29,7 @@ static void cache_line_init(CacheLine *cache_line) {
     cache_line->tag = 0;
     cache_line->content_cache = NULL;
     cache_line->color_cache = NULL;
-    cache_line->user_data = NULL;
+    cache_line->user_data = NULL; 
 }
 
 static void cache_line_class_init(CacheLineClass *class) { }
@@ -45,25 +45,30 @@ void createMemoryModel(Computer *computer) {
         g_object_unref(memory_line);
     }
     computer->memory.model = model;
-    g_object_unref(model);
+    //g_object_unref(model);
 }
 
-static GListStore* create_cache_list_store(int num_lines) {
+void create_cache_list_store(Cache *cache, int data_or_instruction) {
     GListStore *model = g_list_store_new(CACHE_LINE_TYPE);
-    for (int i = 0; i < num_lines; i++) {
+    for (int i = 0; i < cache->num_lines; i++) {
         CacheLine *cache_line = g_object_new(CACHE_LINE_TYPE, NULL);
         cache_line->line = i;
         g_list_store_append(model, cache_line);
         g_object_unref(cache_line);
     }
-    return model;
+    if (data_or_instruction == 0) {
+        cache->model_data = model;
+    } else {
+        cache->model_instruction = model;
+    }
+    //g_object_unref(model);
 }
 
 void createCacheModel(Cache *cache, int level) {
-    cache->model_data = create_cache_list_store(cache->num_lines);
+    create_cache_list_store(cache, 0);
 
     if (cache->separated) {
-        cache->model_instruction = create_cache_list_store(cache->num_lines);
+        create_cache_list_store(cache, 1);
     }
 
 #if DEBUG
