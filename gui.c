@@ -222,8 +222,34 @@ static GtkWidget *create_cache_widget(Cache *cache, int level) {
     }
 }
 
+static GtkWidget *create_toolbar(void) {
+    GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    gtk_widget_add_css_class(toolbar, "toolbar");
+
+    GtkWidget *open_button = gtk_button_new_from_icon_name("document-open");
+    gtk_widget_set_tooltip_text(open_button, "Open Trace File");
+    gtk_box_append(GTK_BOX(toolbar), open_button);
+
+    GtkWidget *run_button = gtk_button_new_from_icon_name("media-playback-start");
+    gtk_widget_set_tooltip_text(run_button, "Run Simulation");
+    gtk_box_append(GTK_BOX(toolbar), run_button);
+
+    GtkWidget *step_button = gtk_button_new_from_icon_name("media-skip-forward");
+    gtk_widget_set_tooltip_text(step_button, "Step Simulation");
+    gtk_box_append(GTK_BOX(toolbar), step_button);
+
+    GtkWidget *reset_button = gtk_button_new_from_icon_name("view-refresh");
+    gtk_widget_set_tooltip_text(reset_button, "Reset Simulation");
+    gtk_box_append(GTK_BOX(toolbar), reset_button);
+
+    return toolbar;
+}
+
 static GtkWidget *create_left_column(void) {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+
+    GtkWidget *toolbar = create_toolbar();
+    gtk_box_append(GTK_BOX(box), toolbar);
 
     GtkWidget *trace_label = gtk_label_new("trace file: filename.vca");
     gtk_box_append(GTK_BOX(box), trace_label);
@@ -284,30 +310,6 @@ static GtkWidget *create_right_column(Computer *computer) {
     return box;
 }
 
-
-static GtkWidget *create_toolbar(void) {
-    GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    gtk_widget_add_css_class(toolbar, "toolbar");
-
-    GtkWidget *open_button = gtk_button_new_from_icon_name("document-open");
-    gtk_widget_set_tooltip_text(open_button, "Open Trace File");
-    gtk_box_append(GTK_BOX(toolbar), open_button);
-
-    GtkWidget *run_button = gtk_button_new_from_icon_name("media-playback-start");
-    gtk_widget_set_tooltip_text(run_button, "Run Simulation");
-    gtk_box_append(GTK_BOX(toolbar), run_button);
-
-    GtkWidget *step_button = gtk_button_new_from_icon_name("media-skip-forward");
-    gtk_widget_set_tooltip_text(step_button, "Step Simulation");
-    gtk_box_append(GTK_BOX(toolbar), step_button);
-
-    GtkWidget *reset_button = gtk_button_new_from_icon_name("view-refresh");
-    gtk_widget_set_tooltip_text(reset_button, "Reset Simulation");
-    gtk_box_append(GTK_BOX(toolbar), reset_button);
-
-    return toolbar;
-}
-
 static void activate(GtkApplication *app, gpointer user_data) {
     Computer *computer = (Computer *)user_data;
 
@@ -315,15 +317,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_window_set_title(GTK_WINDOW(window), "Cache Simulation");
     gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
 
-    GtkWidget *outer_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_window_set_child(GTK_WINDOW(window), outer_box);
-
-    // Create and add toolbar
-    GtkWidget *toolbar = create_toolbar();
-    gtk_box_append(GTK_BOX(outer_box), toolbar);
-
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    gtk_box_append(GTK_BOX(outer_box), main_box);
+    gtk_window_set_child(GTK_WINDOW(window), main_box);
     gtk_widget_set_hexpand(main_box, TRUE);
     gtk_widget_set_vexpand(main_box, TRUE);
 
@@ -338,8 +333,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     gtk_window_present(GTK_WINDOW(window));
 }
-
-
 
 int launch_gui(int argc, char **argv, Computer *computer) {
     GtkApplication *app = gtk_application_new("org.gtk.example", G_APPLICATION_FLAGS_NONE);
