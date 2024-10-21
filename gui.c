@@ -221,64 +221,137 @@ static GtkWidget *create_cache_widget(Cache *cache, int level) {
 }
 
 int step_trace_line(const char *line) {
-   printf("line: %s\n", line);
+   printf("Line: %s\n", line);
    return 1;
+}
+
+int has_breakpoint(const char *line) {
+   static int count = 10;
+   count = (count - 1) % 10;
+    return count == 0;
+}
+
+static GtkTextTag *highlight_tag = NULL;
+static GtkTextMark *previous_highlight_mark = NULL;
+
+static void on_run_to_breakpoint_clicked(GtkButton *button, GtkTextView *trace_text) {
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(trace_text);
+    GtkTextIter start, end;
+
+    if (highlight_tag == NULL) {
+        highlight_tag = gtk_text_buffer_create_tag(buffer, "highlight", "background", "#219ebc", NULL);
+    }
+
+    if (previous_highlight_mark != NULL) {
+        GtkTextIter prev_start, prev_end;
+        gtk_text_buffer_get_iter_at_mark(buffer, &prev_start, previous_highlight_mark);
+        prev_end = prev_start;
+        gtk_text_iter_forward_line(&prev_end);
+        gtk_text_buffer_remove_tag(buffer, highlight_tag, &prev_start, &prev_end);
+    }
+
+    if (previous_highlight_mark == NULL) {
+        gtk_text_buffer_get_start_iter(buffer, &start);
+    } else {
+        gtk_text_buffer_get_iter_at_mark(buffer, &start, previous_highlight_mark);
+        gtk_text_iter_forward_line(&start);
+    }
+
+    gboolean breakpoint_found = FALSE;
+    while (!breakpoint_found && !gtk_text_iter_is_end(&start)) {
+        end = start;
+        gtk_text_iter_forward_line(&end);
+
+        gchar *line_text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+
+        if (line_text && *line_text) {
+            gboolean result = step_trace_line(line_text);
+            if (result && has_breakpoint(line_text)) {
+                breakpoint_found = TRUE;
+                gtk_text_buffer_apply_tag(buffer, highlight_tag, &start, &end);
+                if (previous_highlight_mark == NULL) {
+                    previous_highlight_mark = gtk_text_buffer_create_mark(buffer, "previous_highlight", &start, TRUE);
+                } else {
+                    gtk_text_buffer_move_mark(buffer, previous_highlight_mark, &start);
+                }
+            }
+        }
+        g_free(line_text);
+
+        if (!breakpoint_found) {
+            start = end;
+        }
+    }
+
+    gtk_text_view_scroll_to_iter(trace_text, &start, 0.0, TRUE, 0.0, 0.5);
 }
 
 
 static void on_step_button_clicked(GtkButton *button, GtkTextView *trace_text) {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(trace_text);
     GtkTextIter start, end;
-    static GtkTextTag *tag = NULL;
-    static GtkTextMark *current_mark = NULL;
-
-    if (tag == NULL) {
-        tag = gtk_text_buffer_create_tag(buffer, "highlight", "background", "yellow", NULL);
+ 
+    if (highlight_tag == NULL) {
+        highlight_tag = gtk_text_buffer_create_tag(buffer, "highlight", "background", "#219ebc", NULL);
     }
 
-    if (current_mark == NULL) {
+    if (previous_highlight_mark != NULL) {
+        GtkTextIter prev_start, prev_end;
+        gtk_text_buffer_get_iter_at_mark(buffer, &prev_start, previous_highlight_mark);
+        prev_end = prev_start;
+        gtk_text_iter_forward_line(&prev_end);
+        gtk_text_buffer_remove_tag(buffer, highlight_tag, &prev_start, &prev_end);
+    }
+
+    if (previous_highlight_mark == NULL) {
         gtk_text_buffer_get_start_iter(buffer, &start);
-        current_mark = gtk_text_buffer_create_mark(buffer, "current_position", &start, TRUE);
     } else {
-        gtk_text_buffer_get_iter_at_mark(buffer, &start, current_mark);
+        gtk_text_buffer_get_iter_at_mark(buffer, &start, previous_highlight_mark);
+        gtk_text_iter_forward_line(&start);
     }
 
-    gtk_text_buffer_remove_all_tags(buffer, NULL, NULL);
+    end = start;
+    gtk_text_iter_forward_line(&end);
 
-    gboolean continue_processing = TRUE;
-    while (continue_processing) {
-        end = start;
-        gint line = gtk_text_iter_get_line(&start);
-        gint line_index = gtk_text_iter_get_line_index(&start);
-        printf("Start: (%d, %d)\n", line, line_index);
-        if (!gtk_text_iter_forward_to_line_end(&end)) {
-            break;
-        }
-        line = gtk_text_iter_get_line(&end);
-        line_index = gtk_text_iter_get_line_index(&end);
-        printf("End: (%d, %d)\n", line, line_index);
+    gchar *line_text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
-        gchar *line_text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
-
-        if (line_text && *line_text) {
-            if (step_trace_line(line_text) == 1) {
-                gtk_text_buffer_apply_tag(buffer, tag, &start, &end);
-                continue_processing = FALSE;
+    if (line_text && *line_text) {
+        gboolean result = step_trace_line(line_text);
+        if (result) {
+            gtk_text_buffer_apply_tag(buffer, highlight_tag, &start, &end);
+            if (previous_highlight_mark == NULL) {
+                previous_highlight_mark = gtk_text_buffer_create_mark(buffer, "previous_highlight", &start, TRUE);
+            } else {
+                gtk_text_buffer_move_mark(buffer, previous_highlight_mark, &start);
             }
         }
+    }
+    g_free(line_text);
+    gtk_text_view_scroll_to_iter(trace_text, &start, 0.0, TRUE, 0.0, 0.5);
+}
 
-        g_free(line_text);
-        start = end;
-        gtk_text_buffer_move_mark(buffer, current_mark, &start);
+static void on_reset_button_clicked(GtkButton *button, GtkTextView *trace_text) {
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(trace_text);
+
+    if (highlight_tag == NULL) {
+        GtkTextTagTable *tag_table = gtk_text_buffer_get_tag_table(buffer);
+        highlight_tag = gtk_text_tag_table_lookup(tag_table, "highlight");
     }
 
-    /*if (gtk_text_iter_is_end(&start)) {
-        gtk_text_buffer_remove_all_tags(buffer, NULL, NULL);
-        gtk_text_buffer_get_start_iter(buffer, &start);
-        gtk_text_buffer_move_mark(buffer, current_mark, &start);
-    } */
+    if (previous_highlight_mark != NULL) {
+        GtkTextIter start, end;
+        gtk_text_buffer_get_iter_at_mark(buffer, &start, previous_highlight_mark);
+        end = start;
+        gtk_text_iter_forward_line(&end);
+        gtk_text_buffer_remove_tag(buffer, highlight_tag, &start, &end);
 
-    //gtk_text_view_scroll_to_mark(trace_text, current_mark, 0.0, TRUE, 0.0, 0.5);
+        gtk_text_buffer_delete_mark(buffer, previous_highlight_mark);
+        previous_highlight_mark = NULL;
+    }
+
+    GtkTextIter start;
+    gtk_text_buffer_get_start_iter(buffer, &start);
+    gtk_text_view_scroll_to_iter(trace_text, &start, 0.0, TRUE, 0.0, 0.5);
 }
 
 static GtkWidget *create_toolbar(GtkTextView *trace_text) {
@@ -302,6 +375,8 @@ static GtkWidget *create_toolbar(GtkTextView *trace_text) {
     gtk_box_append(GTK_BOX(toolbar), reset_button);
 
     g_signal_connect(step_button, "clicked", G_CALLBACK(on_step_button_clicked), trace_text);
+    g_signal_connect(run_button, "clicked", G_CALLBACK(on_run_to_breakpoint_clicked), trace_text);
+    g_signal_connect(reset_button, "clicked", G_CALLBACK(on_reset_button_clicked), trace_text);
 
     return toolbar;
 }
