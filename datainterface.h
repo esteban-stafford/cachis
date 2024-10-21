@@ -42,23 +42,23 @@ struct memoryPosition{
 
 extern char *interfaceError;
 
-void resetMemory(Computer *computer);
-void resetCache(Computer *computer, int level);
+void reset_memory(Computer *computer);
+void reset_cache(Computer *computer, int level);
 
-void showLineFromCache(Computer *computer, int instructionOrData, int level, int i);
-long findTagInCache(Computer *computer, int instructionOrData, int level, unsigned requestSet, unsigned requestTag);
-void readLineFromCache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber);
-void readFlagsFromCache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber);
-void writeLineToCache(Computer *computer, int instructionOrData, int level, struct cacheLine *line, unsigned lineNumber);
+void show_line_from_cache(Computer *computer, int instructionOrData, int level, int i);
+long find_tag_in_cache(Computer *computer, int instructionOrData, int level, unsigned requestSet, unsigned requestTag);
+void read_line_from_cache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber);
+void read_flags_from_cache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber);
+void write_line_to_cache(Computer *computer, int instructionOrData, int level, struct cacheLine *line, unsigned lineNumber);
 
-int showMemoryAddress(Computer *computer, long address);
-int readFromMemoryAddress(Computer *computer, struct memoryPosition *pos, long address);
-int writeToMemoryAddress(Computer *computer, struct memoryPosition *pos, long address);
+int show_memory_address(Computer *computer, long address);
+int read_from_memory_address(Computer *computer, struct memoryPosition *pos, long address);
+int write_to_memory_address(Computer *computer, struct memoryPosition *pos, long address);
 
-void setStatistics(char* component, char* property, char* value);
-char* getStatistics(char* component, char* property);
-void printStatistics(FILE* fp);
+void set_statistics(char* component, char* property, char* value);
+char* get_statistics(char* component, char* property);
+void print_statistics(FILE* fp);
 
-void removeAllColors();
+void remove_all_colors();
 
 #endif

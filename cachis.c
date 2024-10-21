@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     // ... or run batch simulation
     } else {
        simulate(&computer);
-       printStatistics(stdout);
+       print_statistics(stdout);
     }
 
 

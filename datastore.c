@@ -83,7 +83,7 @@ void generateDataStorage(Computer *computer){
    createMemoryModel(computer);
    for(int i=0; i< computer->num_caches; i++){
       createCacheModel(&computer->cache[i], i);
-      //resetCache(i);
+      //reset_cache(i);
    }
    create_model_statistics(computer);
 }

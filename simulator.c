@@ -55,7 +55,7 @@ void simulate_step(Computer *computer, struct memOperation *operation) {
       // Statistics: access
       incrementIntegerStatistics(cacheName, "Accesses", 1);
       // Find tag in cache
-      if((line = findTagInCache(computer, operation->instructionOrData, cacheLevel, set, tag)) != -1) {
+      if((line = find_tag_in_cache(computer, operation->instructionOrData, cacheLevel, set, tag)) != -1) {
          // Hit
          printf(">   %s: Hit (%ld)\n", cacheName, line);
          // Statistics: hit
@@ -66,7 +66,7 @@ void simulate_step(Computer *computer, struct memOperation *operation) {
          struct cacheLine cacheData;
          cacheData.content = malloc((sizeof(long))*computer->cache[cacheLevel].num_words);
          // Read data from cache into response
-         readLineFromCache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
+         read_line_from_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
          if(response.size == 1) {
             response.data[0] = cacheData.content[offset];
             printf("Will get %d -> %d\n",offset, response.data[0]);
@@ -110,7 +110,7 @@ void simulate_step(Computer *computer, struct memOperation *operation) {
          response.time += computer->memory.access_time_1;
          // Read data from memory into response
          for(unsigned i=0, address=response.address; i < response.size; i++, address+=computer->cpu.word_width/8) {
-            if(readFromMemoryAddress(computer, &pos, address) < 0) {
+            if(read_from_memory_address(computer, &pos, address) < 0) {
                fprintf(stderr, "error in simulation: %s addr:%x\n", interfaceError, address);
                return;
             }
@@ -126,7 +126,7 @@ void simulate_step(Computer *computer, struct memOperation *operation) {
          // Write data from request into memory
          for(unsigned i=0, address=response.address; i < response.size; i++, address+=computer->cpu.word_width/8) {
             pos.content = response.data[i];
-            if(writeToMemoryAddress(computer, &pos, address) < 0) {
+            if(write_to_memory_address(computer, &pos, address) < 0) {
                fprintf(stderr, "error in simulation: %s addr:%x\n", interfaceError, address);
                return;
             }
@@ -142,7 +142,7 @@ void simulate_step(Computer *computer, struct memOperation *operation) {
       unsigned set = (response.address >> computer->cache[cacheLevel].offset_bits) & ((1 << computer->cache[cacheLevel].set_bits)-1);
       long line;
       // Find tag in cache
-      if((line = findTagInCache(computer, operation->instructionOrData, cacheLevel, tag, set)) > 0) {
+      if((line = find_tag_in_cache(computer, operation->instructionOrData, cacheLevel, tag, set)) > 0) {
          // Hit
          printf("<   %s: Hit\n", cacheName);
       } else {
@@ -156,7 +156,7 @@ void simulate_step(Computer *computer, struct memOperation *operation) {
             cacheData.tag = tag;
             cacheData.content = response.data;
             int via = selectVia(computer, operation->instructionOrData, cacheLevel, set);
-            writeLineToCache(computer, operation->instructionOrData, cacheLevel, &cacheData, via);
+            write_line_to_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, via);
          } else {
             // Write operation
             // Assuming WriteThrough and WriteNoAllocate, do nothing!
@@ -182,7 +182,7 @@ int selectVia(Computer *computer, int instructionOrData, int cacheLevel, int set
    int firstLine = set*cache->associativity;
    for(int i = 0, via = rand() % cache->associativity; i < cache->associativity; i++, via=(via+1) % cache->associativity) {
       int line = firstLine + via;
-      readFlagsFromCache(computer, instructionOrData, cacheLevel, &cacheData, line);
+      read_flags_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
       if(cacheData.valid == 0)
          return line;
       if(lruLine == -1 || lruTime > cacheData.lastAccess) {
@@ -218,37 +218,37 @@ int selectVia(Computer *computer, int instructionOrData, int cacheLevel, int set
 
 void incrementDoubleStatistics(char *component, char *property, double value) {
    double oldValue = 0.0;
-   char *oldValueString = getStatistics(component,property);
+   char *oldValueString = get_statistics(component,property);
    if(oldValueString) 
       oldValue = strtod(oldValueString, NULL);
    char tmp[20];
    sprintf(tmp, "%lf", oldValue+value);
-   setStatistics(component, property, tmp);
+   set_statistics(component, property, tmp);
 }
 
 void incrementIntegerStatistics(char *component, char *property, int value) {
    int oldValue = 0.0;
-   char *oldValueString = getStatistics(component,property);
+   char *oldValueString = get_statistics(component,property);
    if(oldValueString) 
       oldValue = atoi(oldValueString);
    char tmp[20];
    sprintf(tmp, "%d", oldValue+value);
-   setStatistics(component, property, tmp);
+   set_statistics(component, property, tmp);
 }
 
 void calculateRateStatistics(char *component, char *property, char *partialName, char *totalName) {
    double partial = 0.0;
    double total = 0.0;
-   char *valueString = getStatistics(component,partialName);
+   char *valueString = get_statistics(component,partialName);
    if(valueString) 
       partial = strtod(valueString, NULL);
-   valueString = getStatistics(component,totalName);
+   valueString = get_statistics(component,totalName);
    if(valueString) 
       total = strtod(valueString, NULL);
    char tmp[20] = "NaN";
    if(total != 0) {
       sprintf(tmp, "%0.2lf", partial/total);
    }
-   setStatistics(component, property, tmp);
+   set_statistics(component, property, tmp);
 }
 
