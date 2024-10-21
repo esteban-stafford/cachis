@@ -26,6 +26,7 @@ typedef struct
     long page_base_address;
 
     GListStore *model; 
+    GtkWidget *view;
 } Memory;
 
 typedef struct

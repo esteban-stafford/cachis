@@ -48,6 +48,7 @@ static GtkWidget *create_memory_table(Computer *computer) {
     g_object_unref (column);
 
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), column_view);
+    computer->memory.view = column_view;
     return scrolled_window;
 }
 

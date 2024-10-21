@@ -9,6 +9,8 @@ const char* const colors[] = { "green", "red", "yellow", "green", "red", "grey",
 
 char *interfaceError = NULL;
 
+#define RETURN_CACHIS_ERROR(code, message) interfaceError = message; return code;
+
 void reset_memory(Computer *computer) {
 /*   GListStore *model = G_LIST_STORE(computer->memory.model);
    guint n_items = g_list_model_get_n_items(G_LIST_MODEL(model));
@@ -98,32 +100,42 @@ void show_line_from_cache(Computer *computer, int instructionOrData, int level, 
 }
 
 long find_tag_in_cache(Computer *computer, int instructionOrData, int level, unsigned requestSet, unsigned requestTag) {
-   /* GtkTreeModel *model;
-   GtkTreeIter iter;
+    if (level < 0 || level >= computer->num_caches) {
+        return -1;  // Invalid cache level
+    }
 
-   if(computer->cache[level].separated == 0 || instructionOrData == DATA) {
-      model= GTK_TREE_MODEL(computer->cache[level].model_data);
-      printf("Data\n");
-   }
-   else {
-      model= GTK_TREE_MODEL(computer->cache[level].model_instruction);
-      printf("Instruction %d %d %d==%d\n",level, computer->cache[level].separated, instructionOrData, DATA);
-   }
-   unsigned set,tag,valid,via=0;
-   // Get first via in this set
-   int more = gtk_tree_model_iter_nth_child (model, &iter, NULL, requestSet*computer->cache[level].associativity);
+    Cache *cache = &computer->cache[level];
+    GListStore *model = (instructionOrData == 0) ? cache->model_instruction : cache->model_data;
 
-   while (more && via < computer->cache[level].associativity)
-   {
-      gtk_tree_model_get (GTK_TREE_MODEL(model), &iter, SET, &set, TAG, &tag, VALID, &valid, -1);
-      if(valid && tag == requestTag)
-         return requestSet * computer->cache[level].associativity + via;
-      // Get next via
-      via++;
-      more = gtk_tree_model_iter_next(GTK_TREE_MODEL(model), &iter);
-   } */
-   return -1;
+    // Calculate the number of items in the set
+    int items_in_set = cache->associativity;
+
+    // Calculate the starting index for the requested set
+    int start_index = requestSet * items_in_set;
+
+    // Iterate through the lines in the set
+    for (int i = 0; i < items_in_set; i++) {
+        CacheLine *line = CACHE_LINE(g_list_model_get_item(G_LIST_MODEL(model), start_index + i));
+        
+        if (line) {
+            if (line->valid && line->tag == requestTag) {
+                // Tag found
+                line->times_accessed++;
+                line->last_accessed = g_get_monotonic_time();  // Update last accessed time
+                
+                // If it's the first access, set the first_accessed time
+                if (line->first_accessed == 0) {
+                    line->first_accessed = line->last_accessed;
+                }
+                
+                return start_index + i;  // Return the index of the matching line
+            }
+        }
+    }
+
+    return -1;  // Tag not found
 }
+
 
 /**
  * This function reads a data cache line.
@@ -265,38 +277,51 @@ int show_memory_address(Computer *computer, long address){
  * @param address is the memory address
  * @return 0 if correct -1 if not word address error, -2 if out of page error
  */
-int read_from_memory_address(Computer *computer, struct memoryPosition *pos, long address){
-   /* GtkTreeModel *model = GTK_TREE_MODEL(computer->memory.model);
-   GtkTreeView *view = GTK_TREE_VIEW(gui.viewMEMORY);
-   GtkTreeIter iter;
-   // if not word address return error
-   if(address % (computer->cpu.word_width/8)!=0){
-      interfaceError = "not word address";
-      return -1;
-   }
-   // if out of page return error
-   if(address <computer->memory.page_base_address || address >(computer->memory.page_base_address+computer->memory.page_size)){
-      interfaceError = "out of page";
-      return -2;
-   }
-   // get the table row from the memory address
-   gtk_tree_model_iter_nth_child (model,
-         &iter,
-         NULL,
-         (address-computer->memory.page_base_address)/(computer->cpu.word_width/8));
-   gtk_tree_model_get (model, &iter,
-         ADDRESS, &pos->address,
-         CONTENT, &pos->content,
-         USER_CONTENT, &pos->user_content,
-         -1);
-   gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-         COLOR, colors[READ],
-         -1);
-   char rowString[50];
-   sprintf(rowString, "%ld", (address-computer->memory.page_base_address)/(computer->cpu.word_width/8));
-   gtk_tree_view_scroll_to_cell (view, gtk_tree_path_new_from_string(rowString), NULL, TRUE, 0.5, 0); */
-   return 0;
+int read_from_memory_address(Computer *computer, struct memoryPosition *pos, long address) {
+    GListModel *model = G_LIST_MODEL(computer->memory.model);
+    GtkColumnView *view = GTK_COLUMN_VIEW(computer->memory.view);
+
+    // if not word address return error
+    if (address % (computer->cpu.word_width / 8) != 0) {
+        RETURN_CACHIS_ERROR(-1, "Not word address");
+    }
+    // if out of page return error
+    if (address < computer->memory.page_base_address || 
+        address > (computer->memory.page_base_address + computer->memory.page_size)) {
+        RETURN_CACHIS_ERROR(-2, "Out of page");
+    }
+
+    // get the item from the memory address
+    guint index = (address - computer->memory.page_base_address) / (computer->cpu.word_width / 8);
+    gpointer item = g_list_model_get_item(model, index);
+
+    if (item == NULL) {
+        RETURN_CACHIS_ERROR(-3, "Invalid memory address");
+    }
+
+    printf("Memory address: %lx\n", address);
+    printf("Memory index: %d\n", index);
+    printf("Memory item: %p\n", item);
+    MemoryLine *memory_line = MEMORY_LINE(item);
+    printf("Memory address: %x\n", memory_line->address); 
+    printf("Memory content: %x\n", memory_line->content);
+
+    pos->address = memory_line->address;
+    pos->content = memory_line->content;
+
+    // Update the color (assuming you have a way to set color on the item)
+    //memory_position_set_color(memory_pos, colors[READ]);
+
+    // Scroll to the item
+    /*GtkScrollInfo *scroll_info = gtk_column_view_get_scroll_info(view);
+    gtk_scroll_info_set_row(scroll_info, index);
+    gtk_scroll_info_set_align(scroll_info, 0.5); 
+    gtk_column_view_scroll_to(view, scroll_info);*/
+
+    g_object_unref(item);
+    return 0;
 }
+
 /**
  * This function writes a memory position.
  * @param pos. Data to be written will be read from this struct.
