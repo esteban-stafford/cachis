@@ -202,61 +202,48 @@ int readTraceFile(Computer *computer){
    rewind(file);
 
    memoryOperations=NULL;
-   //if(!useGUI){
-           if((memoryOperations = malloc(sizeof(struct memOperation)*numberOfLines)) == NULL){
-               fprintf(stderr,"Execution failure: It was not possible to allocate memory.\n");
-               return -1;
-           }
-   //}
+   if(useGUI){
+      if(computer->cpu.buffer == NULL)
+         computer->cpu.buffer = gtk_text_buffer_new(NULL);
+      else
+         gtk_text_buffer_set_text(computer->cpu.buffer, "", -1);
+   } else {
+      if((memoryOperations = malloc(sizeof(struct memOperation)*numberOfLines)) == NULL){
+         fprintf(stderr,"Execution failure: It was not possible to allocate memory.\n");
+         return -1;
+      }
+   }
 
-   int currentLineNumber=0;
-
-   /*if(useGUI){
-         buffer = gtk_text_buffer_new (NULL);
-   }*/
    // Read all the lines in the file
+   int currentLineNumber=0;
    while ((read = getline(&currentLine, &len, file)) != -1) {
       currentLineNumber++;
-      /*if(useGUI){
-            insertTextInBuffer(currentLine, buffer);
-      }*/
-
+      if(computer->cpu.buffer != NULL) {
+         gtk_text_buffer_insert_at_cursor(computer->cpu.buffer, currentLine, -1);
+      }
       // Skip empty lines
       if(!preprocessTraceLine(currentLine)){
          continue;
       }
-
       struct memOperation *currentMemOperation=NULL;
-      
       //if there is not gui data will be stored. I there is gui thre is not need to store as lines will be parsed at execution time
-      //if(!useGUI){
-           currentMemOperation=&memoryOperations[numberOfOperations];
-      //}
-
+      if(!useGUI){
+         currentMemOperation=&memoryOperations[numberOfOperations++];
+      }
       if(parseLine(currentLine, currentLineNumber, currentMemOperation, computer->cpu.word_width/8, &computer->memory) == -1){
       	      errors++;
       }
-
-      // Increment the number of memory operations read from the file
-      numberOfOperations++;
    }
-
  
    if(errors==0){
-
 #if DEBUG
       if(!useGUI){
       	   showOperations(&computer->cpu);
       }
       fprintf(stderr,"\nTracefile was loaded correctly\n");
 #endif
-      /*if(useGUI){
-            insertTextInBuffer("\n", buffer);
-      }*/
-
       return 0;
    }
-   fprintf(stderr,"\n");
 
    return -1;
 }

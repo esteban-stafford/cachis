@@ -12,7 +12,7 @@
 #include "gui.h"
 #include "simulator.h"
 
-#define PROGRAM_NAME "cache_simulator"
+#define PROGRAM_NAME "cachis"
 #define VERSION "0.1"
 
 void printUsage() {
@@ -34,7 +34,7 @@ void printUsage() {
 
 int main(int argc, char *argv[]) {
    int c;
-   int useGUI = 1;
+   useGUI = 1;
 
    // Parse command line arguments
    opterr = 0;
@@ -88,6 +88,9 @@ int main(int argc, char *argv[]) {
        return 1;
     }
 
+    // Create simulator data structures
+    generateDataStorage(&computer);
+
     // Override trace file if there is a filename on the command line.
     if(optind+1 < argc) {
        computer.cpu.trace_file = argv[optind +1];
@@ -97,9 +100,6 @@ int main(int argc, char *argv[]) {
     if(readTraceFile(&computer) != 0) {
        return 1;
     }
-
-    // Create simulator data structures
-    generateDataStorage(&computer);
 
     // Start GUI...
     if(useGUI) {

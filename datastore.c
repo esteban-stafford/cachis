@@ -79,6 +79,7 @@ void createCacheModel(Cache *cache, int level) {
 }
 
 void generateDataStorage(Computer *computer){
+   computer->cpu.buffer = NULL;
    createMemoryModel(computer);
    for(int i=0; i< computer->num_caches; i++){
       createCacheModel(&computer->cache[i], i);

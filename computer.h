@@ -11,6 +11,8 @@ typedef struct
     long bus_frequency;         // Frecuencia en herzios del bus longerno. Ver Nota 1.
     long mem_bus_frequency;     // Frecuencia en herzios del bus. Ver Nota 1.
     const char* trace_file;     // File de trace
+
+    GtkTextBuffer *buffer;
 } Cpu;
 
 typedef struct

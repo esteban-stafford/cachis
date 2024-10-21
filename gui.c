@@ -1,8 +1,6 @@
 #include "gui.h"
 #include "datastore.h"
 
-static GtkApplication *app = NULL;
-
 static void setup_cb(GtkSignalListItemFactory *factory,GObject  *listitem) {
     GtkWidget *label =gtk_label_new(NULL);
     gtk_list_item_set_child(GTK_LIST_ITEM(listitem),label);
@@ -245,7 +243,7 @@ static GtkWidget *create_toolbar(void) {
     return toolbar;
 }
 
-static GtkWidget *create_left_column(void) {
+static GtkWidget *create_left_column(Computer *computer) {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
     GtkWidget *toolbar = create_toolbar();
@@ -254,7 +252,11 @@ static GtkWidget *create_left_column(void) {
     GtkWidget *trace_label = gtk_label_new("trace file: filename.vca");
     gtk_box_append(GTK_BOX(box), trace_label);
 
-    GtkWidget *trace_text = gtk_text_view_new();
+    if(computer->cpu.buffer == NULL) {
+       computer->cpu.buffer = gtk_text_buffer_new(NULL);
+    }
+
+    GtkWidget *trace_text = gtk_text_view_new_with_buffer(computer->cpu.buffer);
     gtk_widget_set_size_request(trace_text, 200, 400);
     gtk_widget_set_hexpand(trace_text, TRUE);
     gtk_widget_set_vexpand(trace_text, TRUE);
@@ -322,7 +324,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_hexpand(main_box, TRUE);
     gtk_widget_set_vexpand(main_box, TRUE);
 
-    GtkWidget *left_column = create_left_column();
+    GtkWidget *left_column = create_left_column(computer);
     gtk_box_append(GTK_BOX(main_box), left_column);
 
     GtkWidget *middle_section = create_middle_section(computer);
@@ -351,8 +353,7 @@ static void on_dialog_response(GtkDialog *dialog,
    gtk_window_destroy (GTK_WINDOW (dialog));
 }
 
-void print_error_message (const char *message,
-      int         line_number)
+void print_error_message (const char *message, int line_number)
 {
    if (app == NULL)
    {
