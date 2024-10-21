@@ -1,5 +1,8 @@
+#include <ctype.h>
 #include "gui.h"
 #include "datastore.h"
+#include "traceparser.h"
+#include "simulator.h"
 
 static void setup_cb(GtkSignalListItemFactory *factory,GObject  *listitem) {
     GtkWidget *label =gtk_label_new(NULL);
@@ -220,22 +223,37 @@ static GtkWidget *create_cache_widget(Cache *cache, int level) {
     }
 }
 
-int step_trace_line(const char *line) {
-   printf("Line: %s\n", line);
-   return 1;
+int step_trace_line(char *line, Computer *computer) {
+   if(!preprocessTraceLine(line)) {
+      return 1;
+   }
+   struct memOperation operation;
+   if(parseLine(line, -1, &operation, computer->cpu.word_width/8, &computer->memory) == -1) {
+        return 1;
+   }
+   simulate_step(computer, &operation);
+   return 0;
 }
 
 int has_breakpoint(const char *line) {
-   static int count = 10;
-   count = (count - 1) % 10;
-    return count == 0;
+   // Check if line has a ! at the beginning ignoring leading whitespace
+   while(isspace(*line)) {
+      line++;
+   }
+   return *line == '!';
 }
 
 static GtkTextTag *highlight_tag = NULL;
 static GtkTextMark *previous_highlight_mark = NULL;
 
-static void on_run_to_breakpoint_clicked(GtkButton *button, GtkTextView *trace_text) {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(trace_text);
+struct trace_text_and_computer {
+    GtkTextView *trace_text;
+    Computer *computer;
+};
+
+static void on_run_to_breakpoint_clicked(GtkButton *button, gpointer user_data) {
+    struct trace_text_and_computer *data = (struct trace_text_and_computer *)user_data;
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(data->trace_text);
     GtkTextIter start, end;
 
     if (highlight_tag == NULL) {
@@ -265,15 +283,10 @@ static void on_run_to_breakpoint_clicked(GtkButton *button, GtkTextView *trace_t
         gchar *line_text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
         if (line_text && *line_text) {
-            gboolean result = step_trace_line(line_text);
-            if (result && has_breakpoint(line_text)) {
-                breakpoint_found = TRUE;
-                gtk_text_buffer_apply_tag(buffer, highlight_tag, &start, &end);
-                if (previous_highlight_mark == NULL) {
-                    previous_highlight_mark = gtk_text_buffer_create_mark(buffer, "previous_highlight", &start, TRUE);
-                } else {
-                    gtk_text_buffer_move_mark(buffer, previous_highlight_mark, &start);
-                }
+            if(has_breakpoint(line_text)) {
+               breakpoint_found = TRUE;
+            } else {
+                step_trace_line(line_text, data->computer);
             }
         }
         g_free(line_text);
@@ -283,12 +296,19 @@ static void on_run_to_breakpoint_clicked(GtkButton *button, GtkTextView *trace_t
         }
     }
 
-    gtk_text_view_scroll_to_iter(trace_text, &start, 0.0, TRUE, 0.0, 0.5);
+    gtk_text_buffer_apply_tag(buffer, highlight_tag, &start, &end);
+    if (previous_highlight_mark == NULL) {
+        previous_highlight_mark = gtk_text_buffer_create_mark(buffer, "previous_highlight", &start, TRUE);
+    } else {
+        gtk_text_buffer_move_mark(buffer, previous_highlight_mark, &start);
+    }
+
+    gtk_text_view_scroll_to_iter(data->trace_text, &start, 0.0, TRUE, 0.0, 0.5);
 }
 
-
-static void on_step_button_clicked(GtkButton *button, GtkTextView *trace_text) {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(trace_text);
+static void on_step_button_clicked(GtkButton *button, gpointer user_data) {
+    struct trace_text_and_computer *data = (struct trace_text_and_computer *)user_data;
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(data->trace_text);
     GtkTextIter start, end;
  
     if (highlight_tag == NULL) {
@@ -302,7 +322,7 @@ static void on_step_button_clicked(GtkButton *button, GtkTextView *trace_text) {
         gtk_text_iter_forward_line(&prev_end);
         gtk_text_buffer_remove_tag(buffer, highlight_tag, &prev_start, &prev_end);
     }
-
+     
     if (previous_highlight_mark == NULL) {
         gtk_text_buffer_get_start_iter(buffer, &start);
     } else {
@@ -310,25 +330,35 @@ static void on_step_button_clicked(GtkButton *button, GtkTextView *trace_text) {
         gtk_text_iter_forward_line(&start);
     }
 
-    end = start;
-    gtk_text_iter_forward_line(&end);
+    gboolean valid_line_found = FALSE;
+    while (!valid_line_found && !gtk_text_iter_is_end(&start)) {
+        end = start;
+        gtk_text_iter_forward_line(&end);
 
-    gchar *line_text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
-
-    if (line_text && *line_text) {
-        gboolean result = step_trace_line(line_text);
-        if (result) {
-            gtk_text_buffer_apply_tag(buffer, highlight_tag, &start, &end);
-            if (previous_highlight_mark == NULL) {
-                previous_highlight_mark = gtk_text_buffer_create_mark(buffer, "previous_highlight", &start, TRUE);
-            } else {
-                gtk_text_buffer_move_mark(buffer, previous_highlight_mark, &start);
+        gchar *line_text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+         
+        if (line_text && *line_text) {
+            gboolean result = step_trace_line(line_text, data->computer);
+            if (!result) {
+                valid_line_found = TRUE;
+                gtk_text_buffer_apply_tag(buffer, highlight_tag, &start, &end);
+                if (previous_highlight_mark == NULL) {
+                    previous_highlight_mark = gtk_text_buffer_create_mark(buffer, "previous_highlight", &start, TRUE);
+                } else {
+                    gtk_text_buffer_move_mark(buffer, previous_highlight_mark, &start);
+                }
             }
         }
+        g_free(line_text);
+
+        if (!valid_line_found) {
+            start = end;
+        }
     }
-    g_free(line_text);
-    gtk_text_view_scroll_to_iter(trace_text, &start, 0.0, TRUE, 0.0, 0.5);
+
+    gtk_text_view_scroll_to_iter(data->trace_text, &start, 0.0, TRUE, 0.0, 0.5);
 }
+
 
 static void on_reset_button_clicked(GtkButton *button, GtkTextView *trace_text) {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(trace_text);
@@ -354,7 +384,7 @@ static void on_reset_button_clicked(GtkButton *button, GtkTextView *trace_text) 
     gtk_text_view_scroll_to_iter(trace_text, &start, 0.0, TRUE, 0.0, 0.5);
 }
 
-static GtkWidget *create_toolbar(GtkTextView *trace_text) {
+static GtkWidget *create_toolbar(GtkTextView *trace_text, Computer *computer) {
     GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_widget_add_css_class(toolbar, "toolbar");
 
@@ -374,8 +404,12 @@ static GtkWidget *create_toolbar(GtkTextView *trace_text) {
     gtk_widget_set_tooltip_text(reset_button, "Reset Simulation");
     gtk_box_append(GTK_BOX(toolbar), reset_button);
 
-    g_signal_connect(step_button, "clicked", G_CALLBACK(on_step_button_clicked), trace_text);
-    g_signal_connect(run_button, "clicked", G_CALLBACK(on_run_to_breakpoint_clicked), trace_text);
+    struct trace_text_and_computer *data = g_new(struct trace_text_and_computer, 1);
+    data->trace_text = trace_text;
+    data->computer = computer;
+
+    g_signal_connect(step_button, "clicked", G_CALLBACK(on_step_button_clicked), data);
+    g_signal_connect(run_button, "clicked", G_CALLBACK(on_run_to_breakpoint_clicked), data);
     g_signal_connect(reset_button, "clicked", G_CALLBACK(on_reset_button_clicked), trace_text);
 
     return toolbar;
@@ -393,7 +427,7 @@ static GtkWidget *create_left_column(Computer *computer) {
     gtk_widget_set_hexpand(trace_text, TRUE);
     gtk_widget_set_vexpand(trace_text, TRUE);
 
-    GtkWidget *toolbar = create_toolbar(GTK_TEXT_VIEW(trace_text));
+    GtkWidget *toolbar = create_toolbar(GTK_TEXT_VIEW(trace_text), computer);
     gtk_box_append(GTK_BOX(box), toolbar);
 
     GtkWidget *trace_label = gtk_label_new("trace file: filename.vca");
