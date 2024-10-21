@@ -220,7 +220,68 @@ static GtkWidget *create_cache_widget(Cache *cache, int level) {
     }
 }
 
-static GtkWidget *create_toolbar(void) {
+int step_trace_line(const char *line) {
+   printf("line: %s\n", line);
+   return 1;
+}
+
+
+static void on_step_button_clicked(GtkButton *button, GtkTextView *trace_text) {
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(trace_text);
+    GtkTextIter start, end;
+    static GtkTextTag *tag = NULL;
+    static GtkTextMark *current_mark = NULL;
+
+    if (tag == NULL) {
+        tag = gtk_text_buffer_create_tag(buffer, "highlight", "background", "yellow", NULL);
+    }
+
+    if (current_mark == NULL) {
+        gtk_text_buffer_get_start_iter(buffer, &start);
+        current_mark = gtk_text_buffer_create_mark(buffer, "current_position", &start, TRUE);
+    } else {
+        gtk_text_buffer_get_iter_at_mark(buffer, &start, current_mark);
+    }
+
+    gtk_text_buffer_remove_all_tags(buffer, NULL, NULL);
+
+    gboolean continue_processing = TRUE;
+    while (continue_processing) {
+        end = start;
+        gint line = gtk_text_iter_get_line(&start);
+        gint line_index = gtk_text_iter_get_line_index(&start);
+        printf("Start: (%d, %d)\n", line, line_index);
+        if (!gtk_text_iter_forward_to_line_end(&end)) {
+            break;
+        }
+        line = gtk_text_iter_get_line(&end);
+        line_index = gtk_text_iter_get_line_index(&end);
+        printf("End: (%d, %d)\n", line, line_index);
+
+        gchar *line_text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+
+        if (line_text && *line_text) {
+            if (step_trace_line(line_text) == 1) {
+                gtk_text_buffer_apply_tag(buffer, tag, &start, &end);
+                continue_processing = FALSE;
+            }
+        }
+
+        g_free(line_text);
+        start = end;
+        gtk_text_buffer_move_mark(buffer, current_mark, &start);
+    }
+
+    /*if (gtk_text_iter_is_end(&start)) {
+        gtk_text_buffer_remove_all_tags(buffer, NULL, NULL);
+        gtk_text_buffer_get_start_iter(buffer, &start);
+        gtk_text_buffer_move_mark(buffer, current_mark, &start);
+    } */
+
+    //gtk_text_view_scroll_to_mark(trace_text, current_mark, 0.0, TRUE, 0.0, 0.5);
+}
+
+static GtkWidget *create_toolbar(GtkTextView *trace_text) {
     GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_widget_add_css_class(toolbar, "toolbar");
 
@@ -240,26 +301,29 @@ static GtkWidget *create_toolbar(void) {
     gtk_widget_set_tooltip_text(reset_button, "Reset Simulation");
     gtk_box_append(GTK_BOX(toolbar), reset_button);
 
+    g_signal_connect(step_button, "clicked", G_CALLBACK(on_step_button_clicked), trace_text);
+
     return toolbar;
 }
 
 static GtkWidget *create_left_column(Computer *computer) {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
-    GtkWidget *toolbar = create_toolbar();
-    gtk_box_append(GTK_BOX(box), toolbar);
-
-    GtkWidget *trace_label = gtk_label_new("trace file: filename.vca");
-    gtk_box_append(GTK_BOX(box), trace_label);
-
-    if(computer->cpu.buffer == NULL) {
-       computer->cpu.buffer = gtk_text_buffer_new(NULL);
+    if (computer->cpu.buffer == NULL) {
+        computer->cpu.buffer = gtk_text_buffer_new(NULL);
     }
 
     GtkWidget *trace_text = gtk_text_view_new_with_buffer(computer->cpu.buffer);
     gtk_widget_set_size_request(trace_text, 200, 400);
     gtk_widget_set_hexpand(trace_text, TRUE);
     gtk_widget_set_vexpand(trace_text, TRUE);
+
+    GtkWidget *toolbar = create_toolbar(GTK_TEXT_VIEW(trace_text));
+    gtk_box_append(GTK_BOX(box), toolbar);
+
+    GtkWidget *trace_label = gtk_label_new("trace file: filename.vca");
+    gtk_box_append(GTK_BOX(box), trace_label);
+
     gtk_box_append(GTK_BOX(box), trace_text);
 
     GtkWidget *stats_label = gtk_label_new("simulation statistics");
@@ -273,6 +337,7 @@ static GtkWidget *create_left_column(Computer *computer) {
 
     return box;
 }
+
 
 static GtkWidget *create_middle_section(Computer *computer) {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
