@@ -4,25 +4,52 @@
 #include "traceparser.h"
 #include "simulator.h"
 
-static void setup_cb(GtkSignalListItemFactory *factory,GObject  *listitem) {
-    GtkWidget *label =gtk_label_new(NULL);
-    gtk_list_item_set_child(GTK_LIST_ITEM(listitem),label);
+static void set_widget_background_color(GtkWidget *widget, const char *color) {
+    GtkCssProvider *provider = gtk_css_provider_new();
+    GtkStyleContext *context = gtk_widget_get_style_context(widget);
+
+    char *css = g_strdup_printf(".widget { background-color: %s; }", color);
+    gtk_css_provider_load_from_data(provider, css, -1);
+    g_free(css);
+
+    gtk_style_context_add_class(context, "widget");
+    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(provider);
+}
+
+static void setup_cb(GtkSignalListItemFactory *factory, GObject *listitem) {
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *label = gtk_label_new(NULL);
+    gtk_box_append(GTK_BOX(box), label);
+    gtk_list_item_set_child(GTK_LIST_ITEM(listitem), box);
 }
 
 static void bind_address_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem)
 {
-    GtkWidget *label = gtk_list_item_get_child(listitem);
+    GtkWidget *box = gtk_list_item_get_child(listitem);
+    GtkWidget *label = gtk_widget_get_first_child(box);
     MemoryLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
     char *string = g_strdup_printf("%d", item->address);
-    gtk_label_set_text(GTK_LABEL (label), string);
+    gtk_label_set_text(GTK_LABEL(label), string);
+    g_free(string);
+
+    if (item->color) {
+        set_widget_background_color(box, item->color);
+    }
 }
 
 static void bind_content_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem)
 {
-    GtkWidget *label = gtk_list_item_get_child(listitem);
+    GtkWidget *box = gtk_list_item_get_child(listitem);
+    GtkWidget *label = gtk_widget_get_first_child(box);
     MemoryLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
     char *string = g_strdup_printf("%d", item->content);
-    gtk_label_set_text(GTK_LABEL (label), string);
+    gtk_label_set_text(GTK_LABEL(label), string);
+    g_free(string);
+
+    if (item->color) {
+        set_widget_background_color(box, item->color);
+    }
 }
 
 static GtkWidget *create_memory_table(Computer *computer) {

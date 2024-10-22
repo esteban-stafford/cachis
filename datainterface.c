@@ -271,6 +271,34 @@ int show_memory_address(Computer *computer, long address){
    return 0;
 }
 
+void set_row_color(Computer *computer, int row_index, const char *color) {
+    MemoryLine *line = g_list_model_get_item(G_LIST_MODEL(computer->memory.model), row_index);
+    if (line) {
+        line->color = color;
+        //g_list_store_item_changed(computer->memory.model, row_index);
+    }
+}
+
+void scroll_to_row(GtkWidget *column_view, int percentage) {
+    GtkAdjustment *vadjustment = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(column_view));
+    guint max = gtk_adjustment_get_upper(vadjustment);
+    guint page_size = gtk_adjustment_get_page_size(vadjustment);
+
+    guint y = max * percentage / 100;
+
+    //printf("Scrolling to %d%% (%d/%d)  --> ", percentage, y, max);
+    if(y > max - page_size) {
+        y = max - page_size;
+    } else if(y < page_size/2) {
+        y = 0;
+    } else {
+        y -= page_size / 2;
+    }
+    //printf("%d\n", y);
+ 
+    gtk_adjustment_set_value(vadjustment, y);
+}
+
 /**
  * This function reads a memory position
  * @param pos. Read data will be placed in here. User must take care of freeing pos.user_content
@@ -293,31 +321,19 @@ int read_from_memory_address(Computer *computer, struct memoryPosition *pos, lon
 
     // get the item from the memory address
     guint index = (address - computer->memory.page_base_address) / (computer->cpu.word_width / 8);
+    guint max_index = g_list_model_get_n_items(model);
     gpointer item = g_list_model_get_item(model, index);
 
     if (item == NULL) {
         RETURN_CACHIS_ERROR(-3, "Invalid memory address");
     }
 
-    printf("Memory address: %lx\n", address);
-    printf("Memory index: %d\n", index);
-    printf("Memory item: %p\n", item);
     MemoryLine *memory_line = MEMORY_LINE(item);
-    printf("Memory address: %x\n", memory_line->address); 
-    printf("Memory content: %x\n", memory_line->content);
-
     pos->address = memory_line->address;
-    memory_line->content = memory_line->address;
     pos->content = memory_line->content;
 
-    // Update the color (assuming you have a way to set color on the item)
-    //memory_position_set_color(memory_pos, colors[READ]);
-
-    // Scroll to the item
-    /*GtkScrollInfo *scroll_info = gtk_column_view_get_scroll_info(view);
-    gtk_scroll_info_set_row(scroll_info, index);
-    gtk_scroll_info_set_align(scroll_info, 0.5); 
-    gtk_column_view_scroll_to(view, scroll_info);*/
+    set_row_color(computer, index, "#90a955");
+    scroll_to_row(computer->memory.view, index * 100 / max_index);
 
     g_object_unref(item);
     return 0;
