@@ -345,36 +345,43 @@ int read_from_memory_address(Computer *computer, struct memoryPosition *pos, lon
  * @param address is the memory address
  * @return 0 if correct -1 if not word address error, -2 if out of page error
  */
-int write_to_memory_address(Computer *computer, struct memoryPosition *pos, long address){
-   /* GtkTreeModel *model= GTK_TREE_MODEL(computer->memory.model);
-   GtkTreeView *view = GTK_TREE_VIEW(gui.viewMEMORY);
-   GtkTreeIter iter;
-   // if not word address return error
-   if(address % (computer->cpu.word_width/8)!=0){
-      interfaceError = "not word address";
-      return -1;
-   }
-   //if out of page return error
-   if(address < computer->memory.page_base_address || address > (computer->memory.page_base_address+computer->memory.page_size)){
-      interfaceError = "out of page";
-      return -2;
-   }
-   //get the table row from the memory address
-   gtk_tree_model_iter_nth_child (model,
-         &iter,
-         NULL,
-         (address-computer->memory.page_base_address)/(computer->cpu.word_width/8));
-   gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-         ADDRESS, pos->address,
-         CONTENT, pos->content,
-         USER_CONTENT, pos->user_content,
-         COLOR, colors[WRITE],
-         -1);
-   char rowString[50];
-   sprintf(rowString, "%ld", (address-computer->memory.page_base_address)/(computer->cpu.word_width/8));
-   gtk_tree_view_scroll_to_cell (view, gtk_tree_path_new_from_string(rowString), NULL, TRUE, 0.5, 0); */
-   return 0;
+int write_to_memory_address(Computer *computer, struct memoryPosition *pos, long address) {
+    GListModel *model = G_LIST_MODEL(computer->memory.model);
+    GtkColumnView *view = GTK_COLUMN_VIEW(computer->memory.view);
+
+    // if not word address return error
+    if (address % (computer->cpu.word_width / 8) != 0) {
+        RETURN_CACHIS_ERROR(-1, "Not word address");
+    }
+    // if out of page return error
+    if (address < computer->memory.page_base_address ||
+        address > (computer->memory.page_base_address + computer->memory.page_size)) {
+        RETURN_CACHIS_ERROR(-2, "Out of page");
+    }
+
+    // get the item from the memory address
+    guint index = (address - computer->memory.page_base_address) / (computer->cpu.word_width / 8);
+    guint max_index = g_list_model_get_n_items(model);
+    gpointer item = g_list_model_get_item(model, index);
+
+    if (item == NULL) {
+        RETURN_CACHIS_ERROR(-3, "Invalid memory address");
+    }
+
+    MemoryLine *memory_line = MEMORY_LINE(item);
+    memory_line->address = pos->address;
+    memory_line->content = pos->content;
+
+    // Notify the model that the item has changed
+    g_list_model_items_changed(model, index, 1, 1);
+
+    set_row_color(computer, index, "#ff9b54");
+    scroll_to_row(computer->memory.view, index * 100 / max_index);
+
+    g_object_unref(item);
+    return 0;
 }
+
 /**
  * This function is used to add a property or value to the simulation statistics panel
  * @param component String containig the name of the componet
