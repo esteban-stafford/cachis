@@ -51,7 +51,9 @@ typedef struct
     int set_bits;
 
     GListStore *model_data;
+    GtkWidget *view_data;
     GListStore *model_instruction;
+    GtkWidget *view_instruction;
 } Cache;
 
 #define MAX_CACHES 10

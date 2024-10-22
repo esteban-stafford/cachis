@@ -236,17 +236,20 @@ static GtkWidget *create_cache_widget(Cache *cache, int level) {
         GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
         GtkWidget *data_table = create_cache_table(G_LIST_STORE(cache->model_data));
-        gtk_widget_set_vexpand(data_table, TRUE); // Ensure vertical expansion for data_table
+        cache->view_data = data_table;
+        gtk_widget_set_vexpand(data_table, TRUE);
         gtk_box_append(GTK_BOX(box), data_table);
 
         GtkWidget *instruction_table = create_cache_table(G_LIST_STORE(cache->model_instruction));
-        gtk_widget_set_vexpand(instruction_table, TRUE); // Ensure vertical expansion for instruction_table
+        cache->view_instruction = instruction_table;
+        gtk_widget_set_vexpand(instruction_table, TRUE);
         gtk_box_append(GTK_BOX(box), instruction_table);
 
         return box;
     } else {
         GtkWidget *unified_table = create_cache_table(G_LIST_STORE(cache->model_data));
-        gtk_widget_set_vexpand(unified_table, TRUE); // Ensure vertical expansion for unified cache
+        cache->view_data = unified_table;
+        gtk_widget_set_vexpand(unified_table, TRUE);
         return unified_table;
     }
 }

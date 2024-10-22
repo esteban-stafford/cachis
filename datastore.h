@@ -25,7 +25,7 @@ struct _CacheLine {
     unsigned int last_accessed;
     unsigned int first_accessed;
     unsigned int tag;
-    const char *content_cache;
+    char *content_cache;
     const char *color_cache; 
     gpointer user_data;
 };

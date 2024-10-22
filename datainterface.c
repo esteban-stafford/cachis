@@ -11,6 +11,26 @@ char *interfaceError = NULL;
 
 #define RETURN_CACHIS_ERROR(code, message) interfaceError = message; return code;
 
+void scroll_to_row(GtkWidget *column_view, int percentage) {
+    GtkAdjustment *vadjustment = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(column_view));
+    guint max = gtk_adjustment_get_upper(vadjustment);
+    guint page_size = gtk_adjustment_get_page_size(vadjustment);
+
+    guint y = max * percentage / 100;
+
+    //printf("Scrolling to %d%% (%d/%d)  --> ", percentage, y, max);
+    if(y > max - page_size) {
+        y = max - page_size;
+    } else if(y < page_size/2) {
+        y = 0;
+    } else {
+        y -= page_size / 2;
+    }
+    //printf("%d\n", y);
+ 
+    gtk_adjustment_set_value(vadjustment, y);
+}
+
 void reset_memory(Computer *computer) {
 /*   GListStore *model = G_LIST_STORE(computer->memory.model);
    guint n_items = g_list_model_get_n_items(G_LIST_MODEL(model));
@@ -143,48 +163,54 @@ long find_tag_in_cache(Computer *computer, int instructionOrData, int level, uns
  * @param line. A pointer to a struct cacheLine were data will be placed. User must free line.content after calling the function. 
  * @param i line index
  */
-void read_line_from_cache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber){
-   /*GtkTreeModel *model;
-   GtkTreeView *view;
-   GtkTreeIter iter;
-   char *contentString;
+void read_line_from_cache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber) {
+    GListModel *model;
+    GtkColumnView *view;
 
-   if(!computer->cache[level].separated || instructionOrData == DATA) {
-      model = GTK_TREE_MODEL(computer->cache[level].model_data);
-      view = GTK_TREE_VIEW(gui.cachePanel[level].viewData);
-   }
-   else {
-      model= GTK_TREE_MODEL(computer->cache[level].model_instruction);
-      view = GTK_TREE_VIEW(gui.cachePanel[level].viewInstruction);
-   }
-   gtk_tree_model_iter_nth_child (model, &iter, NULL, lineNumber);
+    if (!computer->cache[level].separated || instructionOrData == DATA) {
+        model = G_LIST_MODEL(computer->cache[level].model_data);
+        view = GTK_COLUMN_VIEW(computer->cache[level].view_data);
+    } else {
+        model = G_LIST_MODEL(computer->cache[level].model_instruction);
+        view = GTK_COLUMN_VIEW(computer->cache[level].view_instruction);
+    }
 
-   gtk_tree_model_get (GTK_TREE_MODEL(model), &iter,
-         LINE, &line->line,
-         TAG, &line->tag,
-         SET, &line->set,
-         CONTENT_CACHE, &contentString,
-         USER_CONTENT_CACHE, &line->user_content,
-         VALID, &line->valid,
-         DIRTY, &line->dirty,
-         TIMES_ACCESSED, &line->accessCount,
-         LAST_ACCESSED, &line->lastAccess,
-         FIRST_ACCESSED, &line->firstAccess,
-         -1);
-   gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-         COLOR_CACHE, colors[READ],
-         TIMES_ACCESSED, line->accessCount+1,
-         LAST_ACCESSED, cycle,
-         -1);
-   char rowString[50];
-   sprintf(rowString, "%d", lineNumber);
-   gtk_tree_view_scroll_to_cell (view, gtk_tree_path_new_from_string(rowString), NULL, TRUE, 0.5, 0);
-   //number of words in a cache line
-   line->content = malloc((sizeof(long))*computer->cache[level].num_words);
-   //turn String format to long array.
-   contentStringToArray(line->content, contentString, computer->cache[level].num_words);
-   g_free(contentString); */
+    gpointer item = g_list_model_get_item(model, lineNumber);
+    if (item == NULL) {
+        g_warning("Invalid cache line number: %d", lineNumber);
+        return;
+    }
+
+    CacheLine *cache_line = CACHE_LINE(item);
+
+    // Copy data from the model to the provided line struct
+    line->line = cache_line->line;
+    line->tag = cache_line->tag;
+    line->set = cache_line->set;
+    line->valid = cache_line->valid;
+    line->dirty = cache_line->dirty;
+    line->accessCount = cache_line->times_accessed;
+    line->lastAccess = cache_line->last_accessed;
+    line->firstAccess = cache_line->first_accessed;
+    
+    // Update the model
+    cache_line->color_cache = g_strdup(colors[READ]);
+    cache_line->times_accessed++;
+    cache_line->last_accessed = cycle;
+
+    // Notify the model that the item has changed
+    g_list_model_items_changed(model, lineNumber, 1, 1);
+
+    // Scroll to the updated row
+    //scroll_to_row(view, lineNumber * 100 / g_list_model_get_n_items(model));
+
+    // Allocate memory for content and convert from string to array
+    line->content = g_malloc(sizeof(long) * computer->cache[level].num_words);
+    contentStringToArray(line->content, cache_line->content_cache, computer->cache[level].num_words);
+
+    g_object_unref(item);
 }
+
 
 void read_flags_from_cache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber){
    /* GtkTreeModel *model;
@@ -216,40 +242,52 @@ void read_flags_from_cache(Computer *computer, int instructionOrData, int level,
  * @param i line index
  */
 void write_line_to_cache(Computer *computer, int instructionOrData, int level, struct cacheLine *line, unsigned lineNumber) {
-   /* GtkTreeModel *model;
-   GtkTreeView *view;
-   GtkTreeIter iter;
-   char contentString[2000];
+    GListModel *model;
+    GtkColumnView *view;
+    char contentString[2000];
+    
+    if (!computer->cache[level].separated || instructionOrData == DATA) {
+        model = G_LIST_MODEL(computer->cache[level].model_data);
+        view = GTK_COLUMN_VIEW(computer->cache[level].view_data);
+    } else {
+        model = G_LIST_MODEL(computer->cache[level].model_instruction);
+        view = GTK_COLUMN_VIEW(computer->cache[level].view_instruction);
+    }
 
-   if(!computer->cache[level].separated || instructionOrData == DATA) {
-      model = GTK_TREE_MODEL(computer->cache[level].model_data);
-      view = GTK_TREE_VIEW(gui.cachePanel[level].viewData);
-   }
-   else {
-      model= GTK_TREE_MODEL(computer->cache[level].model_instruction);
-      view = GTK_TREE_VIEW(gui.cachePanel[level].viewInstruction);
-   }
-   contentArrayToString(line->content, contentString, (computer->cache[level].line_size*8)/computer->cpu.word_width, computer->cpu.word_width/4);
-   printf("Write Content: ");
-   for(int i = 0; i < computer->cache[level].num_words; i++) {
-      printf("%x ",line->content[i]);
-   }
-   printf(" ---> %s\n", contentString);
-   gtk_tree_model_iter_nth_child (model, &iter, NULL, lineNumber);
-   gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-         VALID, line->valid,
-         DIRTY, line->dirty,
-         TAG, line->tag,
-         CONTENT_CACHE, contentString, 
-         COLOR_CACHE, colors[WRITE],
-         TIMES_ACCESSED, 1,
-         LAST_ACCESSED, cycle,
-         FIRST_ACCESSED, cycle,
-         -1);
-   char rowString[50];
-   sprintf(rowString, "%d", lineNumber);
-   gtk_tree_view_scroll_to_cell (view, gtk_tree_path_new_from_string(rowString), NULL, TRUE, 0.5, 0); */
+    contentArrayToString(line->content, contentString, (computer->cache[level].line_size*8)/computer->cpu.word_width, computer->cpu.word_width/4);
+    
+    printf("Write Content: ");
+    for (int i = 0; i < computer->cache[level].num_words; i++) {
+        printf("%x ", line->content[i]);
+    }
+    printf(" ---> %s\n", contentString);
+
+    gpointer item = g_list_model_get_item(model, lineNumber);
+    if (item == NULL) {
+        g_warning("Invalid cache line number: %u", lineNumber);
+        return;
+    }
+
+    CacheLine *cache_line = CACHE_LINE(item);
+    cache_line->valid = line->valid;
+    cache_line->dirty = line->dirty;
+    cache_line->tag = line->tag;
+    g_free(cache_line->content_cache);
+    cache_line->content_cache = g_strdup(contentString);
+    cache_line->color_cache = g_strdup(colors[WRITE]);
+    cache_line->times_accessed = 1;
+    cache_line->last_accessed = cycle;
+    cache_line->first_accessed = cycle;
+
+    // Notify the model that the item has changed
+    g_list_model_items_changed(model, lineNumber, 1, 1);
+
+    // Scroll to the updated row
+    //scroll_to_row(GTK_WIDGET(view), lineNumber * 100 / g_list_model_get_n_items(model));
+
+    g_object_unref(item);
 }
+
 
 /**
  * This function shows a memory position
@@ -277,26 +315,6 @@ void set_row_color(Computer *computer, int row_index, const char *color) {
         line->color = color;
         //g_list_store_item_changed(computer->memory.model, row_index);
     }
-}
-
-void scroll_to_row(GtkWidget *column_view, int percentage) {
-    GtkAdjustment *vadjustment = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(column_view));
-    guint max = gtk_adjustment_get_upper(vadjustment);
-    guint page_size = gtk_adjustment_get_page_size(vadjustment);
-
-    guint y = max * percentage / 100;
-
-    //printf("Scrolling to %d%% (%d/%d)  --> ", percentage, y, max);
-    if(y > max - page_size) {
-        y = max - page_size;
-    } else if(y < page_size/2) {
-        y = 0;
-    } else {
-        y -= page_size / 2;
-    }
-    //printf("%d\n", y);
- 
-    gtk_adjustment_set_value(vadjustment, y);
 }
 
 /**
@@ -333,7 +351,7 @@ int read_from_memory_address(Computer *computer, struct memoryPosition *pos, lon
     pos->content = memory_line->content;
 
     set_row_color(computer, index, "#90a955");
-    scroll_to_row(computer->memory.view, index * 100 / max_index);
+    //scroll_to_row(computer->memory.view, index * 100 / max_index);
 
     g_object_unref(item);
     return 0;
@@ -376,7 +394,7 @@ int write_to_memory_address(Computer *computer, struct memoryPosition *pos, long
     g_list_model_items_changed(model, index, 1, 1);
 
     set_row_color(computer, index, "#ff9b54");
-    scroll_to_row(computer->memory.view, index * 100 / max_index);
+    //scroll_to_row(computer->memory.view, index * 100 / max_index);
 
     g_object_unref(item);
     return 0;
