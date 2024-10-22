@@ -13,6 +13,7 @@ typedef struct
     const char* trace_file;     // File de trace
 
     GtkTextBuffer *buffer;
+    GtkTextView *view;
 } Cpu;
 
 typedef struct

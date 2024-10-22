@@ -307,6 +307,7 @@ int read_from_memory_address(Computer *computer, struct memoryPosition *pos, lon
     printf("Memory content: %x\n", memory_line->content);
 
     pos->address = memory_line->address;
+    memory_line->content = memory_line->address;
     pos->content = memory_line->content;
 
     // Update the color (assuming you have a way to set color on the item)

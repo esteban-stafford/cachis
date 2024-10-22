@@ -248,13 +248,11 @@ static GtkTextTag *highlight_tag = NULL;
 static GtkTextMark *previous_highlight_mark = NULL;
 
 struct trace_text_and_computer {
-    GtkTextView *trace_text;
     Computer *computer;
 };
 
-static void on_run_to_breakpoint_clicked(GtkButton *button, gpointer user_data) {
-    struct trace_text_and_computer *data = (struct trace_text_and_computer *)user_data;
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(data->trace_text);
+static void on_run_to_breakpoint_clicked(GtkButton *button, Computer *computer) {
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(computer->cpu.view);
     GtkTextIter start, end;
 
     if (highlight_tag == NULL) {
@@ -287,7 +285,7 @@ static void on_run_to_breakpoint_clicked(GtkButton *button, gpointer user_data) 
             if(has_breakpoint(line_text)) {
                breakpoint_found = TRUE;
             } else {
-                step_trace_line(line_text, data->computer);
+                step_trace_line(line_text, computer);
             }
         }
         g_free(line_text);
@@ -304,12 +302,11 @@ static void on_run_to_breakpoint_clicked(GtkButton *button, gpointer user_data) 
         gtk_text_buffer_move_mark(buffer, previous_highlight_mark, &start);
     }
 
-    gtk_text_view_scroll_to_iter(data->trace_text, &start, 0.0, TRUE, 0.0, 0.5);
+    gtk_text_view_scroll_to_iter(computer->cpu.view, &start, 0.0, TRUE, 0.0, 0.5);
 }
 
-static void on_step_button_clicked(GtkButton *button, gpointer user_data) {
-    struct trace_text_and_computer *data = (struct trace_text_and_computer *)user_data;
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(data->trace_text);
+static void on_step_button_clicked(GtkButton *button, Computer *computer) {
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(computer->cpu.view);
     GtkTextIter start, end;
  
     if (highlight_tag == NULL) {
@@ -339,7 +336,7 @@ static void on_step_button_clicked(GtkButton *button, gpointer user_data) {
         gchar *line_text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
          
         if (line_text && *line_text) {
-            gboolean result = step_trace_line(line_text, data->computer);
+            gboolean result = step_trace_line(line_text, computer);
             if (!result) {
                 valid_line_found = TRUE;
                 gtk_text_buffer_apply_tag(buffer, highlight_tag, &start, &end);
@@ -357,12 +354,12 @@ static void on_step_button_clicked(GtkButton *button, gpointer user_data) {
         }
     }
 
-    gtk_text_view_scroll_to_iter(data->trace_text, &start, 0.0, TRUE, 0.0, 0.5);
+    gtk_text_view_scroll_to_iter(computer->cpu.view, &start, 0.0, TRUE, 0.0, 0.5);
 }
 
 
-static void on_reset_button_clicked(GtkButton *button, GtkTextView *trace_text) {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(trace_text);
+static void on_reset_button_clicked(GtkButton *button, Computer *computer) {
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(computer->cpu.view);
 
     if (highlight_tag == NULL) {
         GtkTextTagTable *tag_table = gtk_text_buffer_get_tag_table(buffer);
@@ -382,7 +379,7 @@ static void on_reset_button_clicked(GtkButton *button, GtkTextView *trace_text) 
 
     GtkTextIter start;
     gtk_text_buffer_get_start_iter(buffer, &start);
-    gtk_text_view_scroll_to_iter(trace_text, &start, 0.0, TRUE, 0.0, 0.5);
+    gtk_text_view_scroll_to_iter(computer->cpu.view, &start, 0.0, TRUE, 0.0, 0.5);
 }
 
 static GtkWidget *create_toolbar(GtkTextView *trace_text, Computer *computer) {
@@ -405,13 +402,9 @@ static GtkWidget *create_toolbar(GtkTextView *trace_text, Computer *computer) {
     gtk_widget_set_tooltip_text(reset_button, "Reset Simulation");
     gtk_box_append(GTK_BOX(toolbar), reset_button);
 
-    struct trace_text_and_computer *data = g_new(struct trace_text_and_computer, 1);
-    data->trace_text = trace_text;
-    data->computer = computer;
-
-    g_signal_connect(step_button, "clicked", G_CALLBACK(on_step_button_clicked), data);
-    g_signal_connect(run_button, "clicked", G_CALLBACK(on_run_to_breakpoint_clicked), data);
-    g_signal_connect(reset_button, "clicked", G_CALLBACK(on_reset_button_clicked), trace_text);
+    g_signal_connect(step_button, "clicked", G_CALLBACK(on_step_button_clicked), computer);
+    g_signal_connect(run_button, "clicked", G_CALLBACK(on_run_to_breakpoint_clicked), computer);
+    g_signal_connect(reset_button, "clicked", G_CALLBACK(on_reset_button_clicked), computer);
 
     return toolbar;
 }
@@ -424,6 +417,7 @@ static GtkWidget *create_left_column(Computer *computer) {
     }
 
     GtkWidget *trace_text = gtk_text_view_new_with_buffer(computer->cpu.buffer);
+    computer->cpu.view = GTK_TEXT_VIEW(trace_text);
     gtk_widget_set_size_request(trace_text, 200, 400);
     gtk_widget_set_hexpand(trace_text, TRUE);
     gtk_widget_set_vexpand(trace_text, TRUE);
