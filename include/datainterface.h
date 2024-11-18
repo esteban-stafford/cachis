@@ -24,9 +24,7 @@ struct cacheLine{
   unsigned tag;
   unsigned set;
   unsigned * content;
-
   void * user_content;
-
   unsigned valid;
   unsigned dirty;
   unsigned lastAccess;
@@ -42,23 +40,31 @@ struct memoryPosition{
 
 extern char *interfaceError;
 
-void reset_memory(Computer *computer);
-void reset_cache(Computer *computer, int level);
 
+
+//CacheLine related functions
+int selectVia(Computer *computer, int instructionOrData, int cacheLevel, int set);
+
+//Cache related functions
+void reset_cache(Computer *computer, int level);
 void show_line_from_cache(Computer *computer, int instructionOrData, int level, int i);
 long find_tag_in_cache(Computer *computer, int instructionOrData, int level, unsigned requestSet, unsigned requestTag);
 void read_line_from_cache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber);
 void read_flags_from_cache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber);
 void write_line_to_cache(Computer *computer, int instructionOrData, int level, struct cacheLine *line, unsigned lineNumber);
 
+//Memory related functions
+void reset_memory(Computer *computer);
 int show_memory_address(Computer *computer, long address);
 int read_from_memory_address(Computer *computer, struct memoryPosition *pos, long address);
 int write_to_memory_address(Computer *computer, struct memoryPosition *pos, long address);
 
+//Statistics
 void set_statistics(char* component, char* property, char* value);
 char* get_statistics(char* component, char* property);
 void print_statistics(FILE* fp);
 
+//Misc
 void remove_all_colors();
 
 #endif

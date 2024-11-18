@@ -31,6 +31,60 @@ void scroll_to_row(GtkWidget *column_view, int percentage) {
     gtk_adjustment_set_value(vadjustment, y);
 }
 
+/**
+ * @brief Returns a via given a computer, cacheLevel and set
+ * @param computer The computer
+ * @param instructionOrData If the operation stores instructions or data
+ * @param cacheLevel The level of the cache to operate in
+ * @param set The line of the cache
+ */
+int selectVia(Computer *computer, int instructionOrData, int cacheLevel, int set) {
+   struct cacheLine cacheData;
+   Cache *cache = &computer->cache[cacheLevel];
+   int lruLine = -1;
+   int lruTime = -1;
+   int lfuLine = -1;
+   int lfuCount = -1;
+   int fifoLine = -1;
+   int fifoTime = -1;
+   int firstLine = set*cache->associativity;
+   for(int i = 0, via = rand() % cache->associativity; i < cache->associativity; i++, via=(via+1) % cache->associativity) {
+      int line = firstLine + via;
+      read_flags_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
+      if(cacheData.valid == 0)
+         return line;
+      if(lruLine == -1 || lruTime > cacheData.lastAccess) {
+         lruLine = line;
+         lruTime = cacheData.lastAccess;
+      }
+      if(lfuLine == -1 || lfuCount > cacheData.accessCount) {
+         lfuLine = line;
+         lfuCount = cacheData.accessCount;
+      }
+      if(fifoLine == -1 || fifoTime > cacheData.firstAccess) {
+         fifoLine = line;
+         fifoTime = cacheData.firstAccess;
+      }
+   }
+   // LRU=0, LFU=1, RANDOM=2, FIFO=3
+   if(cache->replacement_policy == RANDOM) {
+      return set * cache->associativity
+             + rand() % cache->associativity;
+   }
+   else if(cache->replacement_policy == LRU) {
+      return lruLine;
+   }
+   else if(cache->replacement_policy == LFU) {
+      return lfuLine;
+   }
+   else if(cache->replacement_policy == FIFO) {
+      return fifoLine;
+   }
+   else
+      return set * cache->associativity;
+}
+
+
 void reset_memory(Computer *computer) {
 /*   GListStore *model = G_LIST_STORE(computer->memory.model);
    guint n_items = g_list_model_get_n_items(G_LIST_MODEL(model));
@@ -119,15 +173,22 @@ void show_line_from_cache(Computer *computer, int instructionOrData, int level, 
    free(line.content); */
 }
 
+/**
+ * @brief For set associative cache and fully associative cache, find where the tag is located
+ * @param computer The computer
+ * @param instructionOrData If the line contains an instruction or data
+ * @return -2 if error, -1 if miss or the address of the data
+ */
 long find_tag_in_cache(Computer *computer, int instructionOrData, int level, unsigned requestSet, unsigned requestTag) {
+   //If the level is invalid, return -1
     if (level < 0 || level >= computer->num_caches) {
-        return -1;  // Invalid cache level
+        return -2;
     }
 
     Cache *cache = &computer->cache[level];
     GListStore *model = (instructionOrData == 0) ? cache->model_instruction : cache->model_data;
 
-    // Calculate the number of items in the set
+    // Calculate the number of items in the set. If the cache is fully associative, this will return as many items as cache lines
     int items_in_set = cache->associativity;
 
     // Calculate the starting index for the requested set
