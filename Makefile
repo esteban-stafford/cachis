@@ -1,13 +1,13 @@
 
 
 MODULES = src/gui.c src/dictionary.c src/confparser.c src/iniparser.c src/datamanipulation.c src/traceparser.c src/datastore.c src/datainterface.c src/simulator.c src/mappingpolicy.c src/writepolicy.c
-HEADERS = include/gui.h include/dictionary.h include/confparser.h include/iniparser.h include/datamanipulation.h include/traceparser.h include/datastore.h include/datainterface.h include/simulator.h include/computer.h include/mappingpolicy.h include/writepolicy.h
+HEADERS = src/gui.h src/dictionary.h src/confparser.h src/iniparser.h src/datamanipulation.h src/traceparser.h src/datastore.h src/datainterface.h src/simulator.h src/computer.h src/mappingpolicy.h src/writepolicy.h
 
 DEBUG=0
 COVER=0
 
 LIBS = $(shell pkg-config --libs gtk4) -lm
-CFLAGS += -g -Iinclude -Wreturn-type -DDEBUG=${DEBUG}  $(shell pkg-config --cflags gtk4)
+CFLAGS += -g -Wreturn-type -DDEBUG=${DEBUG}  $(shell pkg-config --cflags gtk4)
 
 ifeq ($(COVER),1)
 CFLAGS += --coverage
