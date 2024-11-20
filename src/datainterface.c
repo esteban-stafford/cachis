@@ -97,7 +97,7 @@ void reset_memory(Computer *computer) {
 }
 
 void reset_cacheModel(Computer *computer, int level, int instructionOrData) {
-/*    GListStore *model;
+    GListStore *model;
 
     if (instructionOrData == DATA) {
         model = G_LIST_STORE(computer->cache[level].model_data);
@@ -137,7 +137,7 @@ void reset_cacheModel(Computer *computer, int level, int instructionOrData) {
         
         // Unref the cache line
         g_object_unref(cache_line);
-    }*/
+    }
 }
 
 /**
@@ -145,10 +145,10 @@ void reset_cacheModel(Computer *computer, int level, int instructionOrData) {
  * @param cache level where the cache is located. 
  */
 void reset_cache(Computer *computer, int level){
-   /*if(computer->cache[level].model_data) 
+   if(computer->cache[level].model_data)
       reset_cacheModel(computer, level, DATA);
    if(computer->cache[level].model_instruction) 
-      reset_cacheModel(computer, level, INSTRUCTION);*/
+      reset_cacheModel(computer, level, INSTRUCTION);
 }
 
 /**
@@ -157,7 +157,7 @@ void reset_cache(Computer *computer, int level){
  * @param i line index
  */
 void show_line_from_cache(Computer *computer, int instructionOrData, int level, int i){
-   /*struct cacheLine line;
+   struct cacheLine line;
    //first I read it
    read_line_from_cache(computer, instructionOrData, level, &line, i);
    char contentString[2000];
@@ -170,7 +170,7 @@ void show_line_from_cache(Computer *computer, int instructionOrData, int level, 
    printf("valid: %d   dirty: %d   last accessed: %d  times accessed: %d  first accessed: %d\n",
             line.valid, line.dirty, line.lastAccess, line.accessCount, line.firstAccess);
    printf("------------------------------------------------------\n");
-   free(line.content); */
+   free(line.content);
 }
 
 /**
@@ -344,7 +344,7 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, s
     g_list_model_items_changed(model, lineNumber, 1, 1);
 
     // Scroll to the updated row
-    //scroll_to_row(GTK_WIDGET(view), lineNumber * 100 / g_list_model_get_n_items(model));
+    scroll_to_row(GTK_WIDGET(view), lineNumber * 100 / g_list_model_get_n_items(model));
 
     g_object_unref(item);
 }
@@ -468,7 +468,7 @@ int write_to_memory_address(Computer *computer, struct memoryPosition *pos, long
  * @param value String containing the value which that property will be setted to.
  */
 void set_statistics(char* component, char* property, char* value){
-   /* GtkTreeModel *tree_model=statistics_model;
+    GtkTreeModel *tree_model=statistics_model;
    GtkTreeIter iter;
    int isntEmpty=gtk_tree_model_get_iter_first (tree_model, &iter);
    int hasNext=1;
@@ -534,7 +534,7 @@ void set_statistics(char* component, char* property, char* value){
             COMPONET_OR_PROPERTY, property,
             VALUE, value,
             -1);
-   } */
+   }
 }
 /**
  * This function is used to read a value from the simulation statistics panel
@@ -543,7 +543,7 @@ void set_statistics(char* component, char* property, char* value){
  * @return String containing th value
  */
 char* get_statistics(char* component, char* property){
-   /* GtkTreeModel *tree_model=statistics_model;
+    GtkTreeModel *tree_model=statistics_model;
    GtkTreeIter iter;
    gtk_tree_model_get_iter_first (tree_model, &iter);
    int hasNext=1;
@@ -589,7 +589,7 @@ char* get_statistics(char* component, char* property){
                -1);
          return value;
       }
-   } */
+   }
    //If the componet or the property don't exist I create the componet and the property and I set the value return param to NULL
    return NULL; 
 }
@@ -599,7 +599,7 @@ char* get_statistics(char* component, char* property){
  * @param fp file to where it will be printed
  */
 void print_statistics(FILE* fp) {
-   /* fprintf(fp, "\n------SIMULATION STATISTICS------\n\n");   
+    fprintf(fp, "\n------SIMULATION STATISTICS------\n\n");
    GtkTreeModel *tree_model=statistics_model;
    GtkTreeIter iter;
    gtk_tree_model_get_iter_first (tree_model, &iter);
@@ -630,12 +630,9 @@ void print_statistics(FILE* fp) {
          hasNextProperty=gtk_tree_model_iter_next (tree_model, &child);
       }
 
-
-
       hasNext=gtk_tree_model_iter_next (tree_model, &iter);
    }
    //If the componet or the property don't exist I create the componet and the property and I set the value return param to NULL
-   */
 }
 
 
@@ -643,34 +640,34 @@ void print_statistics(FILE* fp) {
  * This function is used to remove all the colors from the cache and memory tables
  */
 void remove_all_colors(Computer *computer){
-   /*
+
    //remove colors from all caches
-   for(int i=0; i<computer->num_caches; i++){
-       GtkTreeModel *model= GTK_TREE_MODEL(computer->cache[i].model_data);
-       GtkTreeIter iter;
-       int hasNext= gtk_tree_model_get_iter_first (model, &iter);
-
-       while(hasNext){
-           gtk_list_store_set (GTK_LIST_STORE(model), &iter, COLOR_CACHE, colors[WHITE], -1);
-           hasNext=gtk_tree_model_iter_next (model, &iter);
-       }
-
-       if(computer->cache[i].separated){
-           model= GTK_TREE_MODEL(computer->cache[i].model_instruction);
-           hasNext= gtk_tree_model_get_iter_first (model, &iter);
-           while(hasNext){
-              gtk_list_store_set (GTK_LIST_STORE(model), &iter, COLOR_CACHE, colors[WHITE], -1);
-              hasNext=gtk_tree_model_iter_next (model, &iter);
-           }
-       }
-   }
-
-   //remove colors from memory
-   GtkTreeIter iter;
-   int hasNext= gtk_tree_model_get_iter_first (GTK_TREE_MODEL(computer->memory.model), &iter);
-   while(hasNext){
-      gtk_list_store_set (GTK_LIST_STORE(computer->memory.model), &iter, COLOR, colors[WHITE], -1);
-      hasNext=gtk_tree_model_iter_next (GTK_TREE_MODEL(computer->memory.model), &iter);
-   } */
+   // for(int i=0; i<computer->num_caches; i++){
+   //     GtkTreeModel *model= GTK_TREE_MODEL(computer->cache[i].model_data);
+   //     GtkTreeIter iter;
+   //     int hasNext= gtk_tree_model_get_iter_first (model, &iter);
+   //
+   //     while(hasNext){
+   //         gtk_list_store_set (GTK_LIST_STORE(model), &iter, COLOR_CACHE, colors[WHITE], -1);
+   //         hasNext=gtk_tree_model_iter_next (model, &iter);
+   //     }
+   //
+   //     if(computer->cache[i].separated){
+   //         model= GTK_TREE_MODEL(computer->cache[i].model_instruction);
+   //         hasNext= gtk_tree_model_get_iter_first (model, &iter);
+   //         while(hasNext){
+   //            gtk_list_store_set (GTK_LIST_STORE(model), &iter, COLOR_CACHE, colors[WHITE], -1);
+   //            hasNext=gtk_tree_model_iter_next (model, &iter);
+   //         }
+   //     }
+   // }
+   //
+   // //remove colors from memory
+   // GtkTreeIter iter;
+   // int hasNext= gtk_tree_model_get_iter_first (GTK_TREE_MODEL(computer->memory.model), &iter);
+   // while(hasNext){
+   //    gtk_list_store_set (GTK_LIST_STORE(computer->memory.model), &iter, COLOR, colors[WHITE], -1);
+   //    hasNext=gtk_tree_model_iter_next (GTK_TREE_MODEL(computer->memory.model), &iter);
+   // }
 }
 

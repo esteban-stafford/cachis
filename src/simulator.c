@@ -62,11 +62,15 @@ void simulate_step(Computer *computer, struct memOperation *operation) {
    // until it reaches the top level the CPU has access to.
    simPopulateCache(computer, operation, cacheName, &response);
 
-   // The statistics get printed
+   // The action gets printed
    printf("Got %d\n",response.data[0]);      // The data that was operated with
    free(response.data);
    incrementDoubleStatistics("Totals", "Access Time", response.time);
    cycle++;
+
+   // And all the statistics also get printed as well
+   print_statistics(stdout);
+
 
    printf("\n----------------\n\n");
 }

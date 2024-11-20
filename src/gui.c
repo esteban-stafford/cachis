@@ -29,7 +29,7 @@ static void bind_address_cb(GtkSignalListItemFactory *factory, GtkListItem *list
     GtkWidget *box = gtk_list_item_get_child(listitem);
     GtkWidget *label = gtk_widget_get_first_child(box);
     MemoryLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
-    char *string = g_strdup_printf("%d", item->address);
+    char *string = g_strdup_printf("0x%x", item->address);
     gtk_label_set_text(GTK_LABEL(label), string);
     g_free(string);
 
@@ -231,7 +231,8 @@ static GtkWidget *create_cache_table(GListStore *model) {
     return scrolled_window;
 }
 
-static GtkWidget *create_cache_widget(Cache *cache, int level) {
+
+static GtkWidget *create_cache_widget(Cache *cache) {
     if (cache->separated) {
         GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
@@ -273,6 +274,7 @@ int has_breakpoint(const char *line) {
    }
    return *line == '!';
 }
+
 
 static GtkTextTag *highlight_tag = NULL;
 static GtkTextMark *previous_highlight_mark = NULL;
@@ -335,6 +337,9 @@ static void on_run_to_breakpoint_clicked(GtkButton *button, Computer *computer) 
     gtk_text_view_scroll_to_iter(computer->cpu.view, &start, 0.0, TRUE, 0.0, 0.5);
 }
 
+/**
+ * @brief Runs simulation when the step button is clicked
+ */
 static void on_step_button_clicked(GtkButton *button, Computer *computer) {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(computer->cpu.view);
     GtkTextIter start, end;
@@ -484,7 +489,7 @@ static GtkWidget *create_middle_section(Computer *computer) {
         GtkWidget *cache_label = gtk_label_new(title);
         gtk_box_append(GTK_BOX(cache_box), cache_label);
 
-        GtkWidget *cache_widget = create_cache_widget(&computer->cache[i], i + 1);
+        GtkWidget *cache_widget = create_cache_widget(&computer->cache[i]);
         gtk_widget_set_size_request(cache_widget, 150, 400);
         gtk_widget_set_hexpand(cache_widget, TRUE);
         gtk_widget_set_vexpand(cache_widget, TRUE);
