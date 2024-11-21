@@ -136,7 +136,7 @@ static void bind_first_access_cb(GtkSignalListItemFactory *factory, GtkListItem 
 static void bind_tag_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem) {
     GtkWidget *label = gtk_list_item_get_child(listitem);
     CacheLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
-    char *string = g_strdup_printf("%u", item->tag);
+    char *string = g_strdup_printf("0x%x", item->tag);
     gtk_label_set_text(GTK_LABEL(label), string);
 }
 
