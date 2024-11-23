@@ -1,7 +1,7 @@
 
 
-MODULES = src/gui.c src/dictionary.c src/confparser.c src/iniparser.c src/datamanipulation.c src/traceparser.c src/datastore.c src/datainterface.c src/simulator.c src/mappingpolicy.c src/writepolicy.c
-HEADERS = src/gui.h src/dictionary.h src/confparser.h src/iniparser.h src/datamanipulation.h src/traceparser.h src/datastore.h src/datainterface.h src/simulator.h src/computer.h src/mappingpolicy.h src/writepolicy.h
+MODULES = src/gui.c src/dictionary.c src/confparser.c src/iniparser.c src/datamanipulation.c src/traceparser.c src/datastore.c src/datainterface.c src/simulator.c src/mappingpolicy.c src/writepolicy.c src/replacementpolicy.c
+HEADERS = src/gui.h src/dictionary.h src/confparser.h src/iniparser.h src/datamanipulation.h src/traceparser.h src/datastore.h src/datainterface.h src/simulator.h src/computer.h src/mappingpolicy.h src/writepolicy.h src/replacementpolicy.h
 
 DEBUG=0
 COVER=0

@@ -31,59 +31,6 @@ void scroll_to_row(GtkWidget *column_view, int percentage) {
     gtk_adjustment_set_value(vadjustment, y);
 }
 
-/**
- * @brief Returns a via given a computer, cacheLevel and set
- * @param computer The computer
- * @param instructionOrData If the operation stores instructions or data
- * @param cacheLevel The level of the cache to operate in
- * @param set The line of the cache
- */
-int selectVia(Computer *computer, int instructionOrData, int cacheLevel, int set) {
-   struct cacheLine cacheData;
-   Cache *cache = &computer->cache[cacheLevel];
-   int lruLine = -1;
-   int lruTime = -1;
-   int lfuLine = -1;
-   int lfuCount = -1;
-   int fifoLine = -1;
-   int fifoTime = -1;
-   int firstLine = set*cache->associativity;
-   for(int i = 0, via = rand() % cache->associativity; i < cache->associativity; i++, via=(via+1) % cache->associativity) {
-      int line = firstLine + via;
-      read_flags_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
-      if(cacheData.valid == 0)
-         return line;
-      if(lruLine == -1 || lruTime > cacheData.lastAccess) {
-         lruLine = line;
-         lruTime = cacheData.lastAccess;
-      }
-      if(lfuLine == -1 || lfuCount > cacheData.accessCount) {
-         lfuLine = line;
-         lfuCount = cacheData.accessCount;
-      }
-      if(fifoLine == -1 || fifoTime > cacheData.firstAccess) {
-         fifoLine = line;
-         fifoTime = cacheData.firstAccess;
-      }
-   }
-   // LRU=0, LFU=1, RANDOM=2, FIFO=3
-   if(cache->replacement_policy == RANDOM) {
-      return set * cache->associativity
-             + rand() % cache->associativity;
-   }
-   else if(cache->replacement_policy == LRU) {
-      return lruLine;
-   }
-   else if(cache->replacement_policy == LFU) {
-      return lfuLine;
-   }
-   else if(cache->replacement_policy == FIFO) {
-      return fifoLine;
-   }
-   else
-      return set * cache->associativity;
-}
-
 
 void reset_memory(Computer *computer) {
 /*   GListStore *model = G_LIST_STORE(computer->memory.model);
@@ -151,27 +98,6 @@ void reset_cache(Computer *computer, int level){
       reset_cacheModel(computer, level, INSTRUCTION);
 }
 
-/**
- * This function shows all the values contained in the fields of a data cache line
- * @param level which will be shown
- * @param i line index
- */
-void show_line_from_cache(Computer *computer, int instructionOrData, int level, int i){
-   struct cacheLine line;
-   //first I read it
-   read_line_from_cache(computer, instructionOrData, level, &line, i);
-   char contentString[2000];
-   contentArrayToString(line.content, contentString, (computer->cache[level].line_size*8)/computer->cpu.word_width, computer->cpu.word_width/4);
-   //I print the values.
-   printf("------------------------------------------------------\n");
-   printf("line: %x     tag: %x    set: %x\n", line.line, line.tag, line.set);
-   printf("content: %s\n", contentString);
-   printf("user content: %s\n", (char*)line.user_content);
-   printf("valid: %d   dirty: %d   last accessed: %d  times accessed: %d  first accessed: %d\n",
-            line.valid, line.dirty, line.lastAccess, line.accessCount, line.firstAccess);
-   printf("------------------------------------------------------\n");
-   free(line.content);
-}
 
 /**
  * @brief For set associative cache and fully associative cache, find where the tag is located
@@ -259,7 +185,7 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
     cache_line->times_accessed++;
     cache_line->last_accessed = cycle;
 
-    // Notify the model that the item has changed
+    // Notify the model that the item has changed TODO This is broken, the model doesn't auto update anymore
     g_list_model_items_changed(model, lineNumber, 1, 1);
 
     // Scroll to the updated row
@@ -272,9 +198,9 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
     g_object_unref(item);
 }
 
-
+/*
 void read_flags_from_cache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber){
-   /* GtkTreeModel *model;
+   GtkTreeModel *model;
    GtkTreeIter iter;
    char *contentString;
 
@@ -294,8 +220,10 @@ void read_flags_from_cache(Computer *computer, int instructionOrData, int level,
          TIMES_ACCESSED, &line->accessCount,
          LAST_ACCESSED, &line->lastAccess,
          FIRST_ACCESSED, &line->firstAccess,
-         -1); */
-}
+         -1);
+} */
+
+
 /**
  * This function writes a cache line.
  * @param level which will be written

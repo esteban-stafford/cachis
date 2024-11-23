@@ -2,7 +2,8 @@
 #define DATAMANIPULATION_H
 
 #include "confparser.h"
-enum replacement {LRU=0, LFU=1, RANDOM=2, FIFO=3};
+#include "replacementpolicy.h"
+
 enum write_policy {WRITE_THROUGH=0, WRITE_BACK=1};
 
 char* replacementPolicyStr(enum replacement replacement);

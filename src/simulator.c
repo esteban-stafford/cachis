@@ -6,6 +6,7 @@
 #include "datamanipulation.h"
 #include "simulator.h"
 #include "mappingpolicy.h"
+#include "replacementpolicy.h"
 
 unsigned long cycle = 0;
 
@@ -16,7 +17,6 @@ void simPopulateCache(Computer *computer, struct memOperation *operation, char *
 void incrementDoubleStatistics(char *component, char *property, double value);
 void incrementIntegerStatistics(char *component, char *property, int value);
 void calculateRateStatistics(char *component, char *property, char *partial, char *total);
-int selectVia(Computer *computer, int instructionOrData, int cacheLevel, int set);
 
 
 /**
@@ -271,7 +271,7 @@ void simPopulateCache(Computer *computer, struct memOperation *operation, char *
             cacheData.content = response->data;
 
             // The via gets located and populated with the data
-            int via = selectVia(computer, operation->instructionOrData, cacheLevel, mappingResult.set);
+            int via = select_via_to_replace(computer, operation->instructionOrData, cacheLevel, mappingResult.set);
             write_line_to_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, via);
          } else {
             //TODO Implement Write Operations
