@@ -265,7 +265,7 @@ void simPopulateCache(Computer *computer, struct memOperation *operation, char *
          if(operation->operation == LOAD) {
             // Load operation
             struct cacheLine cacheData;
-            cacheData.dirty = 1;
+            cacheData.dirty = 0;
             cacheData.valid = 1;
             cacheData.tag = mappingResult.tag;
             cacheData.content = response->data;

@@ -48,20 +48,35 @@ void createMemoryModel(Computer *computer) {
     //g_object_unref(model);
 }
 
+/**
+ * @brief Initiates a cache.
+ * @param cache The cache to fill with cache lines
+ * @param data_or_instruction if the cache contains data or instructions
+ */
 void create_cache_list_store(Cache *cache, int data_or_instruction) {
     GListStore *model = g_list_store_new(CACHE_LINE_TYPE);
+
+    // The cache gets added num_lines lines.
     for (int i = 0; i < cache->num_lines; i++) {
         CacheLine *cache_line = g_object_new(CACHE_LINE_TYPE, NULL);
+
+        //The basic fields get initiated
         cache_line->line = i;
+        cache_line->set = (int) (i / cache->associativity);
+
+        // The cache line is appended to the model
         g_list_store_append(model, cache_line);
         g_object_unref(cache_line);
     }
+
+    // A pointer to the model is saved deppending on the type of the cache (D or I)
     if (data_or_instruction == 0) {
         cache->model_data = model;
     } else {
         cache->model_instruction = model;
     }
-    //g_object_unref(model);
+
+    // g_object_unref(model);
 }
 
 void createCacheModel(Cache *cache, int level) {
