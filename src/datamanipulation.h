@@ -3,8 +3,7 @@
 
 #include "confparser.h"
 #include "replacementpolicy.h"
-
-enum write_policy {WRITE_THROUGH=0, WRITE_BACK=1};
+#include "writepolicy.h"
 
 char* replacementPolicyStr(enum replacement replacement);
 char* writePolicyStr(enum write_policy write_policy);

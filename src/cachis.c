@@ -11,6 +11,7 @@
 #include "datastore.h"
 #include "gui.h"
 #include "simulator.h"
+#include "statistics.h"
 
 #define PROGRAM_NAME "cachis"
 #define VERSION "0.1"

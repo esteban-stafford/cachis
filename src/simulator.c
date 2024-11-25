@@ -7,6 +7,7 @@
 #include "simulator.h"
 #include "mappingpolicy.h"
 #include "replacementpolicy.h"
+#include "statistics.h"
 
 unsigned long cycle = 0;
 

@@ -56,11 +56,6 @@ int show_memory_address(Computer *computer, long address);
 int read_from_memory_address(Computer *computer, struct memoryPosition *pos, long address);
 int write_to_memory_address(Computer *computer, struct memoryPosition *pos, long address);
 
-//Statistics
-void set_statistics(char* component, char* property, char* value);
-char* get_statistics(char* component, char* property);
-void print_statistics(FILE* fp);
-
 //Misc
 void remove_all_colors();
 
