@@ -9,7 +9,7 @@
  * @param operation The operation to perform
  * @param response Structure where the result will get stored
  */
-void set_associative(Computer *computer, int cacheLevel, struct memOperation *operation, MappingResult *result){
+void set_associative(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *result){
       // The tag set and offset get calculated
       unsigned shift;
       unsigned non_masked_address;
@@ -43,7 +43,7 @@ void set_associative(Computer *computer, int cacheLevel, struct memOperation *op
  * @param operation The operation to perform
  * @param response Structure where the result will get stored
  */
-void direct_associative(Computer *computer, int cacheLevel, struct memOperation *operation, MappingResult *result){
+void direct_associative(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *result){
       // It is calculated in the same way as set_associative, the only difference is that direct_associative uses sets of 1 instead of n
       // This only affects the way the cache replaces and accesses data, not how it calculates the fields.
       set_associative(computer, cacheLevel, operation, result);
@@ -57,7 +57,7 @@ void direct_associative(Computer *computer, int cacheLevel, struct memOperation 
  * @param operation The operation to perform
  * @param response Structure where the result will get stored
  */
-void fully_associative(Computer *computer, int cacheLevel, struct memOperation *operation, MappingResult *result){
+void fully_associative(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *result){
       // The tag and offset get calculated, since any line of the cache can be populated with any address, the set doesn't need to be calculated
       /*
        * ---------------------------

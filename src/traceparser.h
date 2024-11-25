@@ -12,23 +12,23 @@ enum loadOrStore { LOAD=3, STORE=4 };
 #define DEFAULT_OPERATION_TYPE 0;
 #define DEFAULT_ADDRESS 0;
 
-struct memOperation {
+typedef struct {
   int hasBreakPoint;
   int instructionOrData;
   long address;
   int operation;
   int size;
   long data;
-};
+} MemoryOperation;
 
 //array que almacena las operations de memory leidas del file de trace
-extern struct memOperation* memoryOperations;
+extern MemoryOperation* memoryOperations;
 extern int numberOfOperations;
 
 int readTraceFile(Computer *computer);
 void freeMemory();
 void showOperations(Cpu *cpu);
 int preprocessTraceLine(char *currentLine);
-int parseLine(char* line, int lineNumber, struct memOperation *result, int defaultSize, Memory *memory);
-void printMemOperation(FILE *fp, struct memOperation *operation, int cpu_address_width);
+int parseLine(char* line, int lineNumber, MemoryOperation *result, int defaultSize, Memory *memory);
+void printMemOperation(FILE *fp, MemoryOperation *operation, int cpu_address_width);
 #endif

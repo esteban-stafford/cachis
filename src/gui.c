@@ -259,7 +259,7 @@ int step_trace_line(char *line, Computer *computer) {
    if(!preprocessTraceLine(line)) {
       return 1;
    }
-   struct memOperation operation;
+   MemoryOperation operation;
    if(parseLine(line, -1, &operation, computer->cpu.word_width/8, &computer->memory) == -1) {
         return 1;
    }

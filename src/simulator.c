@@ -12,12 +12,12 @@
 unsigned long cycle = 0;
 
 /* Private functions */
-void simFindInCache(Computer *computer, struct memOperation *operation, char *cacheName, struct response_type *response);
-void simOperateMemory(Computer *computer, struct memOperation *operation, char *cacheName, struct response_type *response);
-void simPopulateCache(Computer *computer, struct memOperation *operation, char *cacheName, struct response_type *response);
-void incrementDoubleStatistics(char *component, char *property, double value);
-void incrementIntegerStatistics(char *component, char *property, int value);
-void calculateRateStatistics(char *component, char *property, char *partial, char *total);
+void sim_find_in_cache(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response);
+void sim_operate_memory(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response);
+void sim_populate_cache(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response);
+void increment_double_statistics(char *component, char *property, double value);
+void increment_integer_statistics(char *component, char *property, int value);
+void calculate_rate_statistics(char *component, char *property, char *partial, char *total);
 
 
 /**
@@ -35,10 +35,10 @@ void simulate(Computer *computer) {
  * @param computer The computer to execute the operation
  * @param operation The operation to be executed
  */
-void simulate_step(Computer *computer, struct memOperation *operation) {
+void simulate_step(Computer *computer, MemoryOperation *operation) {
    printf("---> Cycle %lu\n", cycle);
    // The response gets initiated
-   struct response_type response;
+   ResponseType response;
    response.size = operation->size/4;
    response.address = operation->address;
    response.time = 0.0;
@@ -49,24 +49,24 @@ void simulate_step(Computer *computer, struct memOperation *operation) {
 
    printf("Simulating operation: ");
    printMemOperation(stdout, operation, computer->cpu.address_width);
-   incrementIntegerStatistics("CPU", "Accesses", 1);
+   increment_integer_statistics("CPU", "Accesses", 1);
  
    // Try to find the value in the caches
-   simFindInCache(computer, operation, cacheName, &response);
+   sim_find_in_cache(computer, operation, cacheName, &response);
 
    // If no cache level resolved the request, the memory gets accessed
    if (response.resolved < 0) {
-      simOperateMemory(computer, operation, cacheName, &response);
+      sim_operate_memory(computer, operation, cacheName, &response);
    }
 
    // Lastly, since the data has been requested by the CPU, all levels above response.resolved have to been populated
    // until it reaches the top level the CPU has access to.
-   simPopulateCache(computer, operation, cacheName, &response);
+   sim_populate_cache(computer, operation, cacheName, &response);
 
    // The action gets printed
    printf("Got %d\n",response.data[0]);      // The data that was operated with
    free(response.data);
-   incrementDoubleStatistics("Totals", "Access Time", response.time);
+   increment_double_statistics("Totals", "Access Time", response.time);
    cycle++;
 
    // And all the statistics also get printed as well
@@ -79,11 +79,11 @@ void simulate_step(Computer *computer, struct memOperation *operation) {
 /**
  * @brief Iterates through all caches to find if a value is in cache and updates response.
  * @param computer The computer.
- * @param memOperation The operation to perform on the caches.
+ * @param operation The operation to perform on the caches.
  * @param charName Printinf information.
  * @param response Statistics about the access. Will get updated with time and the level of cache that contains the data.
  */
-void simFindInCache(Computer *computer, struct memOperation *operation, char *cacheName, struct response_type *response) {
+void sim_find_in_cache(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response) {
    // Iterate through all the cache levels
    for(int cacheLevel = 0; cacheLevel < computer->num_caches; cacheLevel++){
       MappingResult mappingResult;
@@ -104,7 +104,7 @@ void simFindInCache(Computer *computer, struct memOperation *operation, char *ca
       response->time += computer->cache[cacheLevel].access_time;
 
       // The number of accesses gets incremented by one
-      incrementIntegerStatistics(cacheName, "Accesses", 1);
+      increment_integer_statistics(cacheName, "Accesses", 1);
 
       // Find tag in cache
       line = find_tag_in_cache(computer, operation->instructionOrData, cacheLevel, mappingResult.set, mappingResult.tag);
@@ -121,12 +121,12 @@ void simFindInCache(Computer *computer, struct memOperation *operation, char *ca
          printf(">   %s: Hit (%ld)\n", cacheName, line);
 
          // The statistics get updated
-         incrementIntegerStatistics(cacheName, "Hits", 1);
-         calculateRateStatistics(cacheName, "Hit Rate", "Hits", "Accesses");
-         calculateRateStatistics(cacheName, "Miss Rate", "Misses", "Accesses");
+         increment_integer_statistics(cacheName, "Hits", 1);
+         calculate_rate_statistics(cacheName, "Hit Rate", "Hits", "Accesses");
+         calculate_rate_statistics(cacheName, "Miss Rate", "Misses", "Accesses");
 
          // A response gets prepared
-         struct cacheLine cacheData;
+         CacheLineContent cacheData;
          cacheData.content = malloc((sizeof(long))*computer->cache[cacheLevel].num_words);
 
          // Read data from cache into response
@@ -147,9 +147,9 @@ void simFindInCache(Computer *computer, struct memOperation *operation, char *ca
          printf(">   %s: Miss 2^%d-1 = %f\n", cacheName,computer->cache[cacheLevel].offset_bits, pow(2,computer->cache[cacheLevel].offset_bits)-1);
 
          // The statistics get updated
-         incrementIntegerStatistics(cacheName, "Misses", 1);
-         calculateRateStatistics(cacheName, "Hit Rate", "Hits", "Accesses");
-         calculateRateStatistics(cacheName, "Miss Rate", "Misses", "Accesses");
+         increment_integer_statistics(cacheName, "Misses", 1);
+         calculate_rate_statistics(cacheName, "Hit Rate", "Hits", "Accesses");
+         calculate_rate_statistics(cacheName, "Miss Rate", "Misses", "Accesses");
 
          // If the operation is a LOAD
          if (operation->operation == LOAD) {
@@ -172,20 +172,20 @@ void simFindInCache(Computer *computer, struct memOperation *operation, char *ca
 /**
  * @brief Accesses memory to load or store data.
  * @param computer The computer.
- * @param memOperation The operation to perform on the memory.
+ * @param operation The operation to perform on the memory.
  * @param charName Printinf information.
  * @param response Statistics about the access.
  */
-void simOperateMemory(Computer *computer, struct memOperation *operation, char *cacheName, struct response_type *response) {
+void sim_operate_memory(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response) {
    // Remember that the memory resolved the request
    response->resolved = computer->num_caches;    // The number of caches is used to signify that it has been through all of them
 
    // Statistics get updated
-   incrementIntegerStatistics("Memory", "Accesses", response->size);
+   increment_integer_statistics("Memory", "Accesses", response->size);
 
    // If the operation is a LOAD
    if(operation->operation == LOAD) {
-      struct memoryPosition pos;
+      MemoryPosition pos;
 
       // The time to access the main memory is noted
       response->time += computer->memory.access_time_1;
@@ -201,7 +201,7 @@ void simOperateMemory(Computer *computer, struct memOperation *operation, char *
          response->data[i] = pos.content;
       }
    } else {       // If the operation is a STORE      // TODO. Check if a write policy needs to be implemented into this
-      struct memoryPosition pos;
+      MemoryPosition pos;
 
       //The address and content gets noted
       pos.address = operation->address;
@@ -226,11 +226,11 @@ void simOperateMemory(Computer *computer, struct memOperation *operation, char *
 /**
  * @brief Populates all caches above the line that resolved the request
  * @param computer The computer.
- * @param memOperation The operation to perform on the caches.
+ * @param operation The operation to perform on the caches.
  * @param charName Printinf information.
  * @param response Statistics about the access.
  */
-void simPopulateCache(Computer *computer, struct memOperation *operation, char *cacheName, struct response_type *response) {
+void sim_populate_cache(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response) {
    // Iterate backwards through all the cache levels that were involved in request
    for (int cacheLevel = response->resolved-1; cacheLevel >= 0; cacheLevel--){
       MappingResult mappingResult;
@@ -265,7 +265,7 @@ void simPopulateCache(Computer *computer, struct memOperation *operation, char *
          printf("<   %s: Miss\n", cacheName);
          if(operation->operation == LOAD) {
             // Load operation
-            struct cacheLine cacheData;
+            CacheLineContent cacheData;
             cacheData.dirty = 0;
             cacheData.valid = 1;
             cacheData.tag = mappingResult.tag;
@@ -285,7 +285,7 @@ void simPopulateCache(Computer *computer, struct memOperation *operation, char *
 }
 
 
-void incrementDoubleStatistics(char *component, char *property, double value) {
+void increment_double_statistics(char *component, char *property, double value) {
    double oldValue = 0.0;
    char *oldValueString = get_statistics(component,property);
    if(oldValueString) 
@@ -295,7 +295,7 @@ void incrementDoubleStatistics(char *component, char *property, double value) {
    set_statistics(component, property, tmp);
 }
 
-void incrementIntegerStatistics(char *component, char *property, int value) {
+void increment_integer_statistics(char *component, char *property, int value) {
    int oldValue = 0.0;
    char *oldValueString = get_statistics(component,property);
    if(oldValueString) 
@@ -305,7 +305,7 @@ void incrementIntegerStatistics(char *component, char *property, int value) {
    set_statistics(component, property, tmp);
 }
 
-void calculateRateStatistics(char *component, char *property, char *partialName, char *totalName) {
+void calculate_rate_statistics(char *component, char *property, char *partialName, char *totalName) {
    double partial = 0.0;
    double total = 0.0;
    char *valueString = get_statistics(component,partialName);

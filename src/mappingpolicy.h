@@ -10,8 +10,8 @@ typedef struct {
    unsigned offset;
 } MappingResult;
 
-void direct_associative(Computer *computer, int cacheLevel, struct memOperation *operation, MappingResult *result);
-void set_associative(Computer *computer, int cacheLevel, struct memOperation *operation, MappingResult *result);
-void fully_associative(Computer *computer, int cacheLevel, struct memOperation *operation, MappingResult *result);
+void direct_associative(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *result);
+void set_associative(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *result);
+void fully_associative(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *result);
 
 #endif

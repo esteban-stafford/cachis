@@ -60,7 +60,7 @@ int select_via_to_replace(Computer *computer, int instructionOrData, int cacheLe
  */
 int replacement_lru(Computer *computer, int instructionOrData, int cacheLevel, int first_line, int last_line) {
    Cache *cache = &computer->cache[cacheLevel];
-   struct cacheLine cacheData;
+   CacheLineContent cacheData;
 
    int lruLine = -1;
    int lruTime = -1;
@@ -93,7 +93,7 @@ int replacement_lru(Computer *computer, int instructionOrData, int cacheLevel, i
  */
 int replacement_lfu(Computer *computer, int instructionOrData, int cacheLevel, int first_line, int last_line) {
    Cache *cache = &computer->cache[cacheLevel];
-   struct cacheLine cacheData;
+   CacheLineContent cacheData;
 
    int lfuLine = -1;
    int lfuCount = -1;
@@ -138,7 +138,7 @@ int replacement_random(int first_line, int last_line) {
  */
 int replacement_fifo(Computer *computer, int instructionOrData, int cacheLevel, int first_line, int last_line) {
    Cache *cache = &computer->cache[cacheLevel];
-   struct cacheLine cacheData;
+   CacheLineContent cacheData;
 
    int fifoLine = -1;
    int fifoTime = -1;

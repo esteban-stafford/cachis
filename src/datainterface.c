@@ -150,7 +150,7 @@ long find_tag_in_cache(Computer *computer, int instructionOrData, int level, uns
  * @param line. A pointer to a struct cacheLine were data will be placed. User must free line.content after calling the function. 
  * @param i line index
  */
-void read_line_from_cache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber) {
+void read_line_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, int lineNumber) {
     GListModel *model;
     GtkColumnView *view;
 
@@ -199,7 +199,7 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
 }
 
 /*
-void read_flags_from_cache(Computer *computer, int instructionOrData, int level, struct cacheLine* line, int lineNumber){
+void read_flags_from_cache(Computer *computer, int instructionOrData, int level, CacheLine* line, int lineNumber){
    GtkTreeModel *model;
    GtkTreeIter iter;
    char *contentString;
@@ -230,7 +230,7 @@ void read_flags_from_cache(Computer *computer, int instructionOrData, int level,
  * @param line. A pointer to a struct cacheLine containing the data to be written.
  * @param i line index
  */
-void write_line_to_cache(Computer *computer, int instructionOrData, int level, struct cacheLine *line, unsigned lineNumber) {
+void write_line_to_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, unsigned lineNumber) {
     GListModel *model;
     GtkColumnView *view;
     char contentString[2000];
@@ -284,7 +284,7 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, s
  * @return 0 if correct -1 if not word address error, -2 if out of page error
  */
 int show_memory_address(Computer *computer, long address){
-   /* struct memoryPosition pos;
+   /* MemoryPosition pos;
    //I read the memory position
    int returned=read_from_memory_address(computer, &pos, address);
    if(returned!=0){
@@ -312,7 +312,7 @@ void set_row_color(Computer *computer, int row_index, const char *color) {
  * @param address is the memory address
  * @return 0 if correct -1 if not word address error, -2 if out of page error
  */
-int read_from_memory_address(Computer *computer, struct memoryPosition *pos, long address) {
+int read_from_memory_address(Computer *computer, MemoryPosition *pos, long address) {
     GListModel *model = G_LIST_MODEL(computer->memory.model);
     GtkColumnView *view = GTK_COLUMN_VIEW(computer->memory.view);
 
@@ -352,7 +352,7 @@ int read_from_memory_address(Computer *computer, struct memoryPosition *pos, lon
  * @param address is the memory address
  * @return 0 if correct -1 if not word address error, -2 if out of page error
  */
-int write_to_memory_address(Computer *computer, struct memoryPosition *pos, long address) {
+int write_to_memory_address(Computer *computer, MemoryPosition *pos, long address) {
     GListModel *model = G_LIST_MODEL(computer->memory.model);
     GtkColumnView *view = GTK_COLUMN_VIEW(computer->memory.view);
 

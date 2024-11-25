@@ -7,7 +7,7 @@
 #include "traceparser.h"
 //#include "datastore.h"
 
-struct memOperation* memoryOperations = NULL;
+MemoryOperation* memoryOperations = NULL;
 int numberOfOperations = 0;
 
 // Private functions
@@ -17,17 +17,17 @@ int countLines(FILE* fp);
  * Parse a trace line. It receives a string with the trace line and its line number in the trace file.
  * It returns by reference a structure with the parsed information.
  */
-int parseLine(char* line, int lineNumber, struct memOperation *result, int defaultSize, Memory *memory){
+int parseLine(char* line, int lineNumber, MemoryOperation *result, int defaultSize, Memory *memory){
 #if DEBUG
    fprintf(stderr,"Parsing trace line --%s--\n", line);
 #endif
    // Set default values for optional fields
    int hasBreakPoint=DEFAULT_HAS_BREAK_POINT;
-   int size=defaultSize; 
+   int size=defaultSize;
    long data=DEFAULT_DATA;
    int instructionOrData=DEFAULT_INSTRUCTION_OR_DATA;
    int operation=DEFAULT_OPERATION_TYPE;
-   long address=DEFAULT_ADDRESS; 
+   long address=DEFAULT_ADDRESS;
 
 
    // Check wether it is a breakpoint line
@@ -50,7 +50,7 @@ int parseLine(char* line, int lineNumber, struct memOperation *result, int defau
                return -1;
             }
             operation = *pch == 'L' ? LOAD : STORE;
-            break; 
+            break;
          case 1: // Address (Must be hexadecimal)
             if(!isCorrectHexadecimal(pch)){
                print_error_message("invalid address.", lineNumber);
@@ -93,15 +93,15 @@ int parseLine(char* line, int lineNumber, struct memOperation *result, int defau
          case 4: // Data (Must be a number)
             if(!isCorrectDecimal(pch)){
                print_error_message("invalid data.", lineNumber);
-               return -1;					
+               return -1;
             }
             data = atol(pch);
             if(operation==LOAD){
                print_error_message("you can not use the data field in load (L) operations.", lineNumber);
-               return -1;		
+               return -1;
             }
             if(ceil(log(data+1)/log(2))>(size*8)){
-	       
+
                sprintf(message,"data value is too large to be stored in %d bytes.", defaultSize);
                print_error_message(message, lineNumber);
                return -1;
@@ -127,13 +127,13 @@ int parseLine(char* line, int lineNumber, struct memOperation *result, int defau
        result->data=data;
        result->instructionOrData=instructionOrData;
        result->operation=operation;
-       result->address=address; 
+       result->address=address;
 
    }
    return 0;
 }
 
-void printMemOperation(FILE *fp, struct memOperation *operation, int cpu_address_width){
+void printMemOperation(FILE *fp, MemoryOperation *operation, int cpu_address_width){
    fprintf(fp, operation->hasBreakPoint ? "! " : "  ");
    fprintf(fp, operation->operation==LOAD ? "L " : "S ");
    fprintf(fp, "%0*lx ", (int)cpu_address_width/4, operation->address);
@@ -152,7 +152,7 @@ void showOperations(Cpu *cpu){
    }
 }
 
-/** 
+/**
  * Remove comments and other string operations on a line from a trace file.
  * Returns 1 if the line is not empty, after removing the comments.
  */
@@ -208,7 +208,7 @@ int readTraceFile(Computer *computer){
       else
          gtk_text_buffer_set_text(computer->cpu.buffer, "", -1);
    } else {
-      if((memoryOperations = malloc(sizeof(struct memOperation)*numberOfLines)) == NULL){
+      if((memoryOperations = malloc(sizeof(MemoryOperation)*numberOfLines)) == NULL){
          fprintf(stderr,"Execution failure: It was not possible to allocate memory.\n");
          return -1;
       }
@@ -225,7 +225,7 @@ int readTraceFile(Computer *computer){
       if(!preprocessTraceLine(currentLine)){
          continue;
       }
-      struct memOperation *currentMemOperation=NULL;
+      MemoryOperation *currentMemOperation=NULL;
       //if there is not gui data will be stored. I there is gui thre is not need to store as lines will be parsed at execution time
       if(!useGUI){
          currentMemOperation=&memoryOperations[numberOfOperations++];
@@ -234,7 +234,7 @@ int readTraceFile(Computer *computer){
       	      errors++;
       }
    }
- 
+
    if(errors==0){
 #if DEBUG
       if(!useGUI){
