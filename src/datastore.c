@@ -34,16 +34,32 @@ static void cache_line_init(CacheLine *cache_line) {
 
 static void cache_line_class_init(CacheLineClass *class) { }
 
+
+/**
+ * @brief Creates and populates the memory model
+ * @param computer The computer that contains the memory and the model structure
+ */
 void createMemoryModel(Computer *computer) {
+    // The model gets created
     GListStore *model = g_list_store_new(MEMORY_TYPE_LINE);
-    for (unsigned long i = computer->memory.page_base_address; 
+    int j = 0;
+
+    // From the first to the last memory address in the trace
+    for (unsigned long i = computer->memory.page_base_address;
          i < computer->memory.page_base_address + computer->memory.page_size; 
-         i += (computer->cpu.word_width / 8)) {
+         i += (computer->cpu.word_width / 8), j++) {
+
+        // A new memory line gets created
         MemoryLine *memory_line = g_object_new(MEMORY_TYPE_LINE,NULL);
         memory_line->address = i;
+        memory_line->content = j;                   // Its value gets initiated to an increasing number
+
+        // The line gets added to the model
         g_list_store_append(model, memory_line);
         g_object_unref(memory_line);
     }
+
+    // A pointer to the model gets saved in the memory struct
     computer->memory.model = model;
     //g_object_unref(model);
 }

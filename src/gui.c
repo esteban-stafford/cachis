@@ -43,7 +43,7 @@ static void bind_content_cb(GtkSignalListItemFactory *factory, GtkListItem *list
     GtkWidget *box = gtk_list_item_get_child(listitem);
     GtkWidget *label = gtk_widget_get_first_child(box);
     MemoryLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
-    char *string = g_strdup_printf("%d", item->content);
+    char *string = g_strdup_printf("0x%x", item->content);
     gtk_label_set_text(GTK_LABEL(label), string);
     g_free(string);
 

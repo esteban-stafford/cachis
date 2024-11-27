@@ -16,6 +16,8 @@
 #define PROGRAM_NAME "cachis"
 #define VERSION "0.1"
 
+
+
 void printUsage() {
    printf(
       "Usage: %s [OPTION]... <file>.ini [<file>.vca]\n"
@@ -107,6 +109,8 @@ int main(int argc, char *argv[]) {
        launch_gui(1, argv, &computer);
     // ... or run batch simulation
     } else {
+       printf("Running Cachis in CLI mode\n");
+       printf("-> Starting simulation:\n");
        simulate(&computer);
        print_statistics(stdout);
     }
