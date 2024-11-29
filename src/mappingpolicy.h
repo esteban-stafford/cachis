@@ -5,13 +5,13 @@
 #include "simulator.h"
 
 typedef struct {
-   unsigned tag;
-   unsigned set;
-   unsigned offset;
+    unsigned tag;
+    unsigned set;
+    unsigned offset;
 } MappingResult;
 
-void direct_associative(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *result);
-void set_associative(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *result);
-void fully_associative(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *result);
+void direct_associative(Cache *cache, MemoryOperation *operation, MappingResult *result);
+void set_associative(Cache *cache, MemoryOperation *operation, MappingResult *result);
+void fully_associative(Cache *cache, MemoryOperation *operation, MappingResult *result);
 
 #endif

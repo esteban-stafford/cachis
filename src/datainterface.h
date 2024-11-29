@@ -40,7 +40,9 @@ typedef struct {
 
 extern char *interfaceError;
 
-
+//CacheLine related functions
+unsigned read_word_from_cache_line(Computer *computer, CacheLineContent *line, int wordNumber);
+void write_word_from_cache_line(Computer *computer, CacheLineContent *line, int wordNumber);
 
 //Cache related functions
 void reset_cache(Computer *computer, int level);

@@ -1,9 +1,14 @@
 #ifndef WRITEPOLICY_H
 #define WRITEPOLICY_H
 
+#include "computer.h"
+#include "datainterface.h"
+#include "traceparser.h"
+#include "simulator.h"
+#include "statistics.h"
+
 enum write_policy {WRITE_THROUGH=0, WRITE_BACK=1};
 
-void write_through();
-void write_back();
-
+void write_back(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response, int cacheLine);
+void write_through(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response);
 #endif

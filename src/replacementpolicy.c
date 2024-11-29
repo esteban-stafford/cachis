@@ -17,38 +17,29 @@ int replacement_fifo(Computer *computer, int instructionOrData, int cacheLevel, 
  * @param cacheLevel The level of the cache to operate in
  * @param set The line of the cache
  */
-int select_via_to_replace(Computer *computer, int instructionOrData, int cacheLevel, int set) {
-   Cache *cache = &computer->cache[cacheLevel];
+int select_line_to_replace(Computer *computer, int instructionOrData, int cacheLevel, int set) {
+    Cache *cache = &computer->cache[cacheLevel];
 
-   //TODO Finish documenting this and move everything ro replacementpolicy.c
-   // Values for the different replacement policies get initiated
-   int lruLine = -1;
-   int lruTime = -1;
-   int lfuLine = -1;
-   int lfuCount = -1;
-   int fifoLine = -1;
-   int fifoTime = -1;
+    //The first and last lines of the set are calculated
+    int first_line = set * cache->associativity;
+    int last_line = first_line + cache->associativity;
 
-   //The first and last lines of the set are calculated
-   int first_line = set * cache->associativity;
-   int last_line = first_line + cache->associativity;
+    switch (cache->replacement_policy) {
+        case LRU:
+            return replacement_lru(computer, instructionOrData, cacheLevel, first_line, last_line);
 
-   switch (cache->replacement_policy) {
-      case LRU:
-         return replacement_lru(computer, instructionOrData, cacheLevel, first_line, last_line);
+        case LFU:
+            return replacement_lfu(computer, instructionOrData, cacheLevel, first_line, last_line);
 
-      case LFU:
-         return replacement_lfu(computer, instructionOrData, cacheLevel, first_line, last_line);
+        case RANDOM:
+            return replacement_random(first_line, last_line);
 
-      case RANDOM:
-         return replacement_random(first_line, last_line);
+        case FIFO:
+            return replacement_fifo(computer, instructionOrData, cacheLevel, first_line, last_line);
 
-      case FIFO:
-         return replacement_fifo(computer, instructionOrData, cacheLevel, first_line, last_line);
-
-      default:
-         return set * cache->associativity;        // If the replacement policy is not defined, replace the first line in the set
-   }
+        default:
+            return set * cache->associativity;          // If the replacement policy is not defined, replace the first line in the set
+    }
 }
 
 
@@ -59,29 +50,29 @@ int select_via_to_replace(Computer *computer, int instructionOrData, int cacheLe
  * @return The line that has been picked to be replaced
  */
 int replacement_lru(Computer *computer, int instructionOrData, int cacheLevel, int first_line, int last_line) {
-   Cache *cache = &computer->cache[cacheLevel];
-   CacheLineContent cacheData;
+    Cache *cache = &computer->cache[cacheLevel];
+    CacheLineContent cacheData;
 
-   int lruLine = -1;
-   int lruTime = -1;
+    int lruLine = -1;
+    int lruTime = -1;
 
-   // The set is iterated to find the line that should be replaced
-   for (int line = first_line; line <= last_line; line++){
-      // The line is read
-      read_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
+    // The set is iterated to find the line that should be replaced
+    for (int line = first_line; line <= last_line; line++){
+        // The line is read
+        read_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
 
-      // If the line contains invalid data, it gets replaced by default
-      if (cacheData.valid == 0){
-         return line;
-      }
+        // If the line contains invalid data, it gets replaced by default
+        if (cacheData.valid == 0){
+            return line;
+        }
 
-      // If there is not a candidate for replacement or the line has been accessed less than the previous ones, it gets updated
-      if(lruLine == -1 || lruTime > cacheData.lastAccess) {
-         lruLine = line;
-         lruTime = cacheData.lastAccess;
-      }
-   }
-   return lruLine;
+        // If there is not a candidate for replacement or the line has been accessed less than the previous ones, it gets updated
+        if(lruLine == -1 || lruTime > cacheData.lastAccess) {
+            lruLine = line;
+            lruTime = cacheData.lastAccess;
+        }
+    }
+    return lruLine;
 }
 
 
@@ -92,29 +83,29 @@ int replacement_lru(Computer *computer, int instructionOrData, int cacheLevel, i
  * @return The line that has been picked to be replaced
  */
 int replacement_lfu(Computer *computer, int instructionOrData, int cacheLevel, int first_line, int last_line) {
-   Cache *cache = &computer->cache[cacheLevel];
-   CacheLineContent cacheData;
+    Cache *cache = &computer->cache[cacheLevel];
+    CacheLineContent cacheData;
 
-   int lfuLine = -1;
-   int lfuCount = -1;
+    int lfuLine = -1;
+    int lfuCount = -1;
 
-   // The set is iterated to find the line that should be replaced
-   for (int line = first_line; line <= last_line; line++){
+    // The set is iterated to find the line that should be replaced
+    for (int line = first_line; line <= last_line; line++){
 			// The line is read
-      read_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
+        read_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
 
 			// If the line contains invalid data, it gets replaced by default
-      if (cacheData.valid == 0){
-         return line;
+        if (cacheData.valid == 0){
+            return line;
 			}
 
 			// If there is not a candidate for replacement or the line has been accessed less than the previous ones, it gets updated
-      if (lfuLine == -1 || lfuCount < cacheData.accessCount) {
-         lfuLine = line;
-         lfuCount = cacheData.accessCount;
-      }
-   }
-   return lfuLine;
+        if (lfuLine == -1 || lfuCount < cacheData.accessCount) {
+            lfuLine = line;
+            lfuCount = cacheData.accessCount;
+        }
+    }
+    return lfuLine;
 }
 
 
@@ -125,7 +116,7 @@ int replacement_lfu(Computer *computer, int instructionOrData, int cacheLevel, i
  * @return The line that has been picked to be replaced
  */
 int replacement_random(int first_line, int last_line) {
-      return first_line + rand() % (first_line - last_line);
+        return first_line + rand() % (first_line - last_line);
 }
 
 
@@ -137,27 +128,27 @@ int replacement_random(int first_line, int last_line) {
  * @return The line that has been picked to be replaced
  */
 int replacement_fifo(Computer *computer, int instructionOrData, int cacheLevel, int first_line, int last_line) {
-   Cache *cache = &computer->cache[cacheLevel];
-   CacheLineContent cacheData;
+    Cache *cache = &computer->cache[cacheLevel];
+    CacheLineContent cacheData;
 
-   int fifoLine = -1;
-   int fifoTime = -1;
+    int fifoLine = -1;
+    int fifoTime = -1;
 
-   // The set is iterated to find the line that should be replaced
-   for (int line = first_line; line <= last_line; line++){
+    // The set is iterated to find the line that should be replaced
+    for (int line = first_line; line <= last_line; line++){
 			// The line is read
-      read_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
+        read_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
 
 			// If the line contains invalid data, it gets replaced by default
-      if (cacheData.valid == 0){
-         return line;
+        if (cacheData.valid == 0){
+            return line;
 			}
 
 			// If there is not a candidate for replacement or the selected line is newer than the current one, the line gets updated
-      if (fifoLine == -1 || fifoTime < cacheData.firstAccess) {
-         fifoLine = line;
-         fifoTime = cacheData.firstAccess;
-      }
-   }
-   return fifoLine;
+        if (fifoLine == -1 || fifoTime < cacheData.firstAccess) {
+            fifoLine = line;
+            fifoTime = cacheData.firstAccess;
+        }
+    }
+    return fifoLine;
 }

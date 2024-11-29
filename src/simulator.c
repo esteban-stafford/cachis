@@ -12,21 +12,19 @@
 unsigned long cycle = 0;
 
 /* Private functions */
-void sim_find_in_cache(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response);
-void sim_operate_memory(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response);
-void sim_populate_cache(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response);
-void increment_double_statistics(char *component, char *property, double value);
-void increment_integer_statistics(char *component, char *property, int value);
-void calculate_rate_statistics(char *component, char *property, char *partial, char *total);
+void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response);
+void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response);
+void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response);
+void get_mapping(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *mappingResult);
 
 
 /**
  * @brief Executes all the memory operations in one go
  */
 void simulate(Computer *computer) {
-   for(int i=0; i<numberOfOperations; i++){
-      simulate_step(computer, &memoryOperations[i]);
-   }
+    for(int i=0; i<numberOfOperations; i++){
+        simulate_step(computer, &memoryOperations[i]);
+    }
 }
 
 
@@ -36,136 +34,146 @@ void simulate(Computer *computer) {
  * @param operation The operation to be executed
  */
 void simulate_step(Computer *computer, MemoryOperation *operation) {
-   printf("---> Cycle %lu\n", cycle);
-   // The response gets initiated
-   ResponseType response;
-   response.size = operation->size/4;
-   response.address = operation->address;
-   response.time = 0.0;
-   response.data = malloc((sizeof(unsigned)));
-   response.data[0] = operation->data;
-   response.resolved = -1;
-   char cacheName[20];
+    printf("---> Cycle %lu\n", cycle);
 
-   printf("Simulating operation: ");
-   printMemOperation(stdout, operation, computer->cpu.address_width);
-   increment_integer_statistics("CPU", "Accesses", 1);
- 
-   // Try to find the value in the caches
-   sim_find_in_cache(computer, operation, cacheName, &response);
+    // The response gets initiated
+    ResponseType response;
+    response.size = operation->size/4;
+    response.address = operation->address;
+    response.data = malloc((sizeof(unsigned)));
+    response.data[0] = operation->data;
+    response.resolved = -1;
 
-   // If no cache level resolved the request, the memory gets accessed
-   if (response.resolved < 0) {
-      sim_operate_memory(computer, operation, cacheName, &response);
-   }
-
-   // Lastly, since the data has been requested by the CPU, all levels above response.resolved have to been populated
-   // until it reaches the top level the CPU has access to.
-   sim_populate_cache(computer, operation, cacheName, &response);
-
-   // The action gets printed
-   printf("Got %d\n",response.data[0]);      // The data that was operated with
-   free(response.data);
-   increment_double_statistics("Totals", "Access Time", response.time);
-   cycle++;
-
-   // And all the statistics also get printed as well
-   print_statistics(stdout);
+    Stats stats;
+    init_statistics(&stats);
 
 
-   printf("\n----------------\n\n");
+    printf("Simulating operation: ");
+    printMemOperation(stdout, operation, computer->cpu.address_width);
+    increment_integer_statistics("CPU", "Accesses", 1);
+
+    // If the operation is a LOAD
+    if (operation->operation == LOAD) {
+        // Try to find the value in the caches
+        find_in_cache(computer, operation, &stats, &response);
+
+        // If no cache level resolved the request, the memory gets accessed
+        if (response.resolved < 0) {
+            read_from_memory(computer, operation, &stats, &response);
+        }
+
+        // Lastly, since the data has been requested by the CPU, all levels above response.resolved have to been populated
+        // until it reaches the top level the CPU has access to.
+        populate_cache(computer, operation, &stats, &response);
+
+    } else {            // If the operation is a STORE
+        // If the policy of the first level is WRITE_THROUGH
+        if (computer->cache[0].write_policy == WRITE_THROUGH) {
+            // The whole cache gets checked to see if the data is available
+            find_in_cache(computer, operation, &stats, &response);
+
+            // If no cache level resolved the request, the memory gets accessed
+            if (response.resolved < 0) {
+                read_from_memory(computer, operation, &stats, &response);
+            }
+
+            // The top levels get populated
+            populate_cache(computer, operation, &stats, &response);
+
+            // The last level gets updated with the operation's data and the number of accesses gets incremented by 1
+            write_back(computer, operation, &stats, &response, response.cacheLineDest[0]);
+            stats.numAccesses[0]++;
+
+        } else if (computer->cache[0].write_policy == WRITE_THROUGH) {
+            // The content gets directly written to memory and the memory gets accessed once
+            write_through(computer, operation, &stats, &response);
+
+            // Read the data and populate all caches with it
+            read_from_memory(computer, operation, &stats, &response);
+            populate_cache(computer, operation, &stats, &response);
+        }
+    }
+
+    // The action gets printed
+    printf("Got the following data in the response: %d\n",response.data[0]);        // The data that was operated with
+    free(response.data);
+
+    // The statistics get calculated and printed
+    update_statistics(computer, &stats);
+    print_statistics(stdout);
+
+    printf("\n----------------\n\n");
+    cycle++;
 }
 
 /**
- * @brief Iterates through all caches to find if a value is in cache and updates response.
+ * @brief Iterates through all caches to find if a value is in cache and updates response. If the data is not in cache, the response's capacity gets modified to
+ *        house a full cache line.
  * @param computer The computer.
  * @param operation The operation to perform on the caches.
  * @param charName Printinf information.
  * @param response Statistics about the access. Will get updated with time and the level of cache that contains the data.
  */
-void sim_find_in_cache(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response) {
-   // Iterate through all the cache levels
-   for(int cacheLevel = 0; cacheLevel < computer->num_caches; cacheLevel++){
-      MappingResult mappingResult;
-      long line;
+void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
+    // Iterate through all the cache levels
+    for(int cacheLevel = 0; cacheLevel < computer->num_caches; cacheLevel++){
+        MappingResult mappingResult;
+        long line;
 
-      sprintf(cacheName,"Cache L%d",cacheLevel+1);
+        // The mapping gets calculated
+        get_mapping(computer, cacheLevel, operation, &mappingResult);
 
-      // The associativity of the cache gets checked and the corresponding function gets called
-      if (computer->cache[cacheLevel].associativity == 1) {        // Direct Mapping
-         direct_associative(computer, cacheLevel, operation, &mappingResult);
-      } else if (computer->cache[cacheLevel].associativity > 1) {  // N way set associative
-         set_associative(computer, cacheLevel, operation, &mappingResult);
-      } else {                                                     //Fully associative
-         fully_associative(computer, cacheLevel, operation, &mappingResult);
-      }
+        // The number of accesses gets incremented by one
+        stats->numAccesses[cacheLevel]++;
 
-      // The timing is updated according to the cache's characteristics
-      response->time += computer->cache[cacheLevel].access_time;
+        // Find tag in cache
+        line = find_tag_in_cache(computer, operation->instructionOrData, cacheLevel, mappingResult.set, mappingResult.tag);
 
-      // The number of accesses gets incremented by one
-      increment_integer_statistics(cacheName, "Accesses", 1);
+        // If there was an error, print it and return without making changes
+        if (line == -2){
+            printf("Error: The level of the cache was lower than 0 or exceeded the maximum.\n");
+            return;
+        }
 
-      // Find tag in cache
-      line = find_tag_in_cache(computer, operation->instructionOrData, cacheLevel, mappingResult.set, mappingResult.tag);
+        // If there is a hit and the address has been found
+        if (line > -1) {
+            // Hit
+            printf("> Hit in L%d cache. Line %ld has the data.\n", cacheLevel, line);
 
-      // If there was an error, print it and return without making changes
-      if(line == -2){
-         printf("Error: The level of the cache was lower than 0 or exceeded the maximum.\n");
-         return;
-      }
+            // The statistics get updated
+            stats->numHits[cacheLevel]++;
 
-      // If there is a hit and the address has been found
-      if (line > -1) {
-         // Hit
-         printf(">   %s: Hit (%ld)\n", cacheName, line);
+            // A response gets prepared
+            CacheLineContent cacheData;
+            cacheData.content = malloc((sizeof(long))*computer->cache[cacheLevel].num_words);
 
-         // The statistics get updated
-         increment_integer_statistics(cacheName, "Hits", 1);
-         calculate_rate_statistics(cacheName, "Hit Rate", "Hits", "Accesses");
-         calculate_rate_statistics(cacheName, "Miss Rate", "Misses", "Accesses");
+            // Read data from cache into response
+            read_line_from_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
+            if (response->size == 1) {
+                response->data[0] = cacheData.content[mappingResult.offset];
+                printf("Will get %d -> %d\n",mappingResult.offset, response->data[0]);
+            }
 
-         // A response gets prepared
-         CacheLineContent cacheData;
-         cacheData.content = malloc((sizeof(long))*computer->cache[cacheLevel].num_words);
+            // Remember cache level that resolved the request
+            response->resolved = cacheLevel;
 
-         // Read data from cache into response
-         read_line_from_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
-         if (response->size == 1) {
-            response->data[0] = cacheData.content[mappingResult.offset];
-            printf("Will get %d -> %d\n",mappingResult.offset, response->data[0]);
-         } else {
-         }
+            // Since there has been a hit, there's no need to reach the lower levels of the cache, the loop ends
+            break;
+        } else {     //If there is a miss
+            // Miss
+            // printf(">    %s: Miss 2^%d-1 = %f\n", cacheName,computer->cache[cacheLevel].offset_bits, pow(2,computer->cache[cacheLevel].offset_bits)-1);
+            printf("> Miss in L%d cache.\n", cacheLevel);
 
-         // Remember cache level that resolved the request
-         response->resolved = cacheLevel;
+            // The statistics get updated
+            stats->numMisses[cacheLevel]++;
 
-         // Since there has been a hit, there's no need to reach the lower levels of the cache, the loop ends
-         break;
-      } else {    //If there is a miss
-         // Miss
-         printf(">   %s: Miss 2^%d-1 = %f\n", cacheName,computer->cache[cacheLevel].offset_bits, pow(2,computer->cache[cacheLevel].offset_bits)-1);
-
-         // The statistics get updated
-         increment_integer_statistics(cacheName, "Misses", 1);
-         calculate_rate_statistics(cacheName, "Hit Rate", "Hits", "Accesses");
-         calculate_rate_statistics(cacheName, "Miss Rate", "Misses", "Accesses");
-
-         // If the operation is a LOAD
-         if (operation->operation == LOAD) {
             // Upgrade request to a full cache line
             response->size = computer->cache[cacheLevel].num_words;
             response->address &= -1 << computer->cache[cacheLevel].offset_bits;
             free(response->data);
             response->data = malloc((sizeof(unsigned))*computer->cache[cacheLevel].num_words);
-         } else {    // If the operation is a STORE
-            //TODO Implement write operations (WriteThrough,Writeback)
-            // Write operation
-            // Assuming WriteThrough and WriteNoAllocate do nothing
-         }
-      }
-   }
-
+        }
+    }
 }
 
 
@@ -176,51 +184,26 @@ void sim_find_in_cache(Computer *computer, MemoryOperation *operation, char *cac
  * @param charName Printinf information.
  * @param response Statistics about the access.
  */
-void sim_operate_memory(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response) {
-   // Remember that the memory resolved the request
-   response->resolved = computer->num_caches;    // The number of caches is used to signify that it has been through all of them
+void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
+    MemoryPosition pos;
 
-   // Statistics get updated
-   increment_integer_statistics("Memory", "Accesses", response->size);
+    // Remember that the memory resolved the request
+    // The number of caches is used to signify that it has been through all of them
+    response->resolved = computer->num_caches;
 
-   // If the operation is a LOAD
-   if(operation->operation == LOAD) {
-      MemoryPosition pos;
+    // Statistics get updated
+    stats->numAccesses[MAX_CACHES] += response->size;
 
-      // The time to access the main memory is noted
-      response->time += computer->memory.access_time_1;
-
-      // And the data is read from memory
-      // After every iteration the address gets incremented by computer->cpu.word_width / 8 (Converts the word size to bytes)
-      // After every iteration, the address increases one word
-      for(unsigned i=0, address=response->address; i < response->size; i++, address+=computer->cpu.word_width/8) {
-         if(read_from_memory_address(computer, &pos, address) < 0) {
+    // And the data is read from memory
+    // After every iteration the address gets incremented by computer->cpu.word_width / 8 (Converts the word size to bytes)
+    // After every iteration, the address increases one word
+    for (unsigned i=0, address=response->address; i < response->size; i++, address+=computer->cpu.word_width/8) {
+        if (read_from_memory_address(computer, &pos, address) < 0) {
             fprintf(stderr, "error in simulation: %s addr:%x\n", interfaceError, address);
             return;
-         }
-         response->data[i] = pos.content;
-      }
-   } else {       // If the operation is a STORE      // TODO. Check if a write policy needs to be implemented into this
-      MemoryPosition pos;
-
-      //The address and content gets noted
-      pos.address = operation->address;
-      pos.content = operation->data;
-
-      // The time to write to main memory gets noted
-      response->time += computer->memory.access_time_1;
-
-      // Write data from request into memory
-      // After every iteration the address gets incremented by computer->cpu.word_width / 8 (Converts the word size to bytes)
-      // After every iteration, the address increases one word
-      for(unsigned i=0, address=response->address; i < response->size; i++, address+=computer->cpu.word_width/8) {
-         pos.content = response->data[i];
-         if(write_to_memory_address(computer, &pos, address) < 0) {
-            fprintf(stderr, "error in simulation: %s addr:%x\n", interfaceError, address);
-            return;
-         }
-      }
-   }
+        }
+        response->data[i] = pos.content;
+    }
 }
 
 /**
@@ -230,40 +213,30 @@ void sim_operate_memory(Computer *computer, MemoryOperation *operation, char *ca
  * @param charName Printinf information.
  * @param response Statistics about the access.
  */
-void sim_populate_cache(Computer *computer, MemoryOperation *operation, char *cacheName, ResponseType *response) {
-   // Iterate backwards through all the cache levels that were involved in request
-   for (int cacheLevel = response->resolved-1; cacheLevel >= 0; cacheLevel--){
-      MappingResult mappingResult;
-      long line;
+void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
+    // Iterate backwards through all the cache levels that were involved in request
+    for (int cacheLevel = response->resolved-1; cacheLevel >= 0; cacheLevel--){
+        MappingResult mappingResult;
+        long line;
 
-      sprintf(cacheName,"Cache L%d",cacheLevel+1);
-      // Calculate the different fields from the address
-      // The associativity of the cache gets checked and the corresponding function gets called
-      if (computer->cache[cacheLevel].associativity == 1) {        // Direct Mapping
-         direct_associative(computer, cacheLevel, operation, &mappingResult);
-      } else if (computer->cache[cacheLevel].associativity > 1) {  // N way set associative
-         set_associative(computer, cacheLevel, operation, &mappingResult);
-      } else {                                                     //Fully associative
-         fully_associative(computer, cacheLevel, operation, &mappingResult);
-      }
+        // Calculate the different fields from the address
+        get_mapping(computer, cacheLevel, operation, &mappingResult);
 
-      // Find tag in cache
-      line = find_tag_in_cache(computer, operation->instructionOrData, cacheLevel, mappingResult.tag, mappingResult.set);
+        // Find tag in cache
+        line = find_tag_in_cache(computer, operation->instructionOrData, cacheLevel, mappingResult.tag, mappingResult.set);
 
-      // If there was an error, print it and return without making changes
-      if(line == -2){
-         printf("Error: The level of the cache was lower than 0 or exceeded the maximum.\n");
-         return;
-      }
+        // If there was an error, print it and return without making changes
+        if(line == -2){
+            printf("Error: The level of the cache was lower than 0 or exceeded the maximum.\n");
+            return;
+        }
 
-      // If the line was found in cache, there's a hit
-      if(line > 0) {
-         // Hit
-         printf("<   %s: Hit\n", cacheName);
-      } else {       //If not, miss
-         // Miss
-         printf("<   %s: Miss\n", cacheName);
-         if(operation->operation == LOAD) {
+        // If the line was found in cache, there's a hit
+        // TODO consider that the line can be dirty and should be witten to the next level
+        if(line > 0) {
+            // Hit
+            printf("< Hit in L%d cache. Line %ld has the data.\n", cacheLevel, line);
+        } else {         //If not, miss
             // Load operation
             CacheLineContent cacheData;
             cacheData.dirty = 0;
@@ -272,51 +245,31 @@ void sim_populate_cache(Computer *computer, MemoryOperation *operation, char *ca
             cacheData.content = response->data;
 
             // The via gets located and populated with the data
-            int via = select_via_to_replace(computer, operation->instructionOrData, cacheLevel, mappingResult.set);
-            write_line_to_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, via);
-         } else {
-            //TODO Implement Write Operations
-            // Write operation
-            // Assuming WriteThrough and WriteNoAllocate, do nothing!
-         }
-      }
-   }
+            int line = select_line_to_replace(computer, operation->instructionOrData, cacheLevel, mappingResult.set);
+            write_line_to_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
 
+            // The line that contains the data on the current level gets noted
+            response->cacheLineDest[cacheLevel] = line;
+        }
+    }
 }
 
 
-void increment_double_statistics(char *component, char *property, double value) {
-   double oldValue = 0.0;
-   char *oldValueString = get_statistics(component,property);
-   if(oldValueString) 
-      oldValue = strtod(oldValueString, NULL);
-   char tmp[20];
-   sprintf(tmp, "%lf", oldValue+value);
-   set_statistics(component, property, tmp);
-}
+/**
+ * @brief Calculates the mapping and stores it in mappingResult
+ * @param computer The void get_mapping(Computer* computer, int cacheLevel, MemoryOperation* operation, MappingResult* mappingResult)
+ * @param cacheLevel The cache level that is being checked
+ * @param operation The memory void get_mapping(Computer* computer, int cacheLevel, MemoryOperation* operation, MappingResult* mappingResult)
+ * @param mappingResult Pointer to the struct that will get updated
+ */
+void get_mapping(Computer* computer, int cacheLevel, MemoryOperation* operation, MappingResult* mappingResult) {
+     Cache cache = computer->cache[cacheLevel];
 
-void increment_integer_statistics(char *component, char *property, int value) {
-   int oldValue = 0.0;
-   char *oldValueString = get_statistics(component,property);
-   if(oldValueString) 
-      oldValue = atoi(oldValueString);
-   char tmp[20];
-   sprintf(tmp, "%d", oldValue+value);
-   set_statistics(component, property, tmp);
-}
-
-void calculate_rate_statistics(char *component, char *property, char *partialName, char *totalName) {
-   double partial = 0.0;
-   double total = 0.0;
-   char *valueString = get_statistics(component,partialName);
-   if(valueString) 
-      partial = strtod(valueString, NULL);
-   valueString = get_statistics(component,totalName);
-   if(valueString) 
-      total = strtod(valueString, NULL);
-   char tmp[20] = "NaN";
-   if(total != 0) {
-      sprintf(tmp, "%0.2lf", partial/total);
-   }
-   set_statistics(component, property, tmp);
+     if (cache.associativity == 1) {                                                    // Direct Mapping
+          direct_associative(&cache, operation, mappingResult);
+     } else if (cache.associativity > 1) {                                              // N way set associative
+          set_associative(&cache, operation, mappingResult);
+     } else {                                                                           //Fully associative
+          fully_associative(&cache, operation, mappingResult);
+     }
 }
