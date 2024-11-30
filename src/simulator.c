@@ -37,7 +37,7 @@ void simulate(Computer *computer) {
  * @param operation The operation to be executed
  */
 void simulate_step(Computer *computer, MemoryOperation *operation) {
-    printf("---> Cycle %lu\n", cycle);
+    printf("----> Cycle %lu\n", cycle);
 
     // The response gets initiated
     ResponseType response;
@@ -123,6 +123,11 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
         MappingResult mappingResult;
         long line;
 
+        #if DEBUG
+        printf("\t Looking in cache L%d\n", cacheLevel);
+        fflush(stdout);
+        #endif
+
         // The mapping gets calculated
         get_mapping(computer, cacheLevel, operation, &mappingResult);
 
@@ -190,6 +195,11 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
 void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
     MemoryPosition pos;
 
+    #if DEBUG
+    printf("\t Reading from memory\n");
+    fflush(stdout);
+    #endif
+
     // Remember that the memory resolved the request
     // The number of caches is used to signify that it has been through all of them
     response->resolved = computer->num_caches;
@@ -221,6 +231,11 @@ void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats
     for (int cacheLevel = response->resolved-1; cacheLevel >= 0; cacheLevel--){
         MappingResult mappingResult;
         long line;
+
+        #if DEBUG
+        printf("\t Populating cache L%d\n", cacheLevel);
+        fflush(stdout);
+        #endif
 
         // Calculate the different fields from the address
         get_mapping(computer, cacheLevel, operation, &mappingResult);

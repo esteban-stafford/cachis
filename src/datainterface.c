@@ -156,10 +156,10 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
 
     if (!computer->cache[level].separated || instructionOrData == DATA) {
         model = G_LIST_MODEL(computer->cache[level].model_data);
-        view = GTK_COLUMN_VIEW(computer->cache[level].view_data);
+        // view = GTK_COLUMN_VIEW(computer->cache[level].view_data);
     } else {
         model = G_LIST_MODEL(computer->cache[level].model_instruction);
-        view = GTK_COLUMN_VIEW(computer->cache[level].view_instruction);
+        // view = GTK_COLUMN_VIEW(computer->cache[level].view_instruction);
     }
 
     gpointer item = g_list_model_get_item(model, lineNumber);
@@ -237,10 +237,10 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
     
     if (!computer->cache[level].separated || instructionOrData == DATA) {
         model = G_LIST_MODEL(computer->cache[level].model_data);
-        view = GTK_COLUMN_VIEW(computer->cache[level].view_data);
+        // view = GTK_COLUMN_VIEW(computer->cache[level].view_data);
     } else {
         model = G_LIST_MODEL(computer->cache[level].model_instruction);
-        view = GTK_COLUMN_VIEW(computer->cache[level].view_instruction);
+        // view = GTK_COLUMN_VIEW(computer->cache[level].view_instruction);
     }
 
     contentArrayToString(line->content, contentString, (computer->cache[level].line_size*8)/computer->cpu.word_width, computer->cpu.word_width/4);
@@ -272,7 +272,7 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
     g_list_model_items_changed(model, lineNumber, 1, 1);
 
     // Scroll to the updated row
-    scroll_to_row(GTK_WIDGET(view), lineNumber * 100 / g_list_model_get_n_items(model));
+    // scroll_to_row(GTK_WIDGET(view), lineNumber * 100 / g_list_model_get_n_items(model));
 
     g_object_unref(item);
 }

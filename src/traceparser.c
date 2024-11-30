@@ -228,7 +228,6 @@ int readTraceFile(Computer *computer){
       }
 
       MemoryOperation *currentMemOperation=NULL;
-      numberOfOperations++;
 
       //if there is not gui data will be stored. I there is gui thre is not need to store as lines will be parsed at execution time
       if(!useGUI){
