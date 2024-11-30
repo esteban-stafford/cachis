@@ -23,7 +23,10 @@ void get_mapping(Computer *computer, int cacheLevel, MemoryOperation *operation,
  */
 void simulate(Computer *computer) {
     for(int i=0; i<numberOfOperations; i++){
+        printf("Iteration %d started\n",i);
         simulate_step(computer, &memoryOperations[i]);
+        printf("Iteration %d ended\n",i);
+        fflush(stdout);
     }
 }
 

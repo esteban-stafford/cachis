@@ -221,14 +221,19 @@ int readTraceFile(Computer *computer){
       if(computer->cpu.buffer != NULL) {
          gtk_text_buffer_insert_at_cursor(computer->cpu.buffer, currentLine, -1);
       }
+
       // Skip empty lines
       if(!preprocessTraceLine(currentLine)){
          continue;
       }
+
       MemoryOperation *currentMemOperation=NULL;
+      numberOfOperations++;
+
       //if there is not gui data will be stored. I there is gui thre is not need to store as lines will be parsed at execution time
       if(!useGUI){
          currentMemOperation=&memoryOperations[numberOfOperations++];
+
       }
       if(parseLine(currentLine, currentLineNumber, currentMemOperation, computer->cpu.word_width/8, &computer->memory) == -1){
       	      errors++;

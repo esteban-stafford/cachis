@@ -4,6 +4,7 @@
 #include "traceparser.h"
 #include "simulator.h"
 
+
 static void set_widget_background_color(GtkWidget *widget, const char *color) {
     GtkCssProvider *provider = gtk_css_provider_new();
     GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -521,7 +522,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Cache Simulation");
-    gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
+    gtk_window_set_default_size(GTK_WINDOW(window), 900, 900);
 
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_window_set_child(GTK_WINDOW(window), main_box);

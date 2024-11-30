@@ -16,7 +16,7 @@
 #define PROGRAM_NAME "cachis"
 #define VERSION "0.1"
 
-
+int useGUI = 1;
 
 void printUsage() {
    printf(
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     switch (c)
       {
       case 'g':
-         useGUI = !useGUI;
+         useGUI = 0;
         break;
       case 'v':
         printf("%s version %s\n",PROGRAM_NAME,VERSION);
@@ -106,11 +106,13 @@ int main(int argc, char *argv[]) {
 
     // Start GUI...
     if(useGUI) {
+       printf("Operations to be simulated: %d\n", numberOfOperations);
        launch_gui(1, argv, &computer);
     // ... or run batch simulation
     } else {
        printf("Running Cachis in CLI mode\n");
        printf("-> Starting simulation:\n");
+       printf("Operations to be simulated: %d\n", numberOfOperations);
        simulate(&computer);
        print_statistics(stdout);
     }
