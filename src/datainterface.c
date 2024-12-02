@@ -245,7 +245,7 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
 
     contentArrayToString(line->content, contentString, (computer->cache[level].line_size*8)/computer->cpu.word_width, computer->cpu.word_width/4);
     
-    printf("Write Content: ");
+    printf("\t Writing content in line %d of cache L%d: ", lineNumber, level + 1);
     for (int i = 0; i < computer->cache[level].num_words; i++) {
         printf("%x ", line->content[i]);
     }

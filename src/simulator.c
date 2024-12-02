@@ -23,9 +23,7 @@ void get_mapping(Computer *computer, int cacheLevel, MemoryOperation *operation,
  */
 void simulate(Computer *computer) {
     for(int i=0; i<numberOfOperations; i++){
-        printf("Iteration %d started\n",i);
         simulate_step(computer, &memoryOperations[i]);
-        printf("Iteration %d ended\n",i);
         fflush(stdout);
     }
 }
@@ -37,7 +35,7 @@ void simulate(Computer *computer) {
  * @param operation The operation to be executed
  */
 void simulate_step(Computer *computer, MemoryOperation *operation) {
-    printf("----> Cycle %lu\n", cycle);
+    printf("\n----> Cycle %lu\n\n", cycle);
 
     // The response gets initiated
     ResponseType response;
@@ -98,14 +96,20 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
     }
 
     // The action gets printed
-    printf("Got the following data in the response: %d\n",response.data[0]);        // The data that was operated with
+
+    if (operation->operation == LOAD) {
+        printf("\nFinished simulation, the response contains: 0x%x\n",response.data[0]);        // The data that was operated with
+    } else {
+        printf("\nFinished simulation.\n");
+    }
+
     free(response.data);
 
     // The statistics get calculated and printed
     update_statistics(computer, &stats);
     print_statistics(stdout);
 
-    printf("\n----------------\n\n");
+    printf("\n\n<<----------------------------------------------->>\n\n");
     cycle++;
 }
 
@@ -118,15 +122,12 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
  * @param response Statistics about the access. Will get updated with time and the level of cache that contains the data.
  */
 void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
-    // Iterate through all the cache levels
+    printf("\n-> Looking in cache\n");
+
+        // Iterate through all the cache levels
     for(int cacheLevel = 0; cacheLevel < computer->num_caches; cacheLevel++){
         MappingResult mappingResult;
         long line;
-
-        #if DEBUG
-        printf("\t Looking in cache L%d\n", cacheLevel);
-        fflush(stdout);
-        #endif
 
         // The mapping gets calculated
         get_mapping(computer, cacheLevel, operation, &mappingResult);
@@ -139,14 +140,14 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
 
         // If there was an error, print it and return without making changes
         if (line == -2){
-            printf("Error: The level of the cache was lower than 0 or exceeded the maximum.\n");
+            printf("\t Error: The level of the cache was lower than 0 or exceeded the maximum.\n");
             return;
         }
 
         // If there is a hit and the address has been found
         if (line > -1) {
             // Hit
-            printf("> Hit in L%d cache. Line %ld has the data.\n", cacheLevel, line);
+            printf("\t > Hit in L%d cache. Line %ld has the data.\n", cacheLevel + 1, line);
 
             // The statistics get updated
             stats->numHits[cacheLevel]++;
@@ -159,18 +160,18 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
             read_line_from_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
             if (response->size == 1) {
                 response->data[0] = cacheData.content[mappingResult.offset];
-                printf("Will get %d -> %d\n",mappingResult.offset, response->data[0]);
+                printf("\t The first element contained in offset %d is 0x%x\n",mappingResult.offset, response->data[0]);
             }
 
             // Remember cache level that resolved the request
             response->resolved = cacheLevel;
 
             // Since there has been a hit, there's no need to reach the lower levels of the cache, the loop ends
-            break;
+            return;
         } else {     //If there is a miss
             // Miss
             // printf(">    %s: Miss 2^%d-1 = %f\n", cacheName,computer->cache[cacheLevel].offset_bits, pow(2,computer->cache[cacheLevel].offset_bits)-1);
-            printf("> Miss in L%d cache.\n", cacheLevel);
+            printf("\t > Miss in L%d cache.\n", cacheLevel + 1);
 
             // The statistics get updated
             stats->numMisses[cacheLevel]++;
@@ -182,6 +183,7 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
             response->data = malloc((sizeof(unsigned))*computer->cache[cacheLevel].num_words);
         }
     }
+    printf("\t Data has not been found in cache.\n");
 }
 
 
@@ -193,12 +195,9 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
  * @param response Statistics about the access.
  */
 void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
-    MemoryPosition pos;
+    printf("\n-> Reading memory\n");
 
-    #if DEBUG
-    printf("\t Reading from memory\n");
-    fflush(stdout);
-    #endif
+    MemoryPosition pos;
 
     // Remember that the memory resolved the request
     // The number of caches is used to signify that it has been through all of them
@@ -227,15 +226,15 @@ void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *sta
  * @param response Statistics about the access.
  */
 void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
+    // If the level that resolved the response is below the top one, the caches get populated
+    if (response->resolved > 0) {
+        printf("\n-> Populating caches\n");
+    }
+
     // Iterate backwards through all the cache levels that were involved in request
     for (int cacheLevel = response->resolved-1; cacheLevel >= 0; cacheLevel--){
         MappingResult mappingResult;
         long line;
-
-        #if DEBUG
-        printf("\t Populating cache L%d\n", cacheLevel);
-        fflush(stdout);
-        #endif
 
         // Calculate the different fields from the address
         get_mapping(computer, cacheLevel, operation, &mappingResult);
@@ -253,8 +252,9 @@ void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats
         // TODO consider that the line can be dirty and should be witten to the next level
         if(line > 0) {
             // Hit
-            printf("< Hit in L%d cache. Line %ld has the data.\n", cacheLevel, line);
+            printf("\t < Hit in L%d cache. Line %ld has the data.\n", cacheLevel + 1, line);
         } else {         //If not, miss
+            printf("\t < Miss in L%d cache. Populating.\n", cacheLevel + 1);
             // Load operation
             CacheLineContent cacheData;
             cacheData.dirty = 0;

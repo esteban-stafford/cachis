@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
     // ... or run batch simulation
     } else {
        printf("Running Cachis in CLI mode\n");
-       printf("-> Starting simulation:\n");
+       printf("Starting simulation:\n");
        printf("Operations to be simulated: %d\n", numberOfOperations);
        simulate(&computer);
        print_statistics(stdout);

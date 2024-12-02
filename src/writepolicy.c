@@ -1,12 +1,15 @@
 #include "writepolicy.h"
 
 void write_back(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response, int cacheLine) {
+    printf("\n-> Applying Writeback in cache.\n");
+
     // The contents of the line get read
     CacheLineContent content;
     read_line_from_cache(computer, operation->instructionOrData, 0, &content, cacheLine);
 
     // Update the contents of the line
-    content.content[cacheLine] = *response->data;
+    int position = operation->address % computer->cache[0].num_words;
+    content.content[position] = operation->data;
     content.dirty = 1;
 
     // The line is written back to the cache
