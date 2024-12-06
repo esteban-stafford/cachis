@@ -1,0 +1,24 @@
+# Forces replacements by making lots of loads on the same set
+# Designed for 256B, 16B per line, 4-way associative caches
+
+L 0x08000000 I
+L 0x08000040 I
+L 0x08000080 I
+L 0x080000C0 I
+
+# Line 0 is the first one
+
+# Line 1 becomes the least recenlty used one
+L 0x08000000 I
+L 0x08000080 I
+L 0x080000C0 I
+
+# Line 2 becomes the most accessed line
+L 0x08000080 I
+L 0x08000080 I
+
+# Replacements are forced
+L 0x08000100 I
+L 0x08000140 I
+L 0x08000180 I
+L 0x080001C0 I

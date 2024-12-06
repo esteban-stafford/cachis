@@ -7,10 +7,15 @@ void write_back(Computer *computer, MemoryOperation *operation, Stats *stats, Re
     CacheLineContent content;
     read_line_from_cache(computer, operation->instructionOrData, 0, &content, cacheLine);
 
+	// TODO this doesn't write well, might be because of the read
     // Update the contents of the line
-    int position = operation->address % computer->cache[0].num_words;
-    content.content[position] = operation->data;
-    content.dirty = 1;
+    // int position = operation->address % computer->cache[0].num_words;
+    // content.content[position] = operation->data;
+    // content.dirty = 1;
+
+	for (int i = 0; i < 8; i++) {
+		printf("DEBUG: 0x%x", content.content[i]);
+	}
 
     // The line is written back to the cache
     write_line_to_cache(computer, operation->instructionOrData, 0, &content, cacheLine);

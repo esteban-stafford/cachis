@@ -1,0 +1,14 @@
+# Tests write policies
+# Designed for 256B, 16B per line, 4-way associative caches
+
+L 0x08000000 D
+L 0x08000040 D
+L 0x08000080 D
+L 0x080000C0 D
+
+# Stores some values
+
+S 0x08000000 D 4 12
+S 0x08000040 D 4 34
+S 0x08000080 D 4 56
+S 0x080000C0 D 4 78

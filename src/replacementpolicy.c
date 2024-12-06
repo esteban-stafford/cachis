@@ -22,7 +22,7 @@ int select_line_to_replace(Computer *computer, int instructionOrData, int cacheL
 
     //The first and last lines of the set are calculated
     int first_line = set * cache->associativity;
-    int last_line = first_line + cache->associativity;
+    int last_line = first_line + cache->associativity - 1;
 
     switch (cache->replacement_policy) {
         case LRU:
@@ -59,7 +59,7 @@ int replacement_lru(Computer *computer, int instructionOrData, int cacheLevel, i
     // The set is iterated to find the line that should be replaced
     for (int line = first_line; line <= last_line; line++){
         // The line is read
-        read_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
+        read_flags_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
 
         // If the line contains invalid data, it gets replaced by default
         if (cacheData.valid == 0){
@@ -92,15 +92,15 @@ int replacement_lfu(Computer *computer, int instructionOrData, int cacheLevel, i
     // The set is iterated to find the line that should be replaced
     for (int line = first_line; line <= last_line; line++){
 			// The line is read
-        read_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
+        read_flags_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
 
 			// If the line contains invalid data, it gets replaced by default
         if (cacheData.valid == 0){
-            return line;
-			}
+			return line;
+		}
 
 			// If there is not a candidate for replacement or the line has been accessed less than the previous ones, it gets updated
-        if (lfuLine == -1 || lfuCount < cacheData.accessCount) {
+        if (lfuLine == -1 || lfuCount > cacheData.accessCount) {
             lfuLine = line;
             lfuCount = cacheData.accessCount;
         }
@@ -135,9 +135,9 @@ int replacement_fifo(Computer *computer, int instructionOrData, int cacheLevel, 
     int fifoTime = -1;
 
     // The set is iterated to find the line that should be replaced
-    for (int line = first_line; line <= last_line; line++){
+    for (int line = first_line; line <= last_line; line++) {
 			// The line is read
-        read_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
+        read_flags_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
 
 			// If the line contains invalid data, it gets replaced by default
         if (cacheData.valid == 0){
@@ -145,7 +145,7 @@ int replacement_fifo(Computer *computer, int instructionOrData, int cacheLevel, 
 			}
 
 			// If there is not a candidate for replacement or the selected line is newer than the current one, the line gets updated
-        if (fifoLine == -1 || fifoTime < cacheData.firstAccess) {
+        if (fifoLine == -1 || fifoTime > cacheData.firstAccess) {
             fifoLine = line;
             fifoTime = cacheData.firstAccess;
         }

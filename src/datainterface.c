@@ -128,13 +128,7 @@ long find_tag_in_cache(Computer *computer, int instructionOrData, int level, uns
             if (line->valid && line->tag == requestTag) {
                 // Tag found
                 line->times_accessed++;
-                line->last_accessed = g_get_monotonic_time();  // Update last accessed time
-                
-                // If it's the first access, set the first_accessed time
-                if (line->first_accessed == 0) {
-                    line->first_accessed = line->last_accessed;
-                }
-                
+                line->last_accessed = cycle;
                 return start_index + i;  // Return the index of the matching line
             }
         }
@@ -185,6 +179,13 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
     cache_line->times_accessed++;
     cache_line->last_accessed = cycle;
 
+	printf("cache_line contains this:\n");
+	for (int i = 0; i < 100; i++){
+		printf("%c", cache_line->content_cache[i]);
+	}
+	printf("\n");
+	fflush(stdout);
+
     // Notify the model that the item has changed TODO This is broken, the model doesn't auto update anymore
     g_list_model_items_changed(model, lineNumber, 1, 1);
 
@@ -198,31 +199,40 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
     g_object_unref(item);
 }
 
-/*
-void read_flags_from_cache(Computer *computer, int instructionOrData, int level, CacheLine* line, int lineNumber){
-   GtkTreeModel *model;
-   GtkTreeIter iter;
-   char *contentString;
+void read_flags_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, int lineNumber) {
+    GListModel *model;
 
-   if(!computer->cache[level].separated || instructionOrData == DATA)
-      model= GTK_TREE_MODEL(computer->cache[level].model_data);
-   else
-      model= GTK_TREE_MODEL(computer->cache[level].model_instruction);
+    if (!computer->cache[level].separated || instructionOrData == DATA) {
+        model = G_LIST_MODEL(computer->cache[level].model_data);
+    } else {
+        model = G_LIST_MODEL(computer->cache[level].model_instruction);
+    }
 
-   gtk_tree_model_iter_nth_child (model, &iter, NULL, lineNumber);
+    gpointer item = g_list_model_get_item(model, lineNumber);
+    if (item == NULL) {
+        g_warning("Invalid cache line number: %d", lineNumber);
+        return;
+    }
 
-   gtk_tree_model_get (GTK_TREE_MODEL(model), &iter,
-         LINE, &line->line,
-         TAG, &line->tag,
-         SET, &line->set,
-         VALID, &line->valid,
-         DIRTY, &line->dirty,
-         TIMES_ACCESSED, &line->accessCount,
-         LAST_ACCESSED, &line->lastAccess,
-         FIRST_ACCESSED, &line->firstAccess,
-         -1);
-} */
+    CacheLine *cache_line = CACHE_LINE(item);
 
+    // Copy data from the model to the provided line struct
+    line->line = cache_line->line;
+    line->tag = cache_line->tag;
+    line->set = cache_line->set;
+    line->valid = cache_line->valid;
+    line->dirty = cache_line->dirty;
+    line->accessCount = cache_line->times_accessed;
+    line->lastAccess = cache_line->last_accessed;
+    line->firstAccess = cache_line->first_accessed;
+
+    // Allocate memory for content and convert from string to array
+    line->content = g_malloc(sizeof(long) * computer->cache[level].num_words);
+    contentStringToArray(line->content, cache_line->content_cache, computer->cache[level].num_words);
+
+    g_object_unref(item);
+
+}
 
 /**
  * This function writes a cache line.

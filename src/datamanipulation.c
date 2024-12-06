@@ -357,6 +357,7 @@ void contentStringToArray(unsigned* array, char* content, int count){
    pch = strtok (content," ");
    for(int i=0; pch != NULL && i < count; i++, pch = strtok (NULL, " ")) {
       array[i] = strtol(pch, NULL, 16);
+	  printf("Read: %d\n", array[i]);
    }
 }
 

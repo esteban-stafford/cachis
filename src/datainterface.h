@@ -49,7 +49,7 @@ void reset_cache(Computer *computer, int level);
 void show_line_from_cache(Computer *computer, int instructionOrData, int level, int i);
 long find_tag_in_cache(Computer *computer, int instructionOrData, int level, unsigned requestSet, unsigned requestTag);
 void read_line_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent* line, int lineNumber);
-// void read_flags_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent* line, int lineNumber);
+void read_flags_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent* line, int lineNumber);
 void write_line_to_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, unsigned lineNumber);
 
 //Memory related functions

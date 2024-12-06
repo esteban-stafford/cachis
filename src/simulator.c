@@ -68,8 +68,8 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
         populate_cache(computer, operation, &stats, &response);
 
     } else {            // If the operation is a STORE
-        // If the policy of the first level is WRITE_THROUGH
-        if (computer->cache[0].write_policy == WRITE_THROUGH) {
+        // If the policy of the first level is WRITE_BACK
+        if (computer->cache[0].write_policy == WRITE_BACK) {
             // The whole cache gets checked to see if the data is available
             find_in_cache(computer, operation, &stats, &response);
 
@@ -163,8 +163,9 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
                 printf("\t The first element contained in offset %d is 0x%x\n",mappingResult.offset, response->data[0]);
             }
 
-            // Remember cache level that resolved the request
+            // Remember cache level and line that resolved the request
             response->resolved = cacheLevel;
+            response->cacheLineDest[cacheLevel] = line;
 
             // Since there has been a hit, there's no need to reach the lower levels of the cache, the loop ends
             return;
