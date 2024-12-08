@@ -181,7 +181,7 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
             response->size = computer->cache[cacheLevel].num_words;
             response->address &= -1 << computer->cache[cacheLevel].offset_bits;
             free(response->data);
-            response->data = malloc((sizeof(unsigned))*computer->cache[cacheLevel].num_words);
+            response->data = malloc((sizeof(long))*computer->cache[cacheLevel].num_words);
         }
     }
     printf("\t Data has not been found in cache.\n");

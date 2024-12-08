@@ -179,14 +179,15 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
     cache_line->times_accessed++;
     cache_line->last_accessed = cycle;
 
-	printf("cache_line contains this:\n");
-	for (int i = 0; i < 100; i++){
+	printf("cache_line contains this on read:\n");
+	for (int i = 0; i < 32+3; i++){
 		printf("%c", cache_line->content_cache[i]);
 	}
 	printf("\n");
 	fflush(stdout);
 
-    // Notify the model that the item has changed TODO This is broken, the model doesn't auto update anymore
+
+	// Notify the model that the item has changed TODO This is broken, the model doesn't auto update anymore
     g_list_model_items_changed(model, lineNumber, 1, 1);
 
     // Scroll to the updated row
@@ -226,7 +227,7 @@ void read_flags_from_cache(Computer *computer, int instructionOrData, int level,
     line->lastAccess = cache_line->last_accessed;
     line->firstAccess = cache_line->first_accessed;
 
-    // Allocate memory for content and convert from string to array
+	// Allocate memory for content and convert from string to array
     line->content = g_malloc(sizeof(long) * computer->cache[level].num_words);
     contentStringToArray(line->content, cache_line->content_cache, computer->cache[level].num_words);
 
@@ -273,6 +274,7 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
     cache_line->tag = line->tag;
     g_free(cache_line->content_cache);
     cache_line->content_cache = g_strdup(contentString);
+
     cache_line->color_cache = g_strdup(colors[WRITE]);
     cache_line->times_accessed = 1;
     cache_line->last_accessed = cycle;
@@ -285,6 +287,14 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
     // scroll_to_row(GTK_WIDGET(view), lineNumber * 100 / g_list_model_get_n_items(model));
 
     g_object_unref(item);
+
+
+	printf("cache_line contains this after write:\n");
+	for (int i = 0; i < 32+3; i++){
+		printf("%c", cache_line->content_cache[i]);
+	}
+	printf("\n");
+	fflush(stdout);
 }
 
 

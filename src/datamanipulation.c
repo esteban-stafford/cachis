@@ -342,7 +342,8 @@ int isCorrectDecimal(char * number){
  */
 void contentArrayToString(unsigned* array, char* content, int count, int width){
    char num[50];
-   content[0]='\0';        
+   content[0]='\0';
+
    for(int i=0; i<count; i++) {
       sprintf(num, "%s%0*x", i>0 ? " " : "", width, array[i]);
       strcat(content, num);
@@ -353,12 +354,20 @@ void contentArrayToString(unsigned* array, char* content, int count, int width){
  * Convert a space separated string of hex numbers into an array of longs
  */
 void contentStringToArray(unsigned* array, char* content, int count){
-   char *pch;
-   pch = strtok (content," ");
-   for(int i=0; pch != NULL && i < count; i++, pch = strtok (NULL, " ")) {
-      array[i] = strtol(pch, NULL, 16);
-	  printf("Read: %d\n", array[i]);
-   }
+	if (content == NULL) {
+		return;
+	}
+
+   // A copy of the original array gets created so that strtok does not modify the original array
+   char* contentCopy = malloc(sizeof(char) * 9 * count);
+   strcpy(contentCopy, content);
+
+    char *pch = strtok(contentCopy, " ");
+    for (int i = 0; pch != NULL && i < count; i++, pch = strtok(NULL, " ")) {
+        array[i] = strtol(pch, NULL, 16);
+    }
+
+    free(contentCopy);
 }
 
 
