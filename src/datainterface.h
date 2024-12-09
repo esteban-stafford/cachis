@@ -30,6 +30,7 @@ typedef struct {
   unsigned lastAccess;
   unsigned accessCount;
   unsigned firstAccess;
+  long startingAddress;
 } CacheLineContent;
 
 typedef struct {

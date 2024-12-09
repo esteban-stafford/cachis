@@ -7,18 +7,20 @@ void write_back(Computer *computer, MemoryOperation *operation, Stats *stats, Re
     CacheLineContent content;
     read_line_from_cache(computer, operation->instructionOrData, 0, &content, cacheLine);
 
-    // Update the contents of the line
-    int position = operation->address % computer->cache[0].num_words;
-    content.content[position] = operation->data;
-    content.dirty = 1;
+
+	// TODO Test this by writing that a write that starts on the second word with 3 words, for instance.
+    int position = operation->address % (computer->cache[0].num_words * 4) / 4;
+    for (unsigned i = 0; i < response->size; i++) {
+		content.content[position + i] = operation->data;
+	}
+
+	content.dirty = 1;
 
     // The line is written back to the cache
     write_line_to_cache(computer, operation->instructionOrData, 0, &content, cacheLine);
 
     // The statistics get updated
     stats->numAccesses[0]++;
-
-
 }
 
 void write_through(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {

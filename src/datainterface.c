@@ -173,16 +173,13 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
     line->accessCount = cache_line->times_accessed;
     line->lastAccess = cache_line->last_accessed;
     line->firstAccess = cache_line->first_accessed;
+	line->startingAddress = cache_line->startingAddress;
     
     // Update the model
     cache_line->color_cache = g_strdup(colors[READ]);
     cache_line->times_accessed++;
     cache_line->last_accessed = cycle;
 
-	printf("cache_line contains this on read:\n");
-	for (int i = 0; i < 32+3; i++){
-		printf("%c", cache_line->content_cache[i]);
-	}
 	printf("\n");
 	fflush(stdout);
 
@@ -279,6 +276,7 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
     cache_line->times_accessed = 1;
     cache_line->last_accessed = cycle;
     cache_line->first_accessed = cycle;
+	cache_line->startingAddress = line->startingAddress;
 
     // Notify the model that the item has changed
     g_list_model_items_changed(model, lineNumber, 1, 1);
@@ -288,11 +286,6 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
 
     g_object_unref(item);
 
-
-	printf("cache_line contains this after write:\n");
-	for (int i = 0; i < 32+3; i++){
-		printf("%c", cache_line->content_cache[i]);
-	}
 	printf("\n");
 	fflush(stdout);
 }

@@ -27,6 +27,7 @@ struct _CacheLine {
     unsigned int tag;
     char *content_cache;
     const char *color_cache; 
+	long startingAddress;
     gpointer user_data;
 };
 
