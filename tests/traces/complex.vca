@@ -1,0 +1,25 @@
+# Complex test for multilevel caches with separate I-D.
+# Designed for 2-way L1 and 4-way L2
+
+#Initial loads
+L 0x08000000 I
+L 0x08000040 I
+L 0x08000080 I
+L 0x080000C0 I
+L 0x08000100 D
+L 0x08000140 D
+L 0x08000180 D
+L 0x080001C0 D
+
+# Some other random loads
+L 0x0800073C I
+L 0x080002AC D
+L 0x08000401 I 4
+L 0x080003B1 D 4
+L 0x08000230 D 4
+
+# L1 Stores
+S 0x080005A0 D
+S 0x08000100 D 4 2345
+
+# Force replacements by storing on addresses that are not contained in L1

@@ -11,6 +11,7 @@
 void init_statistics(Stats *stats) {
     // The statistics get initiated to 0
     stats->time = 0.0;
+	stats->numBurstAccesses = 0;
 
     for (int i = 0; i < MAX_CACHES+1; i++) {
         stats->numAccesses[i] = 0;
@@ -49,7 +50,9 @@ void update_statistics(Computer *computer, Stats *stats) {
 
     // If the memory has been accessed, the memory access time get summed up to the total time as well (Just once)
     if (stats->numAccesses[MAX_CACHES] > 0) {
-        stats->time += computer->memory.access_time_1;
+        increment_integer_statistics("Memory", "Accesses", stats->numAccesses[MAX_CACHES]);
+        stats->time += computer->memory.access_time_1 * (stats->numAccesses[MAX_CACHES] - stats->numBurstAccesses);
+		stats->time += computer->memory.access_time_burst * stats->numBurstAccesses;
     }
 
     increment_double_statistics("Totals", "Access Time", stats->time);

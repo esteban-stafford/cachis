@@ -1,0 +1,15 @@
+# Checks associativity
+# Designed for 256B, 16B per line caches.
+
+# For 4-way this should fill the first set. There are 4 sets and the first two bits of the second hex number are 0 always.
+# For 2-way this should fill two sets, 0 and 4. There are 8 sets, address 0 and 8 (1000) will land in the first set because both have 0 in the first 3 bits. Adress 4 and C will land in set 4 for the same reason.
+L 0x08000000 I
+L 0x08000040 I
+L 0x08000080 I
+L 0x080000C0 I
+
+# On a direct associativity cache, this will replace all previous lines. There are 16 sets and all the third hex number is out of the set field.
+L 0x08000100 I
+L 0x08000140 I
+L 0x08000180 I
+L 0x080001C0 I

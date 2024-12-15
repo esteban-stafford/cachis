@@ -180,10 +180,6 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
     cache_line->times_accessed++;
     cache_line->last_accessed = cycle;
 
-	printf("\n");
-	fflush(stdout);
-
-
 	// Notify the model that the item has changed TODO This is broken, the model doesn't auto update anymore
     g_list_model_items_changed(model, lineNumber, 1, 1);
 
@@ -255,7 +251,7 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
     
     printf("\t Writing content in line %d of cache L%d: ", lineNumber, level + 1);
     for (int i = 0; i < computer->cache[level].num_words; i++) {
-        printf("%x ", line->content[i]);
+        printf("0x%x ", line->content[i]);
     }
     printf(" ---> %s\n", contentString);
 
@@ -297,18 +293,30 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
  * @return 0 if correct -1 if not word address error, -2 if out of page error
  */
 int show_memory_address(Computer *computer, long address){
-   /* MemoryPosition pos;
-   //I read the memory position
-   int returned=read_from_memory_address(computer, &pos, address);
-   if(returned!=0){
+    MemoryPosition pos;
+	// Read the memory position
+   int returned = read_from_memory_address(computer, &pos, address);
+   if (returned != 0){
       return returned;
    }
-   //I print the values
-   printf("------------------------------------------------------\n");
-   printf("address: %lx     content: %lx\n", pos.address, pos.content);
-   printf("user content: %s\n", (char*)pos.user_content);
-   printf("------------------------------------------------------\n"); */
+   // printf("Address: 0x%lx \t Content: 0x%lx\t User content: %s\n", pos.address, pos.content, (char*)pos.user_content);
+   printf("Address: 0x%lx \t Content: 0x%lx\n", pos.address, pos.content);
    return 0;
+}
+
+/**
+ * Prints the entire contents of the memory
+ * @param computer The computer
+ */
+void print_memory_contents(Computer *computer) {
+	printf("\n------MEMORY CONTENTS------\n\n");
+
+	for (int i = computer->memory.page_base_address;
+		i < computer->memory.page_base_address + computer->memory.page_size;
+		i+=4) {
+		show_memory_address(computer, i);
+	}
+
 }
 
 void set_row_color(Computer *computer, int row_index, const char *color) {

@@ -23,7 +23,7 @@ typedef struct
     long bus_frequency;         // Frecuencia en herzios del bus. Ver Nota 1.
     double access_time_1;       // Timepo de acceso en nanosegundos.
     double access_time_burst;
-    long page_size;
+    long page_size;				// Size of the memory from the starting address
     long page_base_address;
 
     GListStore *model; 

@@ -16,6 +16,7 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
 void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response);
 void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response, int topLevel);
 void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData, int cacheLevel, int line);
+void upgrade_response_to_full_line(Computer *computer, int cacheLevel, ResponseType *response);
 void get_mapping(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *mappingResult);
 
 
@@ -27,6 +28,9 @@ void simulate(Computer *computer) {
         simulate_step(computer, &memoryOperations[i]);
         fflush(stdout);
     }
+
+    // Print the memory at the end of the simulation
+    print_memory_contents(computer);
 }
 
 
@@ -62,7 +66,6 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
         // If no cache level resolved the request, the memory gets accessed
         if (response.resolved < 0) {
             read_from_memory(computer, operation, &stats, &response);
-
         }
 
         // Lastly, since the data has been requested by the CPU, all levels above response.resolved have to been populated
@@ -71,38 +74,41 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
 
     } else {            // If the operation is a STORE
         // If the policy of the first level is WRITE_BACK
-        if (computer->cache[0].write_policy == WRITE_BACK) {
-            // The whole cache gets checked to see if the data is available
-            find_in_cache(computer, operation, &stats, &response, 0);
+		switch (computer->cache[0].write_policy) {
+			case WRITE_BACK:
+				// The whole cache gets checked to see if the data is available
+				find_in_cache(computer, operation, &stats, &response, 0);
 
-            // If no cache level resolved the request, the memory gets accessed
-            if (response.resolved < 0) {
-                read_from_memory(computer, operation, &stats, &response);
-            }
+				// If no cache level resolved the request, the memory gets accessed
+				if (response.resolved < 0) {
+					read_from_memory(computer, operation, &stats, &response);
+				}
 
-            // The top levels get populated
-            populate_cache(computer, operation, &stats, &response, 0);
+				// The top levels get populated
+				populate_cache(computer, operation, &stats, &response, 0);
 
-            // The last level gets updated with the operation's data and the number of accesses gets incremented by 1
-            write_back(computer, operation, &stats, &response, response.cacheLineDest[0]);
-            stats.numAccesses[0]++;
+				// The last level gets updated with the operation's data and the number of accesses gets incremented by 1
+				write_back(computer, operation, &stats, &response, response.cacheLineDest[0]);
+				break;
+			case WRITE_THROUGH:
+				// The content gets directly written to memory and the memory gets accessed once
+				write_through(computer, operation, &stats, &response);
 
-        } else if (computer->cache[0].write_policy == WRITE_THROUGH) {
-            // The content gets directly written to memory and the memory gets accessed once
-            write_through(computer, operation, &stats, &response);
+				// The response gets upgraded to house an entire cache line of data
+				upgrade_response_to_full_line(computer, computer->num_caches - 1, &response);
 
-            // Read the data and populate all caches with it
-            read_from_memory(computer, operation, &stats, &response);
-            populate_cache(computer, operation, &stats, &response, 0);
+				// Read the data and populate all caches with it
+				read_from_memory(computer, operation, &stats, &response);
+				populate_cache(computer, operation, &stats, &response, 0);
+				break;
         }
     }
 
     // The action gets printed
-
     if (operation->operation == LOAD) {
-        printf("\nFinished simulation, the response contains: 0x%x\n",response.data[0]);        // The data that was operated with
+        printf("Finished simulation, the response contains: 0x%x\n",response.data[0]);        // The data that was operated with
     } else {
-        printf("\nFinished simulation.\n");
+        printf("Finished simulation.\n");
     }
 
     free(response.data);
@@ -128,8 +134,8 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
     printf("\n-> Looking in cache\n");
 
         // Iterate through all the cache levels
-    for(int cacheLevel = topLevel; cacheLevel < computer->num_caches; cacheLevel++){
-        MappingResult mappingResult;
+    for (int cacheLevel = topLevel; cacheLevel < computer->num_caches; cacheLevel++) {
+        MappingResult mappingResult ;
         long line;
 
         // The mapping gets calculated
@@ -163,7 +169,12 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
             read_line_from_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
             if (response->size == 1) {
                 response->data[0] = cacheData.content[mappingResult.offset];
-                printf("\t The first element contained in offset %d is 0x%x\n",mappingResult.offset, response->data[0]);
+                // printf("\t The first element contained in offset %d is 0x%x\n",mappingResult.offset, response->data[0]);
+				printf("\t The cache line contains: ");
+				for (int i = 0; i < computer->cache[cacheLevel].num_words; i++) {
+					printf("0x%x ", cacheData.content[i]);
+				}
+				printf("\n");
             }
 
             // Remember cache level and line that resolved the request
@@ -174,17 +185,13 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
             return;
         } else {     //If there is a miss
             // Miss
-            // printf(">    %s: Miss 2^%d-1 = %f\n", cacheName,computer->cache[cacheLevel].offset_bits, pow(2,computer->cache[cacheLevel].offset_bits)-1);
             printf("\t > Miss in L%d cache.\n", cacheLevel + 1);
 
             // The statistics get updated
             stats->numMisses[cacheLevel]++;
 
             // Upgrade request to a full cache line
-            response->size = computer->cache[cacheLevel].num_words;
-            response->address &= -1 << computer->cache[cacheLevel].offset_bits;
-            free(response->data);
-            response->data = malloc((sizeof(long))*computer->cache[cacheLevel].num_words);
+			upgrade_response_to_full_line(computer, cacheLevel, response);
         }
     }
     printf("\t Data has not been found in cache.\n");
@@ -213,11 +220,17 @@ void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *sta
     // And the data is read from memory
     // After every iteration the address gets incremented by computer->cpu.word_width / 8 (Converts the word size to bytes)
     // After every iteration, the address increases one word
-    for (unsigned i=0, address=response->address; i < response->size; i++, address+=computer->cpu.word_width/8) {
+    for (unsigned i = 0, address = response->address; i < response->size; i++, address += computer->cpu.word_width/8) {
         if (read_from_memory_address(computer, &pos, address) < 0) {
             fprintf(stderr, "error in simulation: %s addr:%x\n", interfaceError, address);
             return;
         }
+
+        // If it's not the first access, it gets noted as a burst access
+        if (i != 0) {
+			stats->numBurstAccesses++;
+		}
+
         response->data[i] = pos.content;
     }
 }
@@ -254,12 +267,13 @@ void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats
         }
 
         // If the line was found in cache, there's a hit
-        // TODO consider that the line can be dirty and should be witten to the next level
-        if(line > 0) {
+        if (line > 0) {
             // Hit
             printf("\t < Hit in L%d cache. Line %ld has the data.\n", cacheLevel + 1, line);
+			stats->numHits[cacheLevel]++;
         } else {         //If not, miss
             printf("\t < Miss in L%d cache. Populating.\n", cacheLevel + 1);
+			stats->numMisses[cacheLevel]++;
             // Load operation
             CacheLineContent cacheData, existingData;
             cacheData.dirty = 0;
@@ -319,11 +333,11 @@ void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData
 	// When the actual stats shouldn't be updated, this empty stats struct should be used
 	Stats fillerStats;
 
-	printf("\t Collision detected! ");
+	printf("\t Collision detected, moving to lower level. ");
 
 	// Move to memory if the last level has been reached
 	if (computer->num_caches - 1 <= cacheLevel) {
-		printf("Reached memory, writing directly\n");
+		printf("Reached memory, writing directly.\n");
 		write_through(computer, &moveOp, stats, &moveResponse);
 	} else {
 		switch (computer->cache[cacheLevel - 1].write_policy) {
@@ -338,7 +352,7 @@ void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData
 				break;
 
 			case WRITE_BACK:
-				printf("Moving to lower level (Lower level is WB)\n");
+				printf("Moving to L%d (Lower level is WB)\n", cacheLevel - 1);
 
 				// The whole cache gets checked to see if the data is available
 				find_in_cache(computer, &moveOp, &fillerStats, &moveResponse, cacheLevel - 1);
@@ -356,6 +370,19 @@ void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData
 				break;
 		}
 	}
+}
+
+/**
+ * @brief Prepares the response to contain all the data in a cache line.
+ * @param computer The computer.
+ * @param cacheLevel The cache level that will be checked to determine the size of the line.
+ * @param response The response.
+ */
+void upgrade_response_to_full_line(Computer *computer, int cacheLevel, ResponseType *response){
+	response->size = computer->cache[cacheLevel].num_words;
+	response->address &= -1 << computer->cache[cacheLevel].offset_bits;
+	free(response->data);
+	response->data = malloc((sizeof(long))*computer->cache[cacheLevel].num_words);
 }
 
 /**

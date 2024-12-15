@@ -7,10 +7,11 @@
 
 
 typedef struct {
-   double time;                         //The amount of time it took for the request to be solved
-   long numAccesses[MAX_CACHES+1];      //The number of times each level has been accessed
-   long numHits[MAX_CACHES+1];          //The number of times each level has had a hit
-   long numMisses[MAX_CACHES+1];        //The number of times each level has had a miss
+   double time;                         // The amount of time it took for the request to be solved
+   long numAccesses[MAX_CACHES+1];      // The number of times each level has been accessed
+   long numHits[MAX_CACHES+1];          // The number of times each level has had a hit
+   long numMisses[MAX_CACHES+1];        // The number of times each level has had a miss
+   long numBurstAccesses;					// The number of times there was a burst access on main memory
 } Stats;
 
 void init_statistics(Stats *stats);

@@ -55,6 +55,7 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
 
 //Memory related functions
 void reset_memory(Computer *computer);
+void print_memory_contents(Computer *computer);
 int show_memory_address(Computer *computer, long address);
 int read_from_memory_address(Computer *computer, MemoryPosition *pos, long address);
 int write_to_memory_address(Computer *computer, MemoryPosition *pos, long address);

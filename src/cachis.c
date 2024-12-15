@@ -114,7 +114,6 @@ int main(int argc, char *argv[]) {
        printf("Starting simulation:\n");
        printf("Operations to be simulated: %d\n", numberOfOperations);
        simulate(&computer);
-       print_statistics(stdout);
     }
 
 
