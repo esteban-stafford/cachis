@@ -27,9 +27,9 @@ Memory
           Accesses: 4
 Cache L1
           Accesses: 1
-          Misses: 2
+          Misses: 1
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 6.080000
@@ -62,9 +62,9 @@ Memory
           Accesses: 8
 Cache L1
           Accesses: 2
-          Misses: 4
+          Misses: 2
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 12.160000
@@ -97,9 +97,9 @@ Memory
           Accesses: 12
 Cache L1
           Accesses: 3
-          Misses: 6
+          Misses: 3
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 18.240000
@@ -132,9 +132,9 @@ Memory
           Accesses: 16
 Cache L1
           Accesses: 4
-          Misses: 8
+          Misses: 4
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 24.320000
@@ -167,9 +167,9 @@ Memory
           Accesses: 20
 Cache L1
           Accesses: 5
-          Misses: 10
+          Misses: 5
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 30.400000
@@ -202,9 +202,9 @@ Memory
           Accesses: 24
 Cache L1
           Accesses: 6
-          Misses: 12
+          Misses: 6
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 36.480000
@@ -237,9 +237,9 @@ Memory
           Accesses: 28
 Cache L1
           Accesses: 7
-          Misses: 14
+          Misses: 7
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 42.560000
@@ -272,9 +272,9 @@ Memory
           Accesses: 32
 Cache L1
           Accesses: 8
-          Misses: 16
+          Misses: 8
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 48.640000

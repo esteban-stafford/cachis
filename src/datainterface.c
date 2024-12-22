@@ -228,6 +228,49 @@ void read_flags_from_cache(Computer *computer, int instructionOrData, int level,
 
 }
 
+
+/**
+ * This function updates the flags of a cache line.
+ * @param level which will be written
+ * @param line. A pointer to a struct cacheLine containing the data to be written.
+ * @param i line index
+ */
+void write_flags_to_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, unsigned lineNumber) {
+    GListModel *model;
+    GtkColumnView *view;
+    if (!computer->cache[level].separated || instructionOrData == DATA) {
+        model = G_LIST_MODEL(computer->cache[level].model_data);
+        // view = GTK_COLUMN_VIEW(computer->cache[level].view_data);
+    } else {
+        model = G_LIST_MODEL(computer->cache[level].model_instruction);
+        // view = GTK_COLUMN_VIEW(computer->cache[level].view_instruction);
+    }
+
+    gpointer item = g_list_model_get_item(model, lineNumber);
+    if (item == NULL) {
+        g_warning("Invalid cache line number: %u", lineNumber);
+        return;
+    }
+
+    CacheLine *cache_line = CACHE_LINE(item);
+    cache_line->valid = line->valid;
+    cache_line->dirty = line->dirty;
+    cache_line->tag = line->tag;
+    cache_line->color_cache = g_strdup(colors[WRITE]);
+    cache_line->times_accessed = 1;
+    cache_line->last_accessed = cycle;
+    cache_line->first_accessed = cycle;
+	cache_line->startingAddress = line->startingAddress;
+
+    // Notify the model that the item has changed
+    g_list_model_items_changed(model, lineNumber, 1, 1);
+
+    // Scroll to the updated row
+    // scroll_to_row(GTK_WIDGET(view), lineNumber * 100 / g_list_model_get_n_items(model));
+
+    g_object_unref(item);
+}
+
 /**
  * This function writes a cache line.
  * @param level which will be written
@@ -281,9 +324,6 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
     // scroll_to_row(GTK_WIDGET(view), lineNumber * 100 / g_list_model_get_n_items(model));
 
     g_object_unref(item);
-
-	printf("\n");
-	fflush(stdout);
 }
 
 

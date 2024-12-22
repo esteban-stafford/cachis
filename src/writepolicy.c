@@ -1,7 +1,7 @@
 #include "writepolicy.h"
 
 void write_back(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response, int cacheLine) {
-    printf("\n-> Applying Writeback in cache.\n");
+    printf("\n-> Applying WriteBack in cache\n");
 
     // The contents of the line get read
     CacheLineContent content;
@@ -19,6 +19,7 @@ void write_back(Computer *computer, MemoryOperation *operation, Stats *stats, Re
 }
 
 void write_through(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
+    printf("\n-> Applying WriteThrough in memory\n");
     MemoryPosition pos;
 
     // The address and content gets noted

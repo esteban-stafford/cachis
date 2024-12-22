@@ -27,9 +27,9 @@ Memory
           Accesses: 4
 Cache L1
           Accesses: 1
-          Misses: 2
+          Misses: 1
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 6.080000
@@ -62,9 +62,9 @@ Memory
           Accesses: 8
 Cache L1
           Accesses: 2
-          Misses: 4
+          Misses: 2
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 12.160000
@@ -97,9 +97,9 @@ Memory
           Accesses: 12
 Cache L1
           Accesses: 3
-          Misses: 6
+          Misses: 3
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 18.240000
@@ -132,9 +132,9 @@ Memory
           Accesses: 16
 Cache L1
           Accesses: 4
-          Misses: 8
+          Misses: 4
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 24.320000
@@ -146,6 +146,8 @@ Totals
 ----> Cycle 4
 
 Simulating operation:   S 08000000 D  4 12
+
+-> Applying WriteThrough in memory
 
 -> Reading memory
 
@@ -163,9 +165,9 @@ Memory
           Accesses: 21
 Cache L1
           Accesses: 4
-          Misses: 9
+          Misses: 4
           Hits: 0
-          Miss Rate: 2.25
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 24.450000
@@ -177,6 +179,8 @@ Totals
 ----> Cycle 5
 
 Simulating operation:   S 08000044 D  4 34
+
+-> Applying WriteThrough in memory
 
 -> Reading memory
 
@@ -194,9 +198,9 @@ Memory
           Accesses: 26
 Cache L1
           Accesses: 4
-          Misses: 10
+          Misses: 4
           Hits: 0
-          Miss Rate: 2.50
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 24.580000
@@ -208,6 +212,8 @@ Totals
 ----> Cycle 6
 
 Simulating operation:   S 08000088 D  4 56
+
+-> Applying WriteThrough in memory
 
 -> Reading memory
 
@@ -225,9 +231,9 @@ Memory
           Accesses: 31
 Cache L1
           Accesses: 4
-          Misses: 11
+          Misses: 4
           Hits: 0
-          Miss Rate: 2.75
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 24.710000
@@ -239,6 +245,8 @@ Totals
 ----> Cycle 7
 
 Simulating operation:   S 080000cc D  4 78
+
+-> Applying WriteThrough in memory
 
 -> Reading memory
 
@@ -256,9 +264,9 @@ Memory
           Accesses: 36
 Cache L1
           Accesses: 4
-          Misses: 12
+          Misses: 4
           Hits: 0
-          Miss Rate: 3.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 24.840000
@@ -291,9 +299,9 @@ Memory
           Accesses: 40
 Cache L1
           Accesses: 5
-          Misses: 14
+          Misses: 5
           Hits: 0
-          Miss Rate: 2.80
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 30.920000
@@ -326,9 +334,9 @@ Memory
           Accesses: 44
 Cache L1
           Accesses: 6
-          Misses: 16
+          Misses: 6
           Hits: 0
-          Miss Rate: 2.67
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 37.000000
@@ -361,9 +369,9 @@ Memory
           Accesses: 48
 Cache L1
           Accesses: 7
-          Misses: 18
+          Misses: 7
           Hits: 0
-          Miss Rate: 2.57
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 43.080000
@@ -396,9 +404,9 @@ Memory
           Accesses: 52
 Cache L1
           Accesses: 8
-          Misses: 20
+          Misses: 8
           Hits: 0
-          Miss Rate: 2.50
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 49.160000

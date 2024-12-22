@@ -52,6 +52,7 @@ long find_tag_in_cache(Computer *computer, int instructionOrData, int level, uns
 void read_line_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent* line, int lineNumber);
 void read_flags_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent* line, int lineNumber);
 void write_line_to_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, unsigned lineNumber);
+void write_flags_to_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, unsigned lineNumber);
 
 //Memory related functions
 void reset_memory(Computer *computer);

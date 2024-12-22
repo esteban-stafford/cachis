@@ -1,9 +1,185 @@
 Loading trace file: complex.vca
 Running Cachis in CLI mode
 Starting simulation:
-Operations to be simulated: 15
+Operations to be simulated: 13
 
 ----> Cycle 0
+
+Simulating operation:   L 08000040 D  4 0
+
+-> Looking in cache
+	 > Miss in L1 cache.
+	 > Miss in L2 cache.
+	 Data has not been found in cache.
+
+-> Reading memory
+
+-> Populating caches
+	 < Miss in L2 cache. Populating.
+	 Writing content in line 4 of cache L2: 0x10 0x11 0x12 0x13  ---> 00000010 00000011 00000012 00000013
+	 < Miss in L1 cache. Populating.
+	 Writing content in line 4 of cache L1: 0x10 0x11 0x12 0x13  ---> 00000010 00000011 00000012 00000013
+
+Finished simulation, the response contains: 0x10
+
+------SIMULATION STATISTICS------
+
+CPU
+          Accesses: 1
+Memory
+          Accesses: 4
+Cache L1
+          Accesses: 1
+          Misses: 1
+          Hits: 0
+          Miss Rate: 1.00
+          Hit Rate: 0.00
+Cache L2
+          Accesses: 1
+          Misses: 1
+          Hits: 0
+          Miss Rate: 1.00
+          Hit Rate: 0.00
+Totals
+          Access Time: 1.825000
+
+
+<<----------------------------------------------->>
+
+
+----> Cycle 1
+
+Simulating operation:   L 08000060 D  4 0
+
+-> Looking in cache
+	 > Miss in L1 cache.
+	 > Miss in L2 cache.
+	 Data has not been found in cache.
+
+-> Reading memory
+
+-> Populating caches
+	 < Miss in L2 cache. Populating.
+	 Writing content in line 6 of cache L2: 0x18 0x19 0x1a 0x1b  ---> 00000018 00000019 0000001a 0000001b
+	 < Miss in L1 cache. Populating.
+	 Writing content in line 6 of cache L1: 0x18 0x19 0x1a 0x1b  ---> 00000018 00000019 0000001a 0000001b
+
+Finished simulation, the response contains: 0x18
+
+------SIMULATION STATISTICS------
+
+CPU
+          Accesses: 2
+Memory
+          Accesses: 8
+Cache L1
+          Accesses: 2
+          Misses: 2
+          Hits: 0
+          Miss Rate: 1.00
+          Hit Rate: 0.00
+Cache L2
+          Accesses: 2
+          Misses: 2
+          Hits: 0
+          Miss Rate: 1.00
+          Hit Rate: 0.00
+Totals
+          Access Time: 3.650000
+
+
+<<----------------------------------------------->>
+
+
+----> Cycle 2
+
+Simulating operation:   L 08000080 D  4 0
+
+-> Looking in cache
+	 > Miss in L1 cache.
+	 > Miss in L2 cache.
+	 Data has not been found in cache.
+
+-> Reading memory
+
+-> Populating caches
+	 < Miss in L2 cache. Populating.
+	 Writing content in line 8 of cache L2: 0x20 0x21 0x22 0x23  ---> 00000020 00000021 00000022 00000023
+	 < Miss in L1 cache. Populating.
+	 Writing content in line 0 of cache L1: 0x20 0x21 0x22 0x23  ---> 00000020 00000021 00000022 00000023
+
+Finished simulation, the response contains: 0x20
+
+------SIMULATION STATISTICS------
+
+CPU
+          Accesses: 3
+Memory
+          Accesses: 12
+Cache L1
+          Accesses: 3
+          Misses: 3
+          Hits: 0
+          Miss Rate: 1.00
+          Hit Rate: 0.00
+Cache L2
+          Accesses: 3
+          Misses: 3
+          Hits: 0
+          Miss Rate: 1.00
+          Hit Rate: 0.00
+Totals
+          Access Time: 5.475000
+
+
+<<----------------------------------------------->>
+
+
+----> Cycle 3
+
+Simulating operation:   L 080000a0 D  4 0
+
+-> Looking in cache
+	 > Miss in L1 cache.
+	 > Miss in L2 cache.
+	 Data has not been found in cache.
+
+-> Reading memory
+
+-> Populating caches
+	 < Miss in L2 cache. Populating.
+	 Writing content in line 10 of cache L2: 0x28 0x29 0x2a 0x2b  ---> 00000028 00000029 0000002a 0000002b
+	 < Miss in L1 cache. Populating.
+	 Writing content in line 2 of cache L1: 0x28 0x29 0x2a 0x2b  ---> 00000028 00000029 0000002a 0000002b
+
+Finished simulation, the response contains: 0x28
+
+------SIMULATION STATISTICS------
+
+CPU
+          Accesses: 4
+Memory
+          Accesses: 16
+Cache L1
+          Accesses: 4
+          Misses: 4
+          Hits: 0
+          Miss Rate: 1.00
+          Hit Rate: 0.00
+Cache L2
+          Accesses: 4
+          Misses: 4
+          Hits: 0
+          Miss Rate: 1.00
+          Hit Rate: 0.00
+Totals
+          Access Time: 7.300000
+
+
+<<----------------------------------------------->>
+
+
+----> Cycle 4
 
 Simulating operation:   L 08000000 I  4 0
 
@@ -17,189 +193,10 @@ Simulating operation:   L 08000000 I  4 0
 -> Populating caches
 	 < Miss in L2 cache. Populating.
 	 Writing content in line 0 of cache L2: 0x0 0x1 0x2 0x3  ---> 00000000 00000001 00000002 00000003
-
 	 < Miss in L1 cache. Populating.
 	 Writing content in line 0 of cache L1: 0x0 0x1 0x2 0x3  ---> 00000000 00000001 00000002 00000003
 
 Finished simulation, the response contains: 0x0
-
-------SIMULATION STATISTICS------
-
-CPU
-          Accesses: 1
-Memory
-          Accesses: 4
-Cache L1
-          Accesses: 1
-          Misses: 2
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Cache L2
-          Accesses: 1
-          Misses: 2
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Totals
-          Access Time: 12.080000
-
-
-<<----------------------------------------------->>
-
-
-----> Cycle 1
-
-Simulating operation:   L 08000040 I  4 0
-
--> Looking in cache
-	 > Miss in L1 cache.
-	 > Miss in L2 cache.
-	 Data has not been found in cache.
-
--> Reading memory
-
--> Populating caches
-	 < Miss in L2 cache. Populating.
-	 Writing content in line 4 of cache L2: 0x10 0x11 0x12 0x13  ---> 00000010 00000011 00000012 00000013
-
-	 < Miss in L1 cache. Populating.
-	 Writing content in line 4 of cache L1: 0x10 0x11 0x12 0x13  ---> 00000010 00000011 00000012 00000013
-
-Finished simulation, the response contains: 0x10
-
-------SIMULATION STATISTICS------
-
-CPU
-          Accesses: 2
-Memory
-          Accesses: 8
-Cache L1
-          Accesses: 2
-          Misses: 4
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Cache L2
-          Accesses: 2
-          Misses: 4
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Totals
-          Access Time: 24.160000
-
-
-<<----------------------------------------------->>
-
-
-----> Cycle 2
-
-Simulating operation:   L 08000080 I  4 0
-
--> Looking in cache
-	 > Miss in L1 cache.
-	 > Miss in L2 cache.
-	 Data has not been found in cache.
-
--> Reading memory
-
--> Populating caches
-	 < Miss in L2 cache. Populating.
-	 Writing content in line 8 of cache L2: 0x20 0x21 0x22 0x23  ---> 00000020 00000021 00000022 00000023
-
-	 < Miss in L1 cache. Populating.
-	 Writing content in line 8 of cache L1: 0x20 0x21 0x22 0x23  ---> 00000020 00000021 00000022 00000023
-Finished simulation, the response contains: 0x20
-
-------SIMULATION STATISTICS------
-
-CPU
-          Accesses: 3
-Memory
-          Accesses: 12
-Cache L1
-          Accesses: 3
-          Misses: 6
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Cache L2
-          Accesses: 3
-          Misses: 6
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Totals
-          Access Time: 36.240000
-
-
-<<----------------------------------------------->>
-
-
-----> Cycle 3
-
-Simulating operation:   L 080000c0 I  4 0
-
--> Looking in cache
-	 > Miss in L1 cache.
-	 > Miss in L2 cache.
-	 Data has not been found in cache.
-
--> Reading memory
-
--> Populating caches
-	 < Miss in L2 cache. Populating.
-	 Writing content in line 12 of cache L2: 0x30 0x31 0x32 0x33  ---> 00000030 00000031 00000032 00000033
-
-	 < Miss in L1 cache. Populating.
-	 Writing content in line 12 of cache L1: 0x30 0x31 0x32 0x33  ---> 00000030 00000031 00000032 00000033
-Finished simulation, the response contains: 0x30
-
-------SIMULATION STATISTICS------
-
-CPU
-          Accesses: 4
-Memory
-          Accesses: 16
-Cache L1
-          Accesses: 4
-          Misses: 8
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Cache L2
-          Accesses: 4
-          Misses: 8
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Totals
-          Access Time: 48.320000
-
-
-<<----------------------------------------------->>
-
-
-----> Cycle 4
-
-Simulating operation:   L 08000100 D  4 0
-
--> Looking in cache
-	 > Miss in L1 cache.
-	 > Miss in L2 cache.
-	 Data has not been found in cache.
-
--> Reading memory
-
--> Populating caches
-	 < Miss in L2 cache. Populating.
-	 Writing content in line 16 of cache L2: 0x40 0x41 0x42 0x43  ---> 00000040 00000041 00000042 00000043
-
-	 < Miss in L1 cache. Populating.
-	 Writing content in line 0 of cache L1: 0x40 0x41 0x42 0x43  ---> 00000040 00000041 00000042 00000043
-
-Finished simulation, the response contains: 0x40
 
 ------SIMULATION STATISTICS------
 
@@ -209,18 +206,18 @@ Memory
           Accesses: 20
 Cache L1
           Accesses: 5
-          Misses: 10
+          Misses: 5
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Cache L2
           Accesses: 5
-          Misses: 10
+          Misses: 5
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
-          Access Time: 60.400000
+          Access Time: 9.125000
 
 
 <<----------------------------------------------->>
@@ -228,7 +225,7 @@ Totals
 
 ----> Cycle 5
 
-Simulating operation:   L 08000140 D  4 0
+Simulating operation:   L 08000010 I  4 0
 
 -> Looking in cache
 	 > Miss in L1 cache.
@@ -239,12 +236,11 @@ Simulating operation:   L 08000140 D  4 0
 
 -> Populating caches
 	 < Miss in L2 cache. Populating.
-	 Writing content in line 20 of cache L2: 0x50 0x51 0x52 0x53  ---> 00000050 00000051 00000052 00000053
-
+	 Writing content in line 1 of cache L2: 0x4 0x5 0x6 0x7  ---> 00000004 00000005 00000006 00000007
 	 < Miss in L1 cache. Populating.
-	 Writing content in line 4 of cache L1: 0x50 0x51 0x52 0x53  ---> 00000050 00000051 00000052 00000053
+	 Writing content in line 1 of cache L1: 0x4 0x5 0x6 0x7  ---> 00000004 00000005 00000006 00000007
 
-Finished simulation, the response contains: 0x50
+Finished simulation, the response contains: 0x4
 
 ------SIMULATION STATISTICS------
 
@@ -254,18 +250,18 @@ Memory
           Accesses: 24
 Cache L1
           Accesses: 6
-          Misses: 12
+          Misses: 6
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Cache L2
           Accesses: 6
-          Misses: 12
+          Misses: 6
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
-          Access Time: 72.480000
+          Access Time: 10.950000
 
 
 <<----------------------------------------------->>
@@ -273,7 +269,7 @@ Totals
 
 ----> Cycle 6
 
-Simulating operation:   L 08000180 D  4 0
+Simulating operation:   L 08000020 I  4 0
 
 -> Looking in cache
 	 > Miss in L1 cache.
@@ -284,11 +280,11 @@ Simulating operation:   L 08000180 D  4 0
 
 -> Populating caches
 	 < Miss in L2 cache. Populating.
-	 Writing content in line 24 of cache L2: 0x60 0x61 0x62 0x63  ---> 00000060 00000061 00000062 00000063
-
+	 Writing content in line 2 of cache L2: 0x8 0x9 0xa 0xb  ---> 00000008 00000009 0000000a 0000000b
 	 < Miss in L1 cache. Populating.
-	 Writing content in line 8 of cache L1: 0x60 0x61 0x62 0x63  ---> 00000060 00000061 00000062 00000063
-Finished simulation, the response contains: 0x60
+	 Writing content in line 2 of cache L1: 0x8 0x9 0xa 0xb  ---> 00000008 00000009 0000000a 0000000b
+
+Finished simulation, the response contains: 0x8
 
 ------SIMULATION STATISTICS------
 
@@ -298,18 +294,18 @@ Memory
           Accesses: 28
 Cache L1
           Accesses: 7
-          Misses: 14
+          Misses: 7
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Cache L2
           Accesses: 7
-          Misses: 14
+          Misses: 7
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
-          Access Time: 84.560000
+          Access Time: 12.775000
 
 
 <<----------------------------------------------->>
@@ -317,7 +313,7 @@ Totals
 
 ----> Cycle 7
 
-Simulating operation:   L 080001c0 D  4 0
+Simulating operation:   L 08000030 I  4 0
 
 -> Looking in cache
 	 > Miss in L1 cache.
@@ -328,11 +324,11 @@ Simulating operation:   L 080001c0 D  4 0
 
 -> Populating caches
 	 < Miss in L2 cache. Populating.
-	 Writing content in line 28 of cache L2: 0x70 0x71 0x72 0x73  ---> 00000070 00000071 00000072 00000073
-
+	 Writing content in line 3 of cache L2: 0xc 0xd 0xe 0xf  ---> 0000000c 0000000d 0000000e 0000000f
 	 < Miss in L1 cache. Populating.
-	 Writing content in line 12 of cache L1: 0x70 0x71 0x72 0x73  ---> 00000070 00000071 00000072 00000073
-Finished simulation, the response contains: 0x70
+	 Writing content in line 3 of cache L1: 0xc 0xd 0xe 0xf  ---> 0000000c 0000000d 0000000e 0000000f
+
+Finished simulation, the response contains: 0xc
 
 ------SIMULATION STATISTICS------
 
@@ -342,18 +338,18 @@ Memory
           Accesses: 32
 Cache L1
           Accesses: 8
-          Misses: 16
+          Misses: 8
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Cache L2
           Accesses: 8
-          Misses: 16
+          Misses: 8
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
-          Access Time: 96.640000
+          Access Time: 14.600000
 
 
 <<----------------------------------------------->>
@@ -361,52 +357,7 @@ Totals
 
 ----> Cycle 8
 
-Simulating operation:   L 0800073c I  4 0
-
--> Looking in cache
-	 > Miss in L1 cache.
-	 > Miss in L2 cache.
-	 Data has not been found in cache.
-
--> Reading memory
-
--> Populating caches
-	 < Miss in L2 cache. Populating.
-	 Writing content in line 19 of cache L2: 0x1cc 0x1cd 0x1ce 0x1cf  ---> 000001cc 000001cd 000001ce 000001cf
-
-	 < Miss in L1 cache. Populating.
-	 Writing content in line 3 of cache L1: 0x1cc 0x1cd 0x1ce 0x1cf  ---> 000001cc 000001cd 000001ce 000001cf
-
-Finished simulation, the response contains: 0x1cc
-
-------SIMULATION STATISTICS------
-
-CPU
-          Accesses: 9
-Memory
-          Accesses: 36
-Cache L1
-          Accesses: 9
-          Misses: 18
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Cache L2
-          Accesses: 9
-          Misses: 18
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Totals
-          Access Time: 108.720000
-
-
-<<----------------------------------------------->>
-
-
-----> Cycle 9
-
-Simulating operation:   L 080002ac D  4 0
+Simulating operation: ! S 080002a0 D  4 0
 
 -> Looking in cache
 	 > Miss in L1 cache.
@@ -418,10 +369,60 @@ Simulating operation:   L 080002ac D  4 0
 -> Populating caches
 	 < Miss in L2 cache. Populating.
 	 Writing content in line 10 of cache L2: 0xa8 0xa9 0xaa 0xab  ---> 000000a8 000000a9 000000aa 000000ab
-
 	 < Miss in L1 cache. Populating.
-	 Writing content in line 10 of cache L1: 0xa8 0xa9 0xaa 0xab  ---> 000000a8 000000a9 000000aa 000000ab
-Finished simulation, the response contains: 0xa8
+	 Writing content in line 2 of cache L1: 0xa8 0xa9 0xaa 0xab  ---> 000000a8 000000a9 000000aa 000000ab
+
+-> Applying WriteBack in cache
+	 Writing content in line 2 of cache L1: 0x0 0xa9 0xaa 0xab  ---> 00000000 000000a9 000000aa 000000ab
+
+Finished simulation.
+
+------SIMULATION STATISTICS------
+
+CPU
+          Accesses: 9
+Memory
+          Accesses: 36
+Cache L1
+          Accesses: 9
+          Misses: 9
+          Hits: 0
+          Miss Rate: 1.00
+          Hit Rate: 0.00
+Cache L2
+          Accesses: 9
+          Misses: 9
+          Hits: 0
+          Miss Rate: 1.00
+          Hit Rate: 0.00
+Totals
+          Access Time: 16.425000
+
+
+<<----------------------------------------------->>
+
+
+----> Cycle 9
+
+Simulating operation:   S 08000100 D  4 2345
+
+-> Looking in cache
+	 > Miss in L1 cache.
+	 > Miss in L2 cache.
+	 Data has not been found in cache.
+
+-> Reading memory
+
+-> Populating caches
+	 < Miss in L2 cache. Populating.
+	 Writing content in line 16 of cache L2: 0x40 0x41 0x42 0x43  ---> 00000040 00000041 00000042 00000043
+	 < Miss in L1 cache. Populating.
+	 Writing content in line 0 of cache L1: 0x40 0x41 0x42 0x43  ---> 00000040 00000041 00000042 00000043
+
+-> Applying WriteBack in cache
+	 Writing content in line 0 of cache L1: 0x929 0x41 0x42 0x43  ---> 00000929 00000041 00000042 00000043
+
+Finished simulation.
 
 ------SIMULATION STATISTICS------
 
@@ -431,18 +432,18 @@ Memory
           Accesses: 40
 Cache L1
           Accesses: 10
-          Misses: 20
+          Misses: 10
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Cache L2
           Accesses: 10
-          Misses: 20
+          Misses: 10
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
-          Access Time: 120.800000
+          Access Time: 18.250000
 
 
 <<----------------------------------------------->>
@@ -450,7 +451,7 @@ Totals
 
 ----> Cycle 10
 
-Simulating operation:   L 08000401 I  4 0
+Simulating operation:   S 08000124 D  4 2345
 
 -> Looking in cache
 	 > Miss in L1 cache.
@@ -461,33 +462,49 @@ Simulating operation:   L 08000401 I  4 0
 
 -> Populating caches
 	 < Miss in L2 cache. Populating.
-	 Writing content in line 0 of cache L2: 0x100 0x101 0x102 0x103  ---> 00000100 00000101 00000102 00000103
-
+	 Writing content in line 18 of cache L2: 0x48 0x49 0x4a 0x4b  ---> 00000048 00000049 0000004a 0000004b
 	 < Miss in L1 cache. Populating.
-	 Writing content in line 0 of cache L1: 0x100 0x101 0x102 0x103  ---> 00000100 00000101 00000102 00000103
+	 Collision detected, moving to lower level. Moving existing data to memory (Lower level is WT)
 
-Finished simulation, the response contains: 0x100
+-> Starting move to lower levels:
+
+-> Applying WriteThrough in memory
+
+-> Reading memory
+
+-> Populating caches
+	 < Miss in L2 cache. Populating.
+	 Writing content in line 10 of cache L2: 0x0 0xa9 0xaa 0xab  ---> 00000000 000000a9 000000aa 000000ab
+
+-> Finishing move to lower levels
+
+	 Writing content in line 2 of cache L1: 0x48 0x49 0x4a 0x4b  ---> 00000048 00000049 0000004a 0000004b
+
+-> Applying WriteBack in cache
+	 Writing content in line 2 of cache L1: 0x48 0x929 0x4a 0x4b  ---> 00000048 00000929 0000004a 0000004b
+
+Finished simulation.
 
 ------SIMULATION STATISTICS------
 
 CPU
           Accesses: 11
 Memory
-          Accesses: 44
+          Accesses: 48
 Cache L1
           Accesses: 11
-          Misses: 22
+          Misses: 11
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Cache L2
           Accesses: 11
-          Misses: 22
+          Misses: 11
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
-          Access Time: 132.880000
+          Access Time: 21.825000
 
 
 <<----------------------------------------------->>
@@ -495,22 +512,18 @@ Totals
 
 ----> Cycle 11
 
-Simulating operation:   L 080003b1 D  4 0
+Simulating operation:   L 08000000 I  4 0
 
 -> Looking in cache
 	 > Miss in L1 cache.
-	 > Miss in L2 cache.
-	 Data has not been found in cache.
-
--> Reading memory
+	 > Hit in L2 cache. Line 0 has the data.
+	 The cache line contains: 0x0 0x1 0x2 0x3 
 
 -> Populating caches
-	 < Miss in L2 cache. Populating.
-	 Writing content in line 27 of cache L2: 0xec 0xed 0xee 0xef  ---> 000000ec 000000ed 000000ee 000000ef
-
 	 < Miss in L1 cache. Populating.
-	 Writing content in line 11 of cache L1: 0xec 0xed 0xee 0xef  ---> 000000ec 000000ed 000000ee 000000ef
-Finished simulation, the response contains: 0xec
+	 Writing content in line 0 of cache L1: 0x0 0x1 0x2 0x3  ---> 00000000 00000001 00000002 00000003
+
+Finished simulation, the response contains: 0x0
 
 ------SIMULATION STATISTICS------
 
@@ -520,18 +533,18 @@ Memory
           Accesses: 48
 Cache L1
           Accesses: 12
-          Misses: 24
+          Misses: 12
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Cache L2
           Accesses: 12
-          Misses: 24
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
+          Misses: 11
+          Hits: 1
+          Miss Rate: 0.92
+          Hit Rate: 0.08
 Totals
-          Access Time: 144.960000
+          Access Time: 21.900000
 
 
 <<----------------------------------------------->>
@@ -539,23 +552,32 @@ Totals
 
 ----> Cycle 12
 
-Simulating operation:   L 08000230 D  4 0
+Simulating operation:   L 08000000 D  4 0
 
 -> Looking in cache
 	 > Miss in L1 cache.
-	 > Miss in L2 cache.
-	 Data has not been found in cache.
+	 > Hit in L2 cache. Line 0 has the data.
+	 The cache line contains: 0x0 0x1 0x2 0x3 
+
+-> Populating caches
+	 < Miss in L1 cache. Populating.
+	 Collision detected, moving to lower level. Moving existing data to memory (Lower level is WT)
+
+-> Starting move to lower levels:
+
+-> Applying WriteThrough in memory
 
 -> Reading memory
 
 -> Populating caches
 	 < Miss in L2 cache. Populating.
-	 Writing content in line 3 of cache L2: 0x8c 0x8d 0x8e 0x8f  ---> 0000008c 0000008d 0000008e 0000008f
+	 Writing content in line 16 of cache L2: 0x929 0x41 0x42 0x43  ---> 00000929 00000041 00000042 00000043
 
-	 < Miss in L1 cache. Populating.
-	 Writing content in line 3 of cache L1: 0x8c 0x8d 0x8e 0x8f  ---> 0000008c 0000008d 0000008e 0000008f
+-> Finishing move to lower levels
 
-Finished simulation, the response contains: 0x8c
+	 Writing content in line 0 of cache L1: 0x0 0x1 0x2 0x3  ---> 00000000 00000001 00000002 00000003
+
+Finished simulation, the response contains: 0x0
 
 ------SIMULATION STATISTICS------
 
@@ -565,103 +587,18 @@ Memory
           Accesses: 52
 Cache L1
           Accesses: 13
-          Misses: 26
+          Misses: 13
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Cache L2
           Accesses: 13
-          Misses: 26
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
+          Misses: 11
+          Hits: 2
+          Miss Rate: 0.85
+          Hit Rate: 0.15
 Totals
-          Access Time: 157.040000
-
-
-<<----------------------------------------------->>
-
-
-----> Cycle 13
-
-Simulating operation:   S 080005a0 D  4 0
-
--> Looking in cache
-	 > Miss in L1 cache.
-	 > Miss in L2 cache.
-	 Data has not been found in cache.
-
--> Reading memory
-
--> Populating caches
-	 < Miss in L2 cache. Populating.
-	 Writing content in line 26 of cache L2: 0x168 0x169 0x16a 0x16b  ---> 00000168 00000169 0000016a 0000016b
-
-	 < Miss in L1 cache. Populating.
-	 Writing content in line 10 of cache L1: 0x168 0x169 0x16a 0x16b  ---> 00000168 00000169 0000016a 0000016b
-
--> Applying Writeback in cache.
-	 Writing content in line 10 of cache L1: 0x0 0x0 0x0 0x0  ---> 00000000 00000000 00000000 00000000
-Finished simulation.
-
-------SIMULATION STATISTICS------
-
-CPU
-          Accesses: 14
-Memory
-          Accesses: 56
-Cache L1
-          Accesses: 14
-          Misses: 28
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Cache L2
-          Accesses: 14
-          Misses: 28
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Totals
-          Access Time: 169.120000
-
-
-<<----------------------------------------------->>
-
-
-----> Cycle 14
-
-Simulating operation:   S 08000100 D  4 2345
-
--> Looking in cache
-	 > Hit in L1 cache. Line 0 has the data.
-	 The cache line contains: 0x40 0x41 0x42 0x43 
-
--> Applying Writeback in cache.
-	 Writing content in line 0 of cache L1: 0x929 0x41 0x42 0x43  ---> 00000929 00000041 00000042 00000043
-
-Finished simulation.
-
-------SIMULATION STATISTICS------
-
-CPU
-          Accesses: 15
-Memory
-          Accesses: 56
-Cache L1
-          Accesses: 15
-          Misses: 28
-          Hits: 1
-          Miss Rate: 1.87
-          Hit Rate: 0.07
-Cache L2
-          Accesses: 14
-          Misses: 28
-          Hits: 0
-          Miss Rate: 2.00
-          Hit Rate: 0.00
-Totals
-          Access Time: 175.120000
+          Access Time: 23.725000
 
 
 <<----------------------------------------------->>
@@ -733,7 +670,7 @@ Address: 0x80000f0 	 Content: 0x3c
 Address: 0x80000f4 	 Content: 0x3d
 Address: 0x80000f8 	 Content: 0x3e
 Address: 0x80000fc 	 Content: 0x3f
-Address: 0x8000100 	 Content: 0x40
+Address: 0x8000100 	 Content: 0x929
 Address: 0x8000104 	 Content: 0x41
 Address: 0x8000108 	 Content: 0x42
 Address: 0x800010c 	 Content: 0x43
@@ -837,7 +774,7 @@ Address: 0x8000290 	 Content: 0xa4
 Address: 0x8000294 	 Content: 0xa5
 Address: 0x8000298 	 Content: 0xa6
 Address: 0x800029c 	 Content: 0xa7
-Address: 0x80002a0 	 Content: 0xa8
+Address: 0x80002a0 	 Content: 0x0
 Address: 0x80002a4 	 Content: 0xa9
 Address: 0x80002a8 	 Content: 0xaa
 Address: 0x80002ac 	 Content: 0xab
@@ -925,259 +862,3 @@ Address: 0x80003f0 	 Content: 0xfc
 Address: 0x80003f4 	 Content: 0xfd
 Address: 0x80003f8 	 Content: 0xfe
 Address: 0x80003fc 	 Content: 0xff
-Address: 0x8000400 	 Content: 0x100
-Address: 0x8000404 	 Content: 0x101
-Address: 0x8000408 	 Content: 0x102
-Address: 0x800040c 	 Content: 0x103
-Address: 0x8000410 	 Content: 0x104
-Address: 0x8000414 	 Content: 0x105
-Address: 0x8000418 	 Content: 0x106
-Address: 0x800041c 	 Content: 0x107
-Address: 0x8000420 	 Content: 0x108
-Address: 0x8000424 	 Content: 0x109
-Address: 0x8000428 	 Content: 0x10a
-Address: 0x800042c 	 Content: 0x10b
-Address: 0x8000430 	 Content: 0x10c
-Address: 0x8000434 	 Content: 0x10d
-Address: 0x8000438 	 Content: 0x10e
-Address: 0x800043c 	 Content: 0x10f
-Address: 0x8000440 	 Content: 0x110
-Address: 0x8000444 	 Content: 0x111
-Address: 0x8000448 	 Content: 0x112
-Address: 0x800044c 	 Content: 0x113
-Address: 0x8000450 	 Content: 0x114
-Address: 0x8000454 	 Content: 0x115
-Address: 0x8000458 	 Content: 0x116
-Address: 0x800045c 	 Content: 0x117
-Address: 0x8000460 	 Content: 0x118
-Address: 0x8000464 	 Content: 0x119
-Address: 0x8000468 	 Content: 0x11a
-Address: 0x800046c 	 Content: 0x11b
-Address: 0x8000470 	 Content: 0x11c
-Address: 0x8000474 	 Content: 0x11d
-Address: 0x8000478 	 Content: 0x11e
-Address: 0x800047c 	 Content: 0x11f
-Address: 0x8000480 	 Content: 0x120
-Address: 0x8000484 	 Content: 0x121
-Address: 0x8000488 	 Content: 0x122
-Address: 0x800048c 	 Content: 0x123
-Address: 0x8000490 	 Content: 0x124
-Address: 0x8000494 	 Content: 0x125
-Address: 0x8000498 	 Content: 0x126
-Address: 0x800049c 	 Content: 0x127
-Address: 0x80004a0 	 Content: 0x128
-Address: 0x80004a4 	 Content: 0x129
-Address: 0x80004a8 	 Content: 0x12a
-Address: 0x80004ac 	 Content: 0x12b
-Address: 0x80004b0 	 Content: 0x12c
-Address: 0x80004b4 	 Content: 0x12d
-Address: 0x80004b8 	 Content: 0x12e
-Address: 0x80004bc 	 Content: 0x12f
-Address: 0x80004c0 	 Content: 0x130
-Address: 0x80004c4 	 Content: 0x131
-Address: 0x80004c8 	 Content: 0x132
-Address: 0x80004cc 	 Content: 0x133
-Address: 0x80004d0 	 Content: 0x134
-Address: 0x80004d4 	 Content: 0x135
-Address: 0x80004d8 	 Content: 0x136
-Address: 0x80004dc 	 Content: 0x137
-Address: 0x80004e0 	 Content: 0x138
-Address: 0x80004e4 	 Content: 0x139
-Address: 0x80004e8 	 Content: 0x13a
-Address: 0x80004ec 	 Content: 0x13b
-Address: 0x80004f0 	 Content: 0x13c
-Address: 0x80004f4 	 Content: 0x13d
-Address: 0x80004f8 	 Content: 0x13e
-Address: 0x80004fc 	 Content: 0x13f
-Address: 0x8000500 	 Content: 0x140
-Address: 0x8000504 	 Content: 0x141
-Address: 0x8000508 	 Content: 0x142
-Address: 0x800050c 	 Content: 0x143
-Address: 0x8000510 	 Content: 0x144
-Address: 0x8000514 	 Content: 0x145
-Address: 0x8000518 	 Content: 0x146
-Address: 0x800051c 	 Content: 0x147
-Address: 0x8000520 	 Content: 0x148
-Address: 0x8000524 	 Content: 0x149
-Address: 0x8000528 	 Content: 0x14a
-Address: 0x800052c 	 Content: 0x14b
-Address: 0x8000530 	 Content: 0x14c
-Address: 0x8000534 	 Content: 0x14d
-Address: 0x8000538 	 Content: 0x14e
-Address: 0x800053c 	 Content: 0x14f
-Address: 0x8000540 	 Content: 0x150
-Address: 0x8000544 	 Content: 0x151
-Address: 0x8000548 	 Content: 0x152
-Address: 0x800054c 	 Content: 0x153
-Address: 0x8000550 	 Content: 0x154
-Address: 0x8000554 	 Content: 0x155
-Address: 0x8000558 	 Content: 0x156
-Address: 0x800055c 	 Content: 0x157
-Address: 0x8000560 	 Content: 0x158
-Address: 0x8000564 	 Content: 0x159
-Address: 0x8000568 	 Content: 0x15a
-Address: 0x800056c 	 Content: 0x15b
-Address: 0x8000570 	 Content: 0x15c
-Address: 0x8000574 	 Content: 0x15d
-Address: 0x8000578 	 Content: 0x15e
-Address: 0x800057c 	 Content: 0x15f
-Address: 0x8000580 	 Content: 0x160
-Address: 0x8000584 	 Content: 0x161
-Address: 0x8000588 	 Content: 0x162
-Address: 0x800058c 	 Content: 0x163
-Address: 0x8000590 	 Content: 0x164
-Address: 0x8000594 	 Content: 0x165
-Address: 0x8000598 	 Content: 0x166
-Address: 0x800059c 	 Content: 0x167
-Address: 0x80005a0 	 Content: 0x168
-Address: 0x80005a4 	 Content: 0x169
-Address: 0x80005a8 	 Content: 0x16a
-Address: 0x80005ac 	 Content: 0x16b
-Address: 0x80005b0 	 Content: 0x16c
-Address: 0x80005b4 	 Content: 0x16d
-Address: 0x80005b8 	 Content: 0x16e
-Address: 0x80005bc 	 Content: 0x16f
-Address: 0x80005c0 	 Content: 0x170
-Address: 0x80005c4 	 Content: 0x171
-Address: 0x80005c8 	 Content: 0x172
-Address: 0x80005cc 	 Content: 0x173
-Address: 0x80005d0 	 Content: 0x174
-Address: 0x80005d4 	 Content: 0x175
-Address: 0x80005d8 	 Content: 0x176
-Address: 0x80005dc 	 Content: 0x177
-Address: 0x80005e0 	 Content: 0x178
-Address: 0x80005e4 	 Content: 0x179
-Address: 0x80005e8 	 Content: 0x17a
-Address: 0x80005ec 	 Content: 0x17b
-Address: 0x80005f0 	 Content: 0x17c
-Address: 0x80005f4 	 Content: 0x17d
-Address: 0x80005f8 	 Content: 0x17e
-Address: 0x80005fc 	 Content: 0x17f
-Address: 0x8000600 	 Content: 0x180
-Address: 0x8000604 	 Content: 0x181
-Address: 0x8000608 	 Content: 0x182
-Address: 0x800060c 	 Content: 0x183
-Address: 0x8000610 	 Content: 0x184
-Address: 0x8000614 	 Content: 0x185
-Address: 0x8000618 	 Content: 0x186
-Address: 0x800061c 	 Content: 0x187
-Address: 0x8000620 	 Content: 0x188
-Address: 0x8000624 	 Content: 0x189
-Address: 0x8000628 	 Content: 0x18a
-Address: 0x800062c 	 Content: 0x18b
-Address: 0x8000630 	 Content: 0x18c
-Address: 0x8000634 	 Content: 0x18d
-Address: 0x8000638 	 Content: 0x18e
-Address: 0x800063c 	 Content: 0x18f
-Address: 0x8000640 	 Content: 0x190
-Address: 0x8000644 	 Content: 0x191
-Address: 0x8000648 	 Content: 0x192
-Address: 0x800064c 	 Content: 0x193
-Address: 0x8000650 	 Content: 0x194
-Address: 0x8000654 	 Content: 0x195
-Address: 0x8000658 	 Content: 0x196
-Address: 0x800065c 	 Content: 0x197
-Address: 0x8000660 	 Content: 0x198
-Address: 0x8000664 	 Content: 0x199
-Address: 0x8000668 	 Content: 0x19a
-Address: 0x800066c 	 Content: 0x19b
-Address: 0x8000670 	 Content: 0x19c
-Address: 0x8000674 	 Content: 0x19d
-Address: 0x8000678 	 Content: 0x19e
-Address: 0x800067c 	 Content: 0x19f
-Address: 0x8000680 	 Content: 0x1a0
-Address: 0x8000684 	 Content: 0x1a1
-Address: 0x8000688 	 Content: 0x1a2
-Address: 0x800068c 	 Content: 0x1a3
-Address: 0x8000690 	 Content: 0x1a4
-Address: 0x8000694 	 Content: 0x1a5
-Address: 0x8000698 	 Content: 0x1a6
-Address: 0x800069c 	 Content: 0x1a7
-Address: 0x80006a0 	 Content: 0x1a8
-Address: 0x80006a4 	 Content: 0x1a9
-Address: 0x80006a8 	 Content: 0x1aa
-Address: 0x80006ac 	 Content: 0x1ab
-Address: 0x80006b0 	 Content: 0x1ac
-Address: 0x80006b4 	 Content: 0x1ad
-Address: 0x80006b8 	 Content: 0x1ae
-Address: 0x80006bc 	 Content: 0x1af
-Address: 0x80006c0 	 Content: 0x1b0
-Address: 0x80006c4 	 Content: 0x1b1
-Address: 0x80006c8 	 Content: 0x1b2
-Address: 0x80006cc 	 Content: 0x1b3
-Address: 0x80006d0 	 Content: 0x1b4
-Address: 0x80006d4 	 Content: 0x1b5
-Address: 0x80006d8 	 Content: 0x1b6
-Address: 0x80006dc 	 Content: 0x1b7
-Address: 0x80006e0 	 Content: 0x1b8
-Address: 0x80006e4 	 Content: 0x1b9
-Address: 0x80006e8 	 Content: 0x1ba
-Address: 0x80006ec 	 Content: 0x1bb
-Address: 0x80006f0 	 Content: 0x1bc
-Address: 0x80006f4 	 Content: 0x1bd
-Address: 0x80006f8 	 Content: 0x1be
-Address: 0x80006fc 	 Content: 0x1bf
-Address: 0x8000700 	 Content: 0x1c0
-Address: 0x8000704 	 Content: 0x1c1
-Address: 0x8000708 	 Content: 0x1c2
-Address: 0x800070c 	 Content: 0x1c3
-Address: 0x8000710 	 Content: 0x1c4
-Address: 0x8000714 	 Content: 0x1c5
-Address: 0x8000718 	 Content: 0x1c6
-Address: 0x800071c 	 Content: 0x1c7
-Address: 0x8000720 	 Content: 0x1c8
-Address: 0x8000724 	 Content: 0x1c9
-Address: 0x8000728 	 Content: 0x1ca
-Address: 0x800072c 	 Content: 0x1cb
-Address: 0x8000730 	 Content: 0x1cc
-Address: 0x8000734 	 Content: 0x1cd
-Address: 0x8000738 	 Content: 0x1ce
-Address: 0x800073c 	 Content: 0x1cf
-Address: 0x8000740 	 Content: 0x1d0
-Address: 0x8000744 	 Content: 0x1d1
-Address: 0x8000748 	 Content: 0x1d2
-Address: 0x800074c 	 Content: 0x1d3
-Address: 0x8000750 	 Content: 0x1d4
-Address: 0x8000754 	 Content: 0x1d5
-Address: 0x8000758 	 Content: 0x1d6
-Address: 0x800075c 	 Content: 0x1d7
-Address: 0x8000760 	 Content: 0x1d8
-Address: 0x8000764 	 Content: 0x1d9
-Address: 0x8000768 	 Content: 0x1da
-Address: 0x800076c 	 Content: 0x1db
-Address: 0x8000770 	 Content: 0x1dc
-Address: 0x8000774 	 Content: 0x1dd
-Address: 0x8000778 	 Content: 0x1de
-Address: 0x800077c 	 Content: 0x1df
-Address: 0x8000780 	 Content: 0x1e0
-Address: 0x8000784 	 Content: 0x1e1
-Address: 0x8000788 	 Content: 0x1e2
-Address: 0x800078c 	 Content: 0x1e3
-Address: 0x8000790 	 Content: 0x1e4
-Address: 0x8000794 	 Content: 0x1e5
-Address: 0x8000798 	 Content: 0x1e6
-Address: 0x800079c 	 Content: 0x1e7
-Address: 0x80007a0 	 Content: 0x1e8
-Address: 0x80007a4 	 Content: 0x1e9
-Address: 0x80007a8 	 Content: 0x1ea
-Address: 0x80007ac 	 Content: 0x1eb
-Address: 0x80007b0 	 Content: 0x1ec
-Address: 0x80007b4 	 Content: 0x1ed
-Address: 0x80007b8 	 Content: 0x1ee
-Address: 0x80007bc 	 Content: 0x1ef
-Address: 0x80007c0 	 Content: 0x1f0
-Address: 0x80007c4 	 Content: 0x1f1
-Address: 0x80007c8 	 Content: 0x1f2
-Address: 0x80007cc 	 Content: 0x1f3
-Address: 0x80007d0 	 Content: 0x1f4
-Address: 0x80007d4 	 Content: 0x1f5
-Address: 0x80007d8 	 Content: 0x1f6
-Address: 0x80007dc 	 Content: 0x1f7
-Address: 0x80007e0 	 Content: 0x1f8
-Address: 0x80007e4 	 Content: 0x1f9
-Address: 0x80007e8 	 Content: 0x1fa
-Address: 0x80007ec 	 Content: 0x1fb
-Address: 0x80007f0 	 Content: 0x1fc
-Address: 0x80007f4 	 Content: 0x1fd
-Address: 0x80007f8 	 Content: 0x1fe
-Address: 0x80007fc 	 Content: 0x1ff

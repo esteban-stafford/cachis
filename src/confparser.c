@@ -457,7 +457,7 @@ int parseConfiguration(dictionary *ini, Computer *computer) {
        computer->cache[cacheNumber].set_bits     = log(computer->cache[cacheNumber].num_sets)/log(2);
        if(computer->cache[cacheNumber].separated){
              computer->cache[cacheNumber].num_lines=(computer->cache[cacheNumber].num_lines)/2;
-			 computer->cache[cacheNumber].set_bits     = (log(computer->cache[cacheNumber].num_sets)/log(2))/2;
+			 computer->cache[cacheNumber].set_bits     = (log(computer->cache[cacheNumber].num_sets)/log(2))-1;
        }
     }
 

@@ -53,7 +53,6 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
     Stats stats;
     init_statistics(&stats);
 
-
     printf("Simulating operation: ");
     printMemOperation(stdout, operation, computer->cpu.address_width);
     increment_integer_statistics("CPU", "Accesses", 1);
@@ -76,6 +75,10 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
         // If the policy of the first level is WRITE_BACK
 		switch (computer->cache[0].write_policy) {
 			case WRITE_BACK:
+				// A backup of the original response size is saved for the write_back function
+				ResponseType write_response;
+				write_response.size = response.size;
+
 				// The whole cache gets checked to see if the data is available
 				find_in_cache(computer, operation, &stats, &response, 0);
 
@@ -86,6 +89,9 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
 
 				// The top levels get populated
 				populate_cache(computer, operation, &stats, &response, 0);
+
+				// The response gets set to the original size
+				response.size = write_response.size;
 
 				// The last level gets updated with the operation's data and the number of accesses gets incremented by 1
 				write_back(computer, operation, &stats, &response, response.cacheLineDest[0]);
@@ -106,9 +112,9 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
 
     // The action gets printed
     if (operation->operation == LOAD) {
-        printf("Finished simulation, the response contains: 0x%x\n",response.data[0]);        // The data that was operated with
+        printf("\nFinished simulation, the response contains: 0x%x\n",response.data[0]);        // The data that was operated with
     } else {
-        printf("Finished simulation.\n");
+        printf("\nFinished simulation.\n");
     }
 
     free(response.data);
@@ -167,15 +173,15 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
 
             // Read data from cache into response
             read_line_from_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
-            if (response->size == 1) {
-                response->data[0] = cacheData.content[mappingResult.offset];
-                // printf("\t The first element contained in offset %d is 0x%x\n",mappingResult.offset, response->data[0]);
-				printf("\t The cache line contains: ");
-				for (int i = 0; i < computer->cache[cacheLevel].num_words; i++) {
+            for (int i = 0; i < response->size; i++) {
+				response->data[i] = cacheData.content[mappingResult.offset + i];
+			}
+
+			printf("\t The cache line contains: ");
+			for (int i = 0; i < computer->cache[cacheLevel].num_words; i++) {
 					printf("0x%x ", cacheData.content[i]);
-				}
-				printf("\n");
-            }
+			}
+			printf("\n");
 
             // Remember cache level and line that resolved the request
             response->resolved = cacheLevel;
@@ -199,11 +205,11 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
 
 
 /**
- * @brief Accesses memory to load or store data.
+ * @brief Accesses memory and reads data from an operation.
  * @param computer The computer.
  * @param operation The operation to perform on the memory.
- * @param charName Printinf information.
- * @param response Statistics about the access.
+ * @param stats Global statistics. The number of accesses to the memory will be updated
+ * @param response Container for the data that has been read from memory.
  */
 void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
     printf("\n-> Reading memory\n");
@@ -239,9 +245,9 @@ void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *sta
  * @brief Populates all caches above the line that resolved the request
  * @param computer The computer.
  * @param operation The operation to perform on the caches.
- * @param charName Printinf information.
- * @param response Statistics about the access.
- * @param topLevel The last level that will get populated.
+ * @param stats The statistics TODO Deprecate this if stats are correct.
+ * @param response Contains the data that will get propagated to the upper levels.
+ * @param topLevel The last level to be populated.
  */
 void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response, int topLevel) {
     // If the level that resolved the response is below the top one, the caches get populated
@@ -270,10 +276,8 @@ void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats
         if (line > 0) {
             // Hit
             printf("\t < Hit in L%d cache. Line %ld has the data.\n", cacheLevel + 1, line);
-			stats->numHits[cacheLevel]++;
         } else {         //If not, miss
             printf("\t < Miss in L%d cache. Populating.\n", cacheLevel + 1);
-			stats->numMisses[cacheLevel]++;
             // Load operation
             CacheLineContent cacheData, existingData;
             cacheData.dirty = 0;
@@ -301,11 +305,12 @@ void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats
 
 
 /**
- * @brief Populates the level that is below the cacheLevel specified
+ * @brief Moves data to lower levels of the hierarchy. Called when there is a collision.
  * @param computer The computer.
- * @param instructionOrData If the cache contains instructions or data
- * @param cacheLevel The cache level that contains the data
- * @param line The line that has to be moved
+ * @param stats Statistics TODO deprecate these if not necessary
+ * @param instructionOrData If the data is located in an instruction or data cache.
+ * @param cacheLevel The cache level that contains the data that has to be moved.
+ * @param line The line that has to be moved.
  */
 void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData, int cacheLevel, int line) {
 	CacheLineContent existingData;
@@ -330,6 +335,10 @@ void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData
 		moveResponse.data[i] = existingData.content[i];
 	}
 
+	// The line is unmarked as dirty
+	existingData.dirty = 0;
+	write_flags_to_cache(computer, instructionOrData, cacheLevel, &existingData, line);
+
 	// When the actual stats shouldn't be updated, this empty stats struct should be used
 	Stats fillerStats;
 
@@ -337,25 +346,28 @@ void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData
 
 	// Move to memory if the last level has been reached
 	if (computer->num_caches - 1 <= cacheLevel) {
-		printf("Reached memory, writing directly.\n");
+		printf("Reached memory, writing directly.\n\n");
+		printf("-> Starting move to lower levels:\n");
 		write_through(computer, &moveOp, stats, &moveResponse);
 	} else {
-		switch (computer->cache[cacheLevel - 1].write_policy) {
+		switch (computer->cache[cacheLevel + 1].write_policy) {
 			case WRITE_THROUGH:
 				// The contents get written to memory and propagated up to cacheLevel - 1
-				printf("Moving to memory (Lower level is WT)\n");
+				printf("Moving existing data to memory (Lower level is WT)\n\n");
+				printf("-> Starting move to lower levels:\n");
 				write_through(computer, &moveOp, stats, &moveResponse);
 
 				// Read the data and populate all caches with it
 				read_from_memory(computer, &moveOp, &fillerStats, &moveResponse);
-				populate_cache(computer, &moveOp, &fillerStats, &moveResponse, cacheLevel - 1);
+				populate_cache(computer, &moveOp, &fillerStats, &moveResponse, cacheLevel + 1);
 				break;
 
 			case WRITE_BACK:
-				printf("Moving to L%d (Lower level is WB)\n", cacheLevel - 1);
+				printf("Moving existing data to L%d (Lower level is WB)\n\n", cacheLevel + 1);
+				printf("-> Starting move to lower levels:\n");
 
 				// The whole cache gets checked to see if the data is available
-				find_in_cache(computer, &moveOp, &fillerStats, &moveResponse, cacheLevel - 1);
+				find_in_cache(computer, &moveOp, &fillerStats, &moveResponse, cacheLevel + 1);
 
 				// If no cache level resolved the request, the memory gets accessed
 				if (moveResponse.resolved < 0) {
@@ -370,10 +382,11 @@ void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData
 				break;
 		}
 	}
+	printf("\n-> Finishing move to lower levels\n\n");
 }
 
 /**
- * @brief Prepares the response to contain all the data in a cache line.
+ * @brief Allocates memory and expands a request to house all the data inside a full cache line.
  * @param computer The computer.
  * @param cacheLevel The cache level that will be checked to determine the size of the line.
  * @param response The response.
@@ -387,10 +400,10 @@ void upgrade_response_to_full_line(Computer *computer, int cacheLevel, ResponseT
 
 /**
  * @brief Calculates the mapping and stores it in mappingResult
- * @param computer The void get_mapping(Computer* computer, int cacheLevel, MemoryOperation* operation, MappingResult* mappingResult)
+ * @param computer The computer
  * @param cacheLevel The cache level that is being checked
- * @param operation The memory void get_mapping(Computer* computer, int cacheLevel, MemoryOperation* operation, MappingResult* mappingResult)
- * @param mappingResult Pointer to the struct that will get updated
+ * @param operation The memory operation.
+ * @param mappingResult Contains the results of the mapping
  */
 void get_mapping(Computer* computer, int cacheLevel, MemoryOperation* operation, MappingResult* mappingResult) {
      Cache cache = computer->cache[cacheLevel];

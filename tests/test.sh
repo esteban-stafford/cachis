@@ -63,6 +63,11 @@ echo -e "----> Testing 4-Way Set Associativity:"
 ../../cachis L1_AssocSet4.ini -g 2>/dev/null > ../results/L1_AssocSet4.tmp
 check_output "$(diff  ../results/L1_AssocSet4 ../results/L1_AssocSet4.tmp)"
 
+echo -e "------------- Complete Tests -------------\n"
+
+echo -e "----> Testing 2 Level Separated Cache:"
+../../cachis L12_Complex.ini -g 2>/dev/null > ../results/L12_Complex.tmp
+check_output "$(diff  ../results/L12_Complex ../results/L12_Complex.tmp)"
 
 echo -e "------------- Results -------------\n"
 if [ $allPassed -eq 1 ]; then

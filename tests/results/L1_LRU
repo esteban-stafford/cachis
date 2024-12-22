@@ -27,9 +27,9 @@ Memory
           Accesses: 4
 Cache L1
           Accesses: 1
-          Misses: 2
+          Misses: 1
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 6.080000
@@ -62,9 +62,9 @@ Memory
           Accesses: 8
 Cache L1
           Accesses: 2
-          Misses: 4
+          Misses: 2
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 12.160000
@@ -97,9 +97,9 @@ Memory
           Accesses: 12
 Cache L1
           Accesses: 3
-          Misses: 6
+          Misses: 3
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 18.240000
@@ -132,9 +132,9 @@ Memory
           Accesses: 16
 Cache L1
           Accesses: 4
-          Misses: 8
+          Misses: 4
           Hits: 0
-          Miss Rate: 2.00
+          Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
           Access Time: 24.320000
@@ -150,6 +150,7 @@ Simulating operation:   L 08000000 I  4 0
 -> Looking in cache
 	 > Hit in L1 cache. Line 0 has the data.
 	 The cache line contains: 0x0 0x1 0x2 0x3 
+
 Finished simulation, the response contains: 0x0
 
 ------SIMULATION STATISTICS------
@@ -160,9 +161,9 @@ Memory
           Accesses: 16
 Cache L1
           Accesses: 5
-          Misses: 8
+          Misses: 4
           Hits: 1
-          Miss Rate: 1.60
+          Miss Rate: 0.80
           Hit Rate: 0.20
 Totals
           Access Time: 30.320000
@@ -178,6 +179,7 @@ Simulating operation:   L 08000080 I  4 0
 -> Looking in cache
 	 > Hit in L1 cache. Line 2 has the data.
 	 The cache line contains: 0x20 0x21 0x22 0x23 
+
 Finished simulation, the response contains: 0x20
 
 ------SIMULATION STATISTICS------
@@ -188,9 +190,9 @@ Memory
           Accesses: 16
 Cache L1
           Accesses: 6
-          Misses: 8
+          Misses: 4
           Hits: 2
-          Miss Rate: 1.33
+          Miss Rate: 0.67
           Hit Rate: 0.33
 Totals
           Access Time: 36.320000
@@ -206,6 +208,7 @@ Simulating operation:   L 080000c0 I  4 0
 -> Looking in cache
 	 > Hit in L1 cache. Line 3 has the data.
 	 The cache line contains: 0x30 0x31 0x32 0x33 
+
 Finished simulation, the response contains: 0x30
 
 ------SIMULATION STATISTICS------
@@ -216,9 +219,9 @@ Memory
           Accesses: 16
 Cache L1
           Accesses: 7
-          Misses: 8
+          Misses: 4
           Hits: 3
-          Miss Rate: 1.14
+          Miss Rate: 0.57
           Hit Rate: 0.43
 Totals
           Access Time: 42.320000
@@ -234,6 +237,7 @@ Simulating operation:   L 08000080 I  4 0
 -> Looking in cache
 	 > Hit in L1 cache. Line 2 has the data.
 	 The cache line contains: 0x20 0x21 0x22 0x23 
+
 Finished simulation, the response contains: 0x20
 
 ------SIMULATION STATISTICS------
@@ -244,9 +248,9 @@ Memory
           Accesses: 16
 Cache L1
           Accesses: 8
-          Misses: 8
+          Misses: 4
           Hits: 4
-          Miss Rate: 1.00
+          Miss Rate: 0.50
           Hit Rate: 0.50
 Totals
           Access Time: 48.320000
@@ -262,6 +266,7 @@ Simulating operation:   L 08000080 I  4 0
 -> Looking in cache
 	 > Hit in L1 cache. Line 2 has the data.
 	 The cache line contains: 0x20 0x21 0x22 0x23 
+
 Finished simulation, the response contains: 0x20
 
 ------SIMULATION STATISTICS------
@@ -272,9 +277,9 @@ Memory
           Accesses: 16
 Cache L1
           Accesses: 9
-          Misses: 8
+          Misses: 4
           Hits: 5
-          Miss Rate: 0.89
+          Miss Rate: 0.44
           Hit Rate: 0.56
 Totals
           Access Time: 54.320000
@@ -307,9 +312,9 @@ Memory
           Accesses: 20
 Cache L1
           Accesses: 10
-          Misses: 10
+          Misses: 5
           Hits: 5
-          Miss Rate: 1.00
+          Miss Rate: 0.50
           Hit Rate: 0.50
 Totals
           Access Time: 60.400000
@@ -342,9 +347,9 @@ Memory
           Accesses: 24
 Cache L1
           Accesses: 11
-          Misses: 12
+          Misses: 6
           Hits: 5
-          Miss Rate: 1.09
+          Miss Rate: 0.55
           Hit Rate: 0.45
 Totals
           Access Time: 66.480000
@@ -377,9 +382,9 @@ Memory
           Accesses: 28
 Cache L1
           Accesses: 12
-          Misses: 14
+          Misses: 7
           Hits: 5
-          Miss Rate: 1.17
+          Miss Rate: 0.58
           Hit Rate: 0.42
 Totals
           Access Time: 72.560000
@@ -412,9 +417,9 @@ Memory
           Accesses: 32
 Cache L1
           Accesses: 13
-          Misses: 16
+          Misses: 8
           Hits: 5
-          Miss Rate: 1.23
+          Miss Rate: 0.62
           Hit Rate: 0.38
 Totals
           Access Time: 78.640000
