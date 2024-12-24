@@ -22,5 +22,6 @@ int isCorrectHexadecimal(char * number);
 int isCorrectDecimal(char * number);
 void contentArrayToString(unsigned* array, char* content, int count, int width);
 void contentStringToArray(unsigned* array, char* content, int level);
+int cycle_rand();
 
 #endif

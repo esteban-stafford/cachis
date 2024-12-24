@@ -4,6 +4,7 @@ cd traces
 ../../cachis L1_FIFO.ini -g 2>/dev/null > ../results/L1_FIFO
 ../../cachis L1_LRU.ini -g 2>/dev/null > ../results/L1_LRU
 ../../cachis L1_LFU.ini -g 2>/dev/null > ../results/L1_LFU
+../../cachis L1_RAND.ini -g 2>/dev/null > ../results/L1_RAND
 
 ../../cachis L1_WB.ini -g 2>/dev/null > ../results/L1_WB
 ../../cachis L1_WT.ini -g 2>/dev/null > ../results/L1_WT

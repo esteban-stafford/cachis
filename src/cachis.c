@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <getopt.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "dictionary.h"
 #include "confparser.h"
@@ -17,6 +18,7 @@
 #define VERSION "0.1"
 
 int useGUI = 1;
+int randSeed;
 
 void printUsage() {
    printf(
@@ -38,6 +40,9 @@ void printUsage() {
 int main(int argc, char *argv[]) {
    int c;
    useGUI = 1;
+
+   // The random seed gets initiated to a default value
+   srand(time(NULL));
 
    // Parse command line arguments
    opterr = 0;

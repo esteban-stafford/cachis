@@ -12,12 +12,16 @@ char* str_true[]= {"1", "yes", "true"};
 char* str_false[]= {"0","no","false"};
 
 #define N_REPLACEMENT 4
-char* str_replacementPolicy[]= {"lru", "lfu", "rnd", "fifo"};
+char* str_replacementPolicy[]= {"lru", "lfu", "rand", "fifo"};
 char* replacementPolicyStr(enum replacement replacement) { return str_replacementPolicy[replacement]; }
 
 #define N_WRITE 2
 char* str_writePolicy[]= {"wt", "wb"};
 char* writePolicyStr(enum write_policy write_policy) { return str_writePolicy[write_policy]; }
+
+// Used to keep the same random value on the same cycle
+int cycle_rand_value;
+int cycle_rand_updated = -1;
 
 /*
  * convert string into long. It can have a multiplier G for 10^9, M for 10^6 o K for 10^3. Any other char will result in error.
@@ -370,6 +374,19 @@ void contentStringToArray(unsigned* array, char* content, int count){
     free(contentCopy);
 }
 
+/**
+ * @brief Returns the same random value on the same cycle. This should be used on the rand replacement policy as it might be called
+ * multiple times per cycle (When a collision happens for instance). The result should always be the same on the same cycle.
+ */
+int cycle_rand() {
+	// A random value gets calculated for this cycle if it has not been done yet
+	if (!(cycle_rand_updated == cycle)) {
+		cycle_rand_value = rand();
+		cycle_rand_updated = cycle;
+	}
+
+	return cycle_rand_value;
+}
 
 
 /*void contentArrayToString(long* array, char* content, int count, int width){

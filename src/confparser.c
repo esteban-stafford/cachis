@@ -5,11 +5,11 @@
 #include "datamanipulation.h"
 #include "confparser.h"
 
-#define NCLAVES_CPU 4
+#define NCLAVES_CPU 5
 #define NCLAVES_MEMORY 5
 #define NCLAVES_CACHE 8
 char* keysCACHE[NCLAVES_CACHE];
-char* keysCPU[]= {"word_width", "address_width", "frequency", "trace_file"};
+char* keysCPU[]= {"word_width", "address_width", "frequency", "trace_file", "rand_seed"};
 char* keysMEMORY[]= {"size", "access_time_1","access_time_burst", "page_size", "page_base_address"};
 char* keysCACHE[]= {"line_size", "size","associativity", "write_policy", "replacement_policy","separated","column_bit_mask", "access_time"};
 
@@ -243,6 +243,7 @@ dictionary *readConfigurationFile(char * ini_name) {
  */
 int parseConfiguration(dictionary *ini, Computer *computer) {
     int errors = 0;
+	long rand_seed;
 
     // Get the number of caches from the readConfigurationFile function
     computer->num_caches=numberCaches;
@@ -271,6 +272,9 @@ int parseConfiguration(dictionary *ini, Computer *computer) {
     } else {
         computer->cpu.trace_file=cpu_trace_file;
     }
+
+    parseConfInt(ini,"cpu:rand_seed",&rand_seed,&errors);
+	srand(rand_seed);
 
     // READING MEMORY CONFIGURATION//////////////////////////////////////
 

@@ -1,5 +1,6 @@
 #include "computer.h"
 #include "datainterface.h"
+#include "datamanipulation.h"
 #include "replacementpolicy.h"
 
 
@@ -110,13 +111,13 @@ int replacement_lfu(Computer *computer, int instructionOrData, int cacheLevel, i
 
 
 /**
- * @brief Applies the random replacement policy.
- * @param cache The cache that contains the data. The associativity is checked to determine the size of the set
- * @param set The set to operate on
+ * @brief Applies the random replacement policy. Will pick a random value between first_line and last_line
+ * @param first_line The first line in the range
+ * @param last_line The last line in the range
  * @return The line that has been picked to be replaced
  */
 int replacement_random(int first_line, int last_line) {
-        return first_line + rand() % (first_line - last_line);
+        return first_line + cycle_rand() % (last_line - first_line + 1);
 }
 
 

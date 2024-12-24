@@ -34,6 +34,10 @@ echo -e "----> Testing FIFO:"
 ../../cachis L1_FIFO.ini -g 2>/dev/null > ../results/L1_FIFO.tmp
 check_output "$(diff  ../results/L1_FIFO ../results/L1_FIFO.tmp)"
 
+echo -e "----> Testing RAND:"
+../../cachis L1_RAND.ini -g 2>/dev/null > ../results/L1_RAND.tmp
+check_output "$(diff  ../results/L1_RAND ../results/L1_RAND.tmp)"
+
 
 echo -e "------------- Write Policy Tests -------------\n"
 
