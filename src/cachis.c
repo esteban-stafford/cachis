@@ -17,8 +17,13 @@
 #define PROGRAM_NAME "cachis"
 #define VERSION "0.1"
 
+#define DEFAULT_FILENAME "cachis.stl"
+
 int useGUI = 1;
-int randSeed;
+char *ini_file = NULL;
+char *dramsys_file = NULL;
+int generate_dramsys_trace = 0;
+
 
 void printUsage() {
    printf(
@@ -27,10 +32,13 @@ void printUsage() {
       "Optionally provide a trace file. This overides the one specified in the ini file.\n"
       "This a list of the options accepted:\n"
       "\n"
-      "  -g    toggle GUI\n"
-      "  -h    display this help and exit\n"
-      "  -v    output version information and exit\n"
-      "\n"
+	  "  -i <file> Indicates which .ini file should be loaded.\n"
+	  "  -e <file> Export a DRAMSys memory trace file to the specified file\n"
+      "  -g        Toggle GUI\n"
+      "  -h        Display this help and exit\n"
+      "  -v        Output version information and exit\n"
+
+	  "\n"
       "Exit status:\n"
       " 0  if OK,\n"
       " 1  if configuration or other kind of errors.\n"
@@ -38,55 +46,81 @@ void printUsage() {
 }
 
 int main(int argc, char *argv[]) {
-   int c;
-   useGUI = 1;
+   int arg;
 
    // The random seed gets initiated to a default value
    srand(time(NULL));
 
-   // Parse command line arguments
+   // getopt won't print any errors, the user must take care of covering them in ? or :
    opterr = 0;
-   while ((c = getopt (argc, argv, "vhg")) != -1)
-    switch (c)
+
+   // Parse command line arguments
+   while ((arg = getopt (argc, argv, "ghvi:e:")) != -1)
+    switch (arg)
       {
+	  case 'i':
+		// The ini file is stored
+		ini_file = optarg;
+
+		// If the next argument has been read as a file name because no filename has been provided, abort
+		if (ini_file[0] == '-') {
+			fprintf (stderr, "Flag -i requires a filename.\n");
+			return 1;
+		}
+		break;
+
+	  case 'e':
+		generate_dramsys_trace = 1;
+		dramsys_file = optarg;
+
+		// If the next argument has been read as a file name because no filename has been provided, abort
+		if (dramsys_file[0] == '-') {
+			fprintf (stderr, "Flag -e requires a filename.\n");
+			return 1;
+		}
+
+		// If the file has not been specified, it gets set to DEFAULT_FILENAME
+		if (dramsys_file == NULL) {
+			dramsys_file = DEFAULT_FILENAME;
+			printf("No filename has been specified, using the default %s\n", dramsys_file);
+		} else {
+			printf("Saving trace to %s\n", dramsys_file);
+		}
+
+		// The file gets created, if it exists, it will be truncated
+		FILE *file = fopen(dramsys_file, "w");
+
+		if (file == NULL) {
+			printf("Error opening the file.\n");
+			return 1;
+		}
+
+		fclose(file);
+        break;
       case 'g':
          useGUI = 0;
         break;
-      case 'v':
-        printf("%s version %s\n",PROGRAM_NAME,VERSION);
-        return 0;
       case 'h':
         printUsage();
         return 0;
-      case '?':
-        if (optopt == 'c')
-          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-        else if (isprint (optopt))
-          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-        else
-          fprintf (stderr,
-                   "Unknown option character `\\x%x'.\n",
-                   optopt);
+      case 'v':
+        printf("%s version %s\n",PROGRAM_NAME,VERSION);
+        return 0;
+	  case ':':
+		  fprintf(stderr, "Flag -%c requires a filename", arg);
+		  return 1;
+	  case '?':
+        if (optopt == 'e' || optopt == 'i')
+			fprintf (stderr, "Flag -%c requires a filename.\n", optopt);
         return 1;
       default:
         abort();
       }
 
-    // Check that there is at least one configuration file.
-    if(argc - optind <= 0) {
-       fprintf (stderr, "Must supply a <file>.ini on the command line.\n");
-       return 1;
-    }
-
-    // Check that there are not too many command line arguments.
-    if(argc - optind > 2) {
-       fprintf (stderr, "Too many command line arguments.\n");
-       return 1;
-    }
-
     // Read configuration file
     dictionary *ini;
-    if((ini = readConfigurationFile(argv[optind])) == NULL) {
+
+    if((ini = readConfigurationFile(ini_file)) == NULL) {
        return 1;
     }
 

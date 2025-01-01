@@ -5,6 +5,45 @@
 #include "simulator.h"
 
 
+static GtkTextTag *highlight_tag = NULL;
+static GtkTextMark *previous_highlight_mark = NULL;
+
+struct trace_text_and_computer {
+    Computer *computer;
+};
+
+static void set_widget_background_color(GtkWidget *widget, const char *color);
+static void setup_cb(GtkSignalListItemFactory *factory, GObject *listitem);
+static void bind_address_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void bind_content_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static GtkWidget *create_memory_table(Computer *computer);
+static void setup_cache_cb(GtkSignalListItemFactory *factory, GObject *listitem);
+static void bind_line_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void bind_set_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void bind_set_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void bind_valid_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void bind_dirty_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void bind_accessed_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void bind_last_access_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void bind_first_access_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void bind_tag_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void bind_cache_content_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static GtkWidget *create_cache_table(GListStore *model);
+static GtkWidget *create_cache_widget(Cache *cache);
+int step_trace_line(char *line, Computer *computer);
+int has_breakpoint(const char *line);
+static void on_run_to_breakpoint_clicked(GtkButton *button, Computer *computer);
+static void on_step_button_clicked(GtkButton *button, Computer *computer);
+static void on_reset_button_clicked(GtkButton *button, Computer *computer);
+static GtkWidget *create_toolbar(GtkTextView *trace_text, Computer *computer);
+static GtkWidget *create_left_column(Computer *computer);
+static GtkWidget *create_right_column(Computer *computer);
+static void activate(GtkApplication *app, gpointer user_data);
+int launch_gui(int argc, char **argv, Computer *computer);
+static void on_dialog_response(GtkDialog *dialog, int response_id, gpointer user_data);
+static void on_dialog_response(GtkDialog *dialog, int response_id, gpointer user_data);
+
+
 static void set_widget_background_color(GtkWidget *widget, const char *color) {
     GtkCssProvider *provider = gtk_css_provider_new();
     GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -25,8 +64,7 @@ static void setup_cb(GtkSignalListItemFactory *factory, GObject *listitem) {
     gtk_list_item_set_child(GTK_LIST_ITEM(listitem), box);
 }
 
-static void bind_address_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem)
-{
+static void bind_address_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem) {
     GtkWidget *box = gtk_list_item_get_child(listitem);
     GtkWidget *label = gtk_widget_get_first_child(box);
     MemoryLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
@@ -39,8 +77,7 @@ static void bind_address_cb(GtkSignalListItemFactory *factory, GtkListItem *list
     }
 }
 
-static void bind_content_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem)
-{
+static void bind_content_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem) {
     GtkWidget *box = gtk_list_item_get_child(listitem);
     GtkWidget *label = gtk_widget_get_first_child(box);
     MemoryLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
@@ -232,7 +269,6 @@ static GtkWidget *create_cache_table(GListStore *model) {
     return scrolled_window;
 }
 
-
 static GtkWidget *create_cache_widget(Cache *cache) {
     if (cache->separated) {
         GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -275,14 +311,6 @@ int has_breakpoint(const char *line) {
    }
    return *line == '!';
 }
-
-
-static GtkTextTag *highlight_tag = NULL;
-static GtkTextMark *previous_highlight_mark = NULL;
-
-struct trace_text_and_computer {
-    Computer *computer;
-};
 
 static void on_run_to_breakpoint_clicked(GtkButton *button, Computer *computer) {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(computer->cpu.view);
@@ -478,7 +506,6 @@ static GtkWidget *create_left_column(Computer *computer) {
     return box;
 }
 
-
 static GtkWidget *create_middle_section(Computer *computer) {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
@@ -551,15 +578,11 @@ int launch_gui(int argc, char **argv, Computer *computer) {
     return status;
 }
 
-static void on_dialog_response(GtkDialog *dialog,
-      int        response_id,
-      gpointer   user_data)
-{
+static void on_dialog_response(GtkDialog *dialog, int response_id, gpointer user_data) {
    gtk_window_destroy (GTK_WINDOW (dialog));
 }
 
-void print_error_message (const char *message, int line_number)
-{
+void print_error_message (const char *message, int line_number) {
    if (app == NULL)
    {
       g_printerr ("%s Line %d\n", message, line_number);
@@ -579,4 +602,3 @@ void print_error_message (const char *message, int line_number)
 
    gtk_widget_show(dialog);
 }
-

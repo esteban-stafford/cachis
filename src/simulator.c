@@ -215,6 +215,13 @@ void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *sta
     printf("\n-> Reading memory\n");
 
     MemoryPosition pos;
+	FILE *file = NULL;
+	int lastNumber;
+
+	// If the DRAMSys trace has been requested, the related variables get initiated
+	if (generate_dramsys_trace) {
+		lastNumber = open_dramsys_file(dramsys_file, &file);
+	}
 
     // Remember that the memory resolved the request
     // The number of caches is used to signify that it has been through all of them
@@ -232,6 +239,11 @@ void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *sta
             return;
         }
 
+		// If the DRAMSys trace has been requested, append a read for the current address
+		if (generate_dramsys_trace) {
+			write_to_dramsys_file(&file, lastNumber + i, 0, address);
+		}
+
         // If it's not the first access, it gets noted as a burst access
         if (i != 0) {
 			stats->numBurstAccesses++;
@@ -239,6 +251,11 @@ void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *sta
 
         response->data[i] = pos.content;
     }
+
+    // The file gets closed if it has been opened previously
+	if (generate_dramsys_trace) {
+		close_dramsys_file(&file);
+	}
 }
 
 /**

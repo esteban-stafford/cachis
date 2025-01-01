@@ -40,6 +40,8 @@ typedef struct {
 } MemoryPosition;
 
 extern char *interfaceError;
+extern int generate_dramsys_trace;
+extern char *dramsys_file;
 
 //CacheLine related functions
 unsigned read_word_from_cache_line(Computer *computer, CacheLineContent *line, int wordNumber);

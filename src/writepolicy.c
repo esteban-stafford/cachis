@@ -1,4 +1,5 @@
 #include "writepolicy.h"
+#include "datamanipulation.h"
 
 void write_back(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response, int cacheLine) {
     printf("\n-> Applying WriteBack in cache\n");
@@ -21,6 +22,13 @@ void write_back(Computer *computer, MemoryOperation *operation, Stats *stats, Re
 void write_through(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
     printf("\n-> Applying WriteThrough in memory\n");
     MemoryPosition pos;
+	FILE *file;
+	int lastNumber;
+
+	// If the DRAMSys trace has been requested, the related variables get initiated
+	if (generate_dramsys_trace) {
+		lastNumber = open_dramsys_file(dramsys_file, &file);
+	}
 
     // The address and content gets noted
     pos.address = operation->address;
@@ -39,9 +47,21 @@ void write_through(Computer *computer, MemoryOperation *operation, Stats *stats,
             fprintf(stderr, "error in simulation: %s addr:%x\n", interfaceError, address);
             return;
         }
+
+		// If the DRAMSys trace has been requested, append a write for the current address
+		if (generate_dramsys_trace) {
+			write_to_dramsys_file(&file, lastNumber + i, 1, address);
+		}
+
         // If it's not the first access, it gets noted as a burst access
         if (i != 0) {
 			stats->numBurstAccesses++;
 		}
     }
+
+    // The file gets closed if it has been opened previously
+	if (generate_dramsys_trace) {
+		close_dramsys_file(&file);
+	}
+
 }

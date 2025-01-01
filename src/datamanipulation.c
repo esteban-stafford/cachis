@@ -374,6 +374,72 @@ void contentStringToArray(unsigned* array, char* content, int count){
     free(contentCopy);
 }
 
+
+/**
+ * @brief Opens the specified DRAMSys file and returns the last memory access stored in the file
+ * @param filename The name or path to the file.
+ * @param f A pointer to the file that will get opened.
+ * @return The number of the last memory access stored in the open file.
+ */
+int open_dramsys_file(const char *filename, FILE **f){
+	// The file gets opened
+	*f = fopen(filename, "r");
+
+	// If the file could not be opened, return -1
+    if (*f == NULL) {
+        perror("Error opening file\n");
+        return -1;
+    }
+
+    int number;
+    char text[256];
+
+    // While there is data on the file, iterate until the end is reached.
+    while (fscanf(*f, "%d:%255[^\n]", &number, text) == 2) {}
+
+    // If the file is empty, the first number should be 0
+    if (ftell(*f) == 0) {
+		number = 0;
+	}
+
+    // The file is closed and reopened in append mode
+    fclose(*f);
+	*f = fopen(filename, "a");
+
+	return number;
+}
+
+
+/**
+ * @brief Appends the specified memory address to the specified filename.
+ * @param f Pointer to the end of the file to append the content (open_dramsys_file should be used).
+ * @param lastNumber The number of the last memory access.
+ * @param address The address to append to the file.
+ * @param readOrWrite 0 If read, 1 if write.
+ */
+void write_to_dramsys_file(FILE **f, int lastNumber, int readOrWrite, int address) {
+	// The pointer gets checked before writing
+    if (*f == NULL) {
+        perror("File pointer is null\n");
+        return;
+    }
+
+    // The line gets written to the file
+    if (readOrWrite == 0) {
+		fprintf(*f, "%d:\tread\t0x%x\n",lastNumber + 1, address);
+	} else {
+		fprintf(*f, "%d:\twrite\t0x%x\n",lastNumber + 1, address);
+	}
+}
+
+/**
+ * @brief Closes the DRAMSys trace file.
+ * @param f The file to be closed.
+ */
+void close_dramsys_file(FILE **f) {
+    fclose(*f);
+}
+
 /**
  * @brief Returns the same random value on the same cycle. This should be used on the rand replacement policy as it might be called
  * multiple times per cycle (When a collision happens for instance). The result should always be the same on the same cycle.
@@ -387,6 +453,8 @@ int cycle_rand() {
 
 	return cycle_rand_value;
 }
+
+
 
 
 /*void contentArrayToString(long* array, char* content, int count, int width){
