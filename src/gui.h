@@ -33,6 +33,18 @@
 #define M_ADDR "Address"
 #define M_CONT "Content"
 
+// For stats
+#define S_CPU "CPU"
+#define S_MEM "Memory"
+#define S_ACCESSES "Accesses"
+#define S_MISSES "Misses"
+#define S_HITS "Hits"
+#define S_MRATE "Miss Rate"
+#define S_HRATE "Hit Rate"
+#define S_TOTALS "Totals"
+#define S_ATIME "Access Time"
+
+
 
 static GtkApplication *app = NULL;
 extern int useGUI;

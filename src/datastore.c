@@ -3,7 +3,11 @@
 #include "datamanipulation.h"
 #include "datastore.h"
 
-GtkTreeModel *statistics_model;
+
+// Private functions
+GListModel *get_stats_node_children(GObject *item, gpointer user_data);
+
+GtkTreeListModel *statistics_model;
 
 G_DEFINE_TYPE(MemoryLine, memory_line, G_TYPE_OBJECT)
 
@@ -32,7 +36,40 @@ static void cache_line_init(CacheLine *cache_line) {
     cache_line->user_data = NULL; 
 }
 
+// This is required
 static void cache_line_class_init(CacheLineClass *class) { }
+
+
+G_DEFINE_TYPE(StatsNode, stats_node, G_TYPE_OBJECT)
+
+/**
+ * @brief Creates a StatsNode for the tree view of the statistics.
+ * @param node Pointer to the node
+ * @param name Name of the node.
+ * @param content Content of the node.
+ */
+static void stats_node_init(StatsNode *node) {
+	// The node gets initiated no children gets created and returned
+	node->name = NULL;
+	node->content = NULL;
+	node->children = g_list_store_new(STATS_NODE_TYPE);
+}
+
+
+// This is required
+static void stats_node_class_init(StatsNodeClass *class) { }
+
+/**
+ * @brief Creates a StatsNode for the tree view of the statistics.
+ * @param node Pointer to the node
+ * @param name Name of the node.
+ * @param content Content of the node.
+ */
+void stats_node_set(StatsNode *node, gchar *name, gchar *content) {
+	// The node gets initiated no children gets created and returned
+	node->name = name;
+	node->content = content;
+}
 
 
 /**
@@ -91,8 +128,6 @@ void create_cache_list_store(Cache *cache, int data_or_instruction) {
     } else {
         cache->model_instruction = model;
     }
-
-    // g_object_unref(model);
 }
 
 void createCacheModel(Cache *cache, int level) {
@@ -132,81 +167,119 @@ void insertTextInBuffer(char* text, GtkTextBuffer *buffer){
    gtk_text_buffer_insert (buffer, &iter, text, -1);
 }
 
+
+
 /**
- * Function that creates the data structure for simulation statistics.
+ * @brief Creates the tree structure of the statistics and stores the pointer in the statistics_model global variable.
+ * @param computer The computer.
  */
-GtkTreeModel *create_model_statistics(Computer *computer){
-   GtkTreeIter    toplevel, child;
-   GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(NUM_COLS,
-            G_TYPE_STRING,
-            G_TYPE_STRING,
-            G_TYPE_STRING));
-   /* Append a top level row and leave it empty */
-   gtk_tree_store_append(GTK_TREE_STORE(model), &toplevel, NULL);
-   gtk_tree_store_set(GTK_TREE_STORE(model), &toplevel,
-         COMPONET_OR_PROPERTY, "CPU",
-         -1);
-   /* Append a child to the top level row, and fill in some data */
-   gtk_tree_store_append(GTK_TREE_STORE(model), &child, &toplevel);
-   gtk_tree_store_set(GTK_TREE_STORE(model), &child,
-         COMPONET_OR_PROPERTY, "Accesses",
-         VALUE, "",
-         -1);
-   /* Append a second top level row, and fill it with some data */
-   gtk_tree_store_append(GTK_TREE_STORE(model), &toplevel, NULL);
-   gtk_tree_store_set(GTK_TREE_STORE(model), &toplevel,
-         COMPONET_OR_PROPERTY, "Memory",
-         -1);
-   /* Append a child to the second top level row, and fill in some data */
-   gtk_tree_store_append(GTK_TREE_STORE(model), &child, &toplevel);
-   gtk_tree_store_set(GTK_TREE_STORE(model), &child,
-         COMPONET_OR_PROPERTY, "Accesses",
-         VALUE, "",
-         -1);
-   for(int i=0; i<computer->num_caches; i++){
-      char currentCache[100];
-      sprintf(currentCache, "Cache L%d", i+1);
-      gtk_tree_store_append(GTK_TREE_STORE(model), &toplevel, NULL);
-      gtk_tree_store_set(GTK_TREE_STORE(model), &toplevel,
-            COMPONET_OR_PROPERTY, currentCache,
-            -1);
-      /* Append a child to the second top level row, and fill in some data */
-      gtk_tree_store_append(GTK_TREE_STORE(model), &child, &toplevel);
-      gtk_tree_store_set(GTK_TREE_STORE(model), &child,
-            COMPONET_OR_PROPERTY, "Accesses",
-            VALUE, "",
-            -1);
-      gtk_tree_store_append(GTK_TREE_STORE(model), &child, &toplevel);
-      gtk_tree_store_set(GTK_TREE_STORE(model), &child,
-            COMPONET_OR_PROPERTY, "Misses",
-            VALUE, "",
-            -1);
-      gtk_tree_store_append(GTK_TREE_STORE(model), &child, &toplevel);
-      gtk_tree_store_set(GTK_TREE_STORE(model), &child,
-            COMPONET_OR_PROPERTY, "Hits",
-            VALUE, "",
-            -1);
-      gtk_tree_store_append(GTK_TREE_STORE(model), &child, &toplevel);
-      gtk_tree_store_set(GTK_TREE_STORE(model), &child,
-            COMPONET_OR_PROPERTY, "Miss Rate",
-            VALUE, "",
-            -1);
-      gtk_tree_store_append(GTK_TREE_STORE(model), &child, &toplevel);
-      gtk_tree_store_set(GTK_TREE_STORE(model), &child,
-            COMPONET_OR_PROPERTY, "Hit Rate",
-            VALUE, "",
-            -1);
-   }
-   /* Append a last top level row, and fill it with some data */
-   gtk_tree_store_append(GTK_TREE_STORE(model), &toplevel, NULL);
-   gtk_tree_store_set(GTK_TREE_STORE(model), &toplevel,
-         COMPONET_OR_PROPERTY, "Totals",
-         -1);
-   gtk_tree_store_append(GTK_TREE_STORE(model), &child, &toplevel);
-   gtk_tree_store_set(GTK_TREE_STORE(model), &child,
-         COMPONET_OR_PROPERTY, "Access Time",
-         VALUE, "",
-         -1);
-   statistics_model= model;
-   return GTK_TREE_MODEL(model);
+void *create_model_statistics(Computer *computer) {
+	// All the nodes get declared
+	StatsNode *cpu, *mem, *caches[MAX_CACHES], *totals;
+	StatsNode *cpu_accesses, *mem_accesses, *totals_atime;
+
+	// A GListStore that will contain all the data gets created
+    GListStore *root_store = g_list_store_new(STATS_NODE_TYPE);
+
+	// CPU and Memory nodes get created, initiated and appended to the root node
+	CacheLine *cache_line = g_object_new(CACHE_LINE_TYPE, NULL);
+	cpu = g_object_new(STATS_NODE_TYPE, NULL);
+	mem = g_object_new(STATS_NODE_TYPE, NULL);
+	stats_node_set(cpu, S_CPU, NULL);
+	stats_node_set(mem, S_MEM, NULL);
+	g_list_store_append(root_store, cpu);
+	g_list_store_append(root_store, mem);
+
+
+
+	// For each level of cache, a new node gets appended
+	for (int i = 0; i < computer->num_caches; i++) {
+		caches[i] = g_object_new(STATS_NODE_TYPE, NULL);
+		char *name = (char *)malloc(sizeof(char)*20);
+		sprintf(name, "Cache L%d", i + 1);
+		stats_node_set(caches[i], name, NULL);
+		g_list_store_append(root_store, caches[i]);
+
+	}
+
+	// A "Totals" section gets created
+	totals = g_object_new(STATS_NODE_TYPE, NULL);
+	stats_node_set(totals, S_TOTALS, NULL);
+	g_list_store_append(root_store, totals);
+
+
+	// The properties of the CPU get assigned
+	cpu_accesses = g_object_new(STATS_NODE_TYPE, NULL);
+	stats_node_set(cpu_accesses, S_ACCESSES, "");
+	g_list_store_append(cpu->children, cpu_accesses);
+	// g_object_unref(cpu_accesses);
+
+	// The properties of the memory get assigned
+	mem_accesses = g_object_new(STATS_NODE_TYPE, NULL);
+	stats_node_set(mem_accesses, S_ACCESSES, "");
+	g_list_store_append(mem->children, mem_accesses);
+	// g_object_unref(mem_accesses);
+
+	// The properties of the caches get assigned
+	// StatsNode *c_accesses, *c_misses, *c_hits, *c_missrate, *c_hitrate;
+	for (int i = 0; i < computer->num_caches; i++) {
+		// StatsNode *c_accesses = malloc(sizeof(StatsNode));
+		// StatsNode *c_misses = malloc(sizeof(StatsNode));
+		// StatsNode *c_hits = malloc(sizeof(StatsNode));
+		// StatsNode *c_missrate = malloc(sizeof(StatsNode));
+		// StatsNode *c_hitrate = malloc(sizeof(StatsNode));
+		StatsNode *c_accesses, *c_misses, *c_hits, *c_missrate, *c_hitrate;
+		c_accesses = g_object_new(STATS_NODE_TYPE, NULL);
+		c_misses = g_object_new(STATS_NODE_TYPE, NULL);
+		c_hits = g_object_new(STATS_NODE_TYPE, NULL);
+		c_missrate = g_object_new(STATS_NODE_TYPE, NULL);
+		c_hitrate = g_object_new(STATS_NODE_TYPE, NULL);
+
+		stats_node_set(c_accesses, S_ACCESSES, "");
+		stats_node_set(c_misses, S_MISSES, "");
+		stats_node_set(c_hits, S_HITS, "");
+		stats_node_set(c_missrate, S_MRATE, "");
+		stats_node_set(c_hitrate, S_HRATE, "");
+
+		g_list_store_append(caches[i]->children, c_accesses);
+		g_list_store_append(caches[i]->children, c_misses);
+		g_list_store_append(caches[i]->children, c_hits);
+		g_list_store_append(caches[i]->children, c_missrate);
+		g_list_store_append(caches[i]->children, c_hitrate);
+
+		// g_object_unref(caches[i]);
+	}
+	// The properties of the totals get assigned
+	totals_atime = g_object_new(STATS_NODE_TYPE, NULL);
+	stats_node_set(totals_atime, S_ATIME, "");
+	g_list_store_append(totals->children, totals_atime);
+	// g_object_unref(totals_atime);
+
+	// A GtkTreeListModel gets created
+	statistics_model = gtk_tree_list_model_new(
+		G_LIST_MODEL(root_store),
+		TRUE,
+		TRUE,
+		(GtkTreeListModelCreateModelFunc) get_stats_node_children,
+		NULL,
+		NULL);
+
+	// g_object_unref(cpu);
+	// g_object_unref(mem);
+	// g_object_unref(totals);
+
+	return 0;
+}
+
+
+
+/**
+ * @brief Gets the children of a StatsNode. Used for the GtkTreeListModel of the stats. The params are required by GTK.
+ * @param item
+ * @param user_data
+ */
+GListModel *get_stats_node_children(GObject *item, gpointer user_data) {
+	// The chilren pointer is returned as a G_LIST_MODEL
+	StatsNode *node = (StatsNode *)item;
+	return G_LIST_MODEL(node->children);
 }

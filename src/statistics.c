@@ -58,180 +58,135 @@ void update_statistics(Computer *computer, Stats *stats) {
     increment_double_statistics("Totals", "Access Time", stats->time);
 }
 
-
 /**
  * This function is used to add a property or value to the simulation statistics panel
- * @param component String containig the name of the componet
- * @param property String containig the name of the component's property
- * @param value String containing the value which that property will be setted to.
+ * @param component String containing the name of the component
+ * @param property String containing the name of the component's property
+ * @param value String containing the value which that property will be set to.
  */
 void set_statistics(char* component, char* property, char* value){
-    GtkTreeModel *tree_model=statistics_model;
-    GtkTreeIter iter;
-    int isntEmpty=gtk_tree_model_get_iter_first (tree_model, &iter);
-    int hasNext=1;
-    int componentExists=0;
-    //Search for the memory hierarchy componet
-    while(hasNext&&isntEmpty){
-        char *name;
-        gtk_tree_model_get (tree_model, &iter,
-                COMPONET_OR_PROPERTY, &name, -1);
-        //found
-        if(!strcmp(component, name)){
-            componentExists=1;
-            break;
-        }
-        hasNext=gtk_tree_model_iter_next (tree_model, &iter);
-    }
-    //If the componet exists I search for the property
-    if(componentExists){
-        GtkTreeIter child;
-        int hasChildren=gtk_tree_model_iter_children (tree_model,
-                &child,
-                &iter);
-        int hasNext=1;
-        int propertyExists=0;
-        //Search for the componets property
-        while(hasNext&&hasChildren){
-            char *name;
-            gtk_tree_model_get (tree_model, &child,
-                    COMPONET_OR_PROPERTY, &name, -1);
-            //found
-            if(!strcmp(property, name)){
-                propertyExists=1;
-                break;
-            }
-            hasNext=gtk_tree_model_iter_next (tree_model, &child);
-        }
-        //If the componet's property exists I set the value
-        if(propertyExists){
-            gtk_tree_store_set(GTK_TREE_STORE(tree_model), &child,
-                    //COMPONET_OR_PROPERTY, "probando",
-                    VALUE, value,
-                    -1);
-            //If the componet's property doesn't exist I add the property and set the value
-        }else{
-            gtk_tree_store_append(GTK_TREE_STORE(tree_model), &child, &iter);
-            gtk_tree_store_set(GTK_TREE_STORE(tree_model), &child,
-                    COMPONET_OR_PROPERTY, property,
-                    VALUE, value,
-                    -1);
-        }
-        //If the componet doesn't exist I create the componet and the property and I set the value
-    }else{
-        GtkTreeIter child;
-        gtk_tree_store_append(GTK_TREE_STORE(tree_model), &iter, NULL);
-        gtk_tree_store_set(GTK_TREE_STORE(tree_model), &iter,
-                COMPONET_OR_PROPERTY, component,
-                -1);
-        gtk_tree_model_iter_children (tree_model,
-                &child,
-                &iter);
-        gtk_tree_store_append(GTK_TREE_STORE(tree_model), &child, &iter);
-        gtk_tree_store_set(GTK_TREE_STORE(tree_model), &child,
-                COMPONET_OR_PROPERTY, property,
-                VALUE, value,
-                -1);
-    }
+	// A pinter to the stats model and an interator are created
+    GListModel *model = gtk_tree_list_model_get_model(statistics_model);
+	guint num_children = g_list_model_get_n_items(model);
+	guint num_properties;
+	StatsNode *comp_node, *prop_node;
+
+	// All the children of the root are iterated
+	for (guint i = 0; i < num_children; i++) {
+		comp_node = g_list_model_get_item(model, i);
+
+		// If the children have the same name as component
+		if (g_strcmp0(component, comp_node->name) == 0) {
+			// Get the number of properties of that component
+			num_properties = g_list_model_get_n_items(G_LIST_MODEL(comp_node->children));
+
+			// Check if any of the properties match with the one that was provided as an argument
+			for (guint i = 0; i < num_properties; i++) {
+				prop_node = g_list_model_get_item(G_LIST_MODEL(comp_node->children), i);
+
+				// If they match, update the value and exit.
+				if (g_strcmp0(property, prop_node->name) == 0) {
+					// The memory of the previous value is freed (If there was a value previously)
+					if (g_strcmp0(prop_node->content, "") != 0) {
+						free(prop_node->content);
+
+					}
+
+					// Memory for a new pointer is allocated
+					char *new_value = (char *)malloc(sizeof(char)*20);
+					sprintf(new_value, "%s", value);
+					prop_node->content = new_value;
+					return;
+				}
+			}
+
+			// If the component matches but the property has not been found, create it and attach it.
+			StatsNode *new = g_object_new(STATS_NODE_TYPE, NULL);
+			stats_node_set(new, property, value);
+			g_list_store_append(comp_node->children, new);
+		}
+	}
+
+	// If there are no components with that name, create one and attach the property to that component
+	StatsNode *new_c = g_object_new(STATS_NODE_TYPE, NULL);
+	StatsNode *new_p = g_object_new(STATS_NODE_TYPE, NULL);
+	stats_node_set(new_c, component, NULL);
+	stats_node_set(new_p, component, NULL);
+	g_list_store_append(new_c->children, new_p);
+	g_list_store_append(G_LIST_STORE(model), new_c);
 }
+
+
+
 /**
  * This function is used to read a value from the simulation statistics panel
  * @param component String containig the name of the componet
  * @param property String containig the name of the component's property
  * @return String containing th value
  */
-char* get_statistics(char* component, char* property){
-     GtkTreeModel *tree_model=statistics_model;
-    GtkTreeIter iter;
-    gtk_tree_model_get_iter_first (tree_model, &iter);
-    int hasNext=1;
-    int componentExists=0;
-    //Search for the memory hierarchy componet
-    while(hasNext){
-        char *name;
-        gtk_tree_model_get (tree_model, &iter,
-                COMPONET_OR_PROPERTY, &name, -1);
-        //found
-        if(!strcmp(component, name)){
-            componentExists=1;
-            break;
-        }
-        hasNext=gtk_tree_model_iter_next (tree_model, &iter);
-    }
-    //If the componet exists I search for the property
-    if(componentExists){
-        GtkTreeIter child;
-        gtk_tree_model_iter_children (tree_model,
-                &child,
-                &iter);
-        int hasNext=1;
-        int propertyExists=0;
-        //Search for the componet's property
-        while(hasNext){
-            char *name;
-            gtk_tree_model_get (tree_model, &child,
-                    COMPONET_OR_PROPERTY, &name, -1);
-            //found
-            if(!strcmp(property, name)){
-                propertyExists=1;
-                break;
-            }
-            hasNext=gtk_tree_model_iter_next (tree_model, &child);
-        }
-        //If the componet's property exists I get the value
-        if(propertyExists){
-            char* value;
-            gtk_tree_model_get(GTK_TREE_MODEL(tree_model), &child,
-                    //COMPONET_OR_PROPERTY, "probando",
-                    VALUE, &value,
-                    -1);
-            return value;
-        }
-    }
-    //If the componet or the property don't exist I create the componet and the property and I set the value return param to NULL
-    return NULL;
+char* get_statistics(char* component, char* property) {
+	// A pinter to the stats model and an interator are created
+    GListModel *model = gtk_tree_list_model_get_model(statistics_model);
+	guint num_children = g_list_model_get_n_items(model);
+	guint num_properties;
+	StatsNode *comp_node, *prop_node;
+
+	// All the children of the root are iterated
+	for (guint i = 0; i < num_children; i++) {
+		comp_node = g_list_model_get_item(model, i);
+
+		// If the children have the same name as component
+		if (g_strcmp0(component, comp_node->name) == 0) {
+			// Get the number of properties of that component
+			num_properties = g_list_model_get_n_items(G_LIST_MODEL(comp_node->children));
+
+			// Check if any of the properties match with the one that was provided as an argument
+			for (guint i = 0; i < num_properties; i++) {
+				prop_node = g_list_model_get_item(G_LIST_MODEL(comp_node->children), i);
+
+				// If they match, return the value.
+				if (g_strcmp0(property, prop_node->name) == 0){
+					return prop_node->content;
+				}
+			}
+		}
+	}
+
+	// If the component and property have not been found, null is returned
+	return NULL;
 }
+
+
 
 /**
  * This function is used to print simulation statistics panel
  * @param fp file to where it will be printed
  */
 void print_statistics(FILE* fp) {
-     fprintf(fp, "\n------SIMULATION STATISTICS------\n\n");
-    GtkTreeModel *tree_model=statistics_model;
-    GtkTreeIter iter;
-    gtk_tree_model_get_iter_first (tree_model, &iter);
-    int hasNext=1;
-    int componentExists=0;
-    //Search for the memory hierarchy componet
-    while(hasNext){
-        char *name;
-        gtk_tree_model_get (tree_model, &iter,
-                COMPONET_OR_PROPERTY, &name, -1);
-        //print title
-        printf("%s\n", name);
-        //print children
-        GtkTreeIter child;
-        int hasNextProperty=gtk_tree_model_iter_children(tree_model,
-                &child,
-                &iter);
+	fprintf(fp, "\n------SIMULATION STATISTICS------\n\n");
+	// A pinter to the stats model and an interator are created
+    GListModel *model = gtk_tree_list_model_get_model(statistics_model);
+	guint num_children = g_list_model_get_n_items(model);
+	guint num_properties;
+	StatsNode *comp_node, *prop_node;
 
-        while(hasNextProperty){
-            char *name;
-            char *value;
-            gtk_tree_model_get (tree_model, &child,
-                    COMPONET_OR_PROPERTY, &name, -1);
-            gtk_tree_model_get (tree_model, &child,
-                    VALUE, &value, -1);
+	// All the children of the root are iterated
+	for (guint i = 0; i < num_children; i++) {
+		// Print the component's name
+		comp_node = g_list_model_get_item(model, i);
+        printf("%s\n", comp_node->name);
 
-            printf("          %s: %s\n", name, value);
-            hasNextProperty=gtk_tree_model_iter_next (tree_model, &child);
-        }
+		// Get the number of properties of the component
+		num_properties = g_list_model_get_n_items(G_LIST_MODEL(comp_node->children));
 
-        hasNext=gtk_tree_model_iter_next (tree_model, &iter);
-    }
-    //If the componet or the property don't exist I create the componet and the property and I set the value return param to NULL
+		// Print the component names and contents / values
+		for (guint i = 0; i < num_properties; i++) {
+			prop_node = g_list_model_get_item(G_LIST_MODEL(comp_node->children), i);
+            printf("          %s: %s\n", prop_node->name, prop_node->content);
+		}
+	}
 }
+
 
 void increment_double_statistics(char *component, char *property, double value) {
     double oldValue = 0.0;

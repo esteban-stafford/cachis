@@ -14,6 +14,7 @@ typedef struct {
    long numBurstAccesses;					// The number of times there was a burst access on main memory
 } Stats;
 
+
 void init_statistics(Stats *stats);
 void update_statistics(Computer *computer, Stats *stats);
 void set_statistics(char* component, char* property, char* value);

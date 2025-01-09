@@ -1,7 +1,7 @@
 #ifndef DATASTORE_H
 #define DATASTORE_H
 
-extern GtkTreeModel *statistics_model;
+extern GtkTreeListModel *statistics_model;
 
 #define MEMORY_TYPE_LINE (memory_line_get_type())
 G_DECLARE_FINAL_TYPE(MemoryLine, memory_line, MEMORY, LINE, GObject)
@@ -36,6 +36,18 @@ struct _CacheLineClass {
 };
 
 
+// Nodes of the tree like structure of the statistics view
+// The define, G_DECLARE and GObject parent_instance are required by GObject to store structs inside of GListStores
+#define STATS_NODE_TYPE (stats_node_get_type())
+G_DECLARE_FINAL_TYPE(StatsNode, stats_node, STATS, NODE, GObject)
+struct _StatsNode {
+	GObject parent_instance;
+	gchar *name;			// Name of the node
+	gchar *content;			// Content of the node
+	GListStore *children;	// Possible children of the node
+};
+
+
 enum {
   COMPONET_OR_PROPERTY = 0,
   VALUE=1,
@@ -46,7 +58,8 @@ void createMemoryModel(Computer *computer);
 void createCacheModel(Cache *cache, int level);
 void writeBlankLine(int level, long line);
 void insertTextInBuffer(char* text, GtkTextBuffer *buffer);
-GtkTreeModel *create_model_statistics(Computer *computer);
+void *create_model_statistics(Computer *computer);
+void stats_node_set(StatsNode *node, gchar *name, gchar *content);
 void generateDataStorage(Computer *computer);
 
 #endif
