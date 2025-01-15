@@ -6,6 +6,7 @@
 // Dimensions and spacing
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
+#define MARGIN_LARGE 20
 #define MARGIN_MED 10
 #define MARGIN_SMALL 5
 #define CACHE_WIDGET_MIN_WIDTH 300	// This makes middle column more prone to overflow as cache widgets get wider

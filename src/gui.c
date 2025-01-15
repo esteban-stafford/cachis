@@ -39,7 +39,6 @@ static void bind_last_access_cb(GtkSignalListItemFactory *factory, GtkListItem *
 static void bind_first_access_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
 static void bind_tag_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
 static void bind_cache_content_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
-static void setup_stats_row(GtkListItemFactory *factory, GtkListItem *list_item);
 static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item);
 
 // Callbacks
@@ -173,7 +172,6 @@ static GtkWidget *create_left_column(Computer *computer) {
 
 	// A factory for the stats model is created
 	GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
-	g_signal_connect(factory, "setup", G_CALLBACK(setup_stats_row), NULL);
     g_signal_connect(factory, "bind", G_CALLBACK(bind_stats_row), NULL);
 
 	// A wrapper for the statistics_model is created
@@ -656,15 +654,10 @@ static void bind_cache_content_cb(GtkSignalListItemFactory *factory, GtkListItem
 	gtk_label_set_text(GTK_LABEL(label), item->content_cache);
 }
 
-// TODO finish this
-static void setup_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) {
-}
-
 /**
  * @brief Creates a row of statistics.
  * @param factory
  * @param list_item
- * @param user_data
  */
 static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) {
 	// Retrieve the StatsNode associated with this list item
@@ -679,7 +672,11 @@ static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) 
 		// A new expander gets created
 		GtkWidget *expander = gtk_expander_new(data->name);
 		gtk_list_item_set_child(list_item, expander);
+
+		// The pointer to the expander is saved
 		data->expander = expander;
+
+		// The state of the expander is updated.
 		gtk_expander_set_expanded(GTK_EXPANDER(expander), data->isExpanded);
 
 		// A the expand signal is connected to on_expander_toggled. It keeps the state of the extender after updating the model.
@@ -687,17 +684,16 @@ static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) 
         g_signal_connect(expander, "notify::expanded", G_CALLBACK(on_expander_toggled), data);
 
 		// The expander only has one child, so it has to contain a box
-		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, MARGIN_SMALL);
 		gtk_expander_set_child(GTK_EXPANDER(expander), box);
 	} else {
-		// gtk_list_item_set_child(list_item, NULL);
 		// If the node is a property, a box with the name and content are created
         GtkWidget *name = gtk_label_new(data->name);
         GtkWidget *content = gtk_label_new(data->content);
-		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, MARGIN_SMALL);
 
-		gtk_widget_set_margin_start(name, 20);
-
+		// A large left margin gets applied and the labels are appended to the box
+		gtk_widget_set_margin_start(name, MARGIN_LARGE);
 		gtk_box_append(GTK_BOX(box), name);
 		gtk_box_append(GTK_BOX(box), content);
 
@@ -709,7 +705,7 @@ static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) 
 		while (next_child != NULL ) {
 			GtkWidget *name_label = gtk_widget_get_first_child(next_child);
 
-			// If the strings are the same, the box gets removed
+			// If the label in the box and the name of the data are the same, the box gets removed
 			if (g_strcmp0(gtk_label_get_text(GTK_LABEL(name_label)), data->name) == 0) {
 				gtk_box_remove(GTK_BOX(expander_box), next_child);
 				break;
@@ -722,6 +718,12 @@ static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) 
     }
 }
 
+/**
+ * @brief Toggles the state of the node in the model after the expander gets clicked.
+ * @param expander The expander.
+ * @param pspec
+ * @param data Pointer to the StatsNode that has the expander.
+ */
 static void on_expander_toggled(GtkExpander *expander, GParamSpec *pspec, StatsNode *data) {
     // gboolean is_expanded = gtk_expander_get_expanded(expander);
     data->isExpanded = !data->isExpanded;

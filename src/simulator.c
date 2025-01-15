@@ -221,6 +221,9 @@ void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *sta
 	// If the DRAMSys trace has been requested, the related variables get initiated
 	if (generate_dramsys_trace) {
 		lastNumber = open_dramsys_file(dramsys_file, &file);
+
+		// Since this is a different burst, there has to be some separation between the last timestamp
+		lastNumber++;
 	}
 
     // Remember that the memory resolved the request

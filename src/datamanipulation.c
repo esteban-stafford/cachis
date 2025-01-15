@@ -397,9 +397,9 @@ int open_dramsys_file(const char *filename, FILE **f){
     // While there is data on the file, iterate until the end is reached.
     while (fscanf(*f, "%d:%255[^\n]", &number, text) == 2) {}
 
-    // If the file is empty, the first number should be 0
+    // If the file is empty, the timestamp should begin in 0 or 1, so -1 gets returned (It will get incremented afterwards)
     if (ftell(*f) == 0) {
-		number = 0;
+		number = -1;
 	}
 
     // The file is closed and reopened in append mode
