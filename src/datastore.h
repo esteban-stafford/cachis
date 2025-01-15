@@ -41,10 +41,15 @@ struct _CacheLineClass {
 #define STATS_NODE_TYPE (stats_node_get_type())
 G_DECLARE_FINAL_TYPE(StatsNode, stats_node, STATS, NODE, GObject)
 struct _StatsNode {
-	GObject parent_instance;
+	GObject parent_instance;	// Enables the struct to act like a node (Required by GObject)
+	GListStore *children;	// Possible children of the node
 	gchar *name;			// Name of the node
 	gchar *content;			// Content of the node
-	GListStore *children;	// Possible children of the node
+	StatsNode *parent;		// Pointer to the parent node
+
+	gboolean isComponent;	// If the stats node is a component or a property
+	gboolean isExpanded;	// Handles collapsing of the GUI, by default all component tags are expanded.
+	GtkWidget *expander;	// If the object is a component, this will contain a expander
 };
 
 
@@ -59,7 +64,7 @@ void createCacheModel(Cache *cache, int level);
 void writeBlankLine(int level, long line);
 void insertTextInBuffer(char* text, GtkTextBuffer *buffer);
 void *create_model_statistics(Computer *computer);
-void stats_node_set(StatsNode *node, gchar *name, gchar *content);
+void stats_node_set(StatsNode *node, gchar *name, gchar *content, StatsNode *parent, gboolean isComponent);
 void generateDataStorage(Computer *computer);
 
 #endif

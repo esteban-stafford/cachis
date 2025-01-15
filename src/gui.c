@@ -32,7 +32,6 @@ static void bind_address_cb(GtkSignalListItemFactory *factory, GtkListItem *list
 static void bind_content_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
 static void bind_line_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
 static void bind_set_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
-static void bind_set_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
 static void bind_valid_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
 static void bind_dirty_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
 static void bind_accessed_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
@@ -40,8 +39,11 @@ static void bind_last_access_cb(GtkSignalListItemFactory *factory, GtkListItem *
 static void bind_first_access_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
 static void bind_tag_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
 static void bind_cache_content_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem);
+static void setup_stats_row(GtkListItemFactory *factory, GtkListItem *list_item);
+static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item);
 
 // Callbacks
+static void on_expander_toggled(GtkExpander *expander, GParamSpec *pspec, StatsNode *data);
 static void on_run_to_breakpoint_clicked(GtkButton *button, Computer *computer);
 static void on_step_button_clicked(GtkButton *button, Computer *computer);
 static void on_reset_button_clicked(GtkButton *button, Computer *computer);
@@ -127,24 +129,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 	gtk_window_present(GTK_WINDOW(window));
 }
 
-/*
-static GMenu* create_menubar() {
-    GMenu *menubar = g_menu_new();
-	GMenuItem *menu_item_menu = g_menu_item_new ("Menu", NULL);
-	GMenu *menu = g_menu_new ();
-	GMenuItem *menu_item_quit = g_menu_item_new ("Quit", NULL);
-    g_menu_append_item(menubar, menu_item_quit);
-
-	g_menu_append_item (menu, menu_item_quit);
-	g_object_unref (menu_item_quit);
-	g_menu_item_set_submenu (menu_item_menu, G_MENU_MODEL (menu));
-	g_object_unref (menu);
-	g_menu_append_item (menubar, menu_item_menu);
-	g_object_unref (menu_item_menu);
-
-    return menubar;
-}
-*/
 
 /**
  * @brief Creates the left column.
@@ -177,21 +161,32 @@ static GtkWidget *create_left_column(Computer *computer) {
 
 	// The trace label and text are appended to the box. The trace text is put inside a scrolled window
 	GtkWidget *trace_label = gtk_label_new(TXT_TRACE);
-	GtkWidget *trace_scroll = gtk_scrolled_window_new ();
+	GtkWidget *trace_scroll = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (trace_scroll), trace_text);
 	gtk_box_append(GTK_BOX(trace_box), trace_label);
 	gtk_box_append(GTK_BOX(trace_box), trace_scroll);
 
 	// The stats label and text gets appended to the box
 	GtkWidget *stats_label = gtk_label_new(TXT_SIMSTATS);
+	GtkWidget *stats_scroll = gtk_scrolled_window_new();
 	gtk_box_append(GTK_BOX(stats_box), stats_label);
 
-	GtkWidget *stats_text = gtk_text_view_new();
+	// A factory for the stats model is created
+	GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
+	g_signal_connect(factory, "setup", G_CALLBACK(setup_stats_row), NULL);
+    g_signal_connect(factory, "bind", G_CALLBACK(bind_stats_row), NULL);
+
+	// A wrapper for the statistics_model is created
+	GtkSelectionModel *selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(statistics_model)));
+
+	GtkWidget *stats_text = gtk_list_view_new(selection_model, factory);
+
 	gtk_widget_set_size_request(stats_text, 200, 200);
 	gtk_widget_set_margin_all(stats_text, MARGIN_SMALL);
 	gtk_widget_set_hexpand(stats_text, TRUE);
 	gtk_widget_set_vexpand(stats_text, TRUE);
-	gtk_box_append(GTK_BOX(stats_box), stats_text);
+	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (stats_scroll), stats_text);
+	gtk_box_append(GTK_BOX(stats_box), stats_scroll);
 
 	// A paned view gets created. This allows the user to resize the trace / stats views
 	GtkWidget *trace_stats_paned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
@@ -203,6 +198,7 @@ static GtkWidget *create_left_column(Computer *computer) {
 
 	// The pane gets appended to the parent box
 	gtk_box_append(GTK_BOX(box), trace_stats_paned);
+
 
 	return box;
 }
@@ -660,7 +656,76 @@ static void bind_cache_content_cb(GtkSignalListItemFactory *factory, GtkListItem
 	gtk_label_set_text(GTK_LABEL(label), item->content_cache);
 }
 
+// TODO finish this
+static void setup_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) {
+}
 
+/**
+ * @brief Creates a row of statistics.
+ * @param factory
+ * @param list_item
+ * @param user_data
+ */
+static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) {
+	// Retrieve the StatsNode associated with this list item
+    StatsNode *data = gtk_list_item_get_item(GTK_LIST_ITEM(list_item));
+
+	if (!data) {
+        return;
+    }
+
+	// If it's a component
+    if (data->isComponent) {
+		// A new expander gets created
+		GtkWidget *expander = gtk_expander_new(data->name);
+		gtk_list_item_set_child(list_item, expander);
+		data->expander = expander;
+		gtk_expander_set_expanded(GTK_EXPANDER(expander), data->isExpanded);
+
+		// A the expand signal is connected to on_expander_toggled. It keeps the state of the extender after updating the model.
+		// This avoids the expander closing if it has been previously opened
+        g_signal_connect(expander, "notify::expanded", G_CALLBACK(on_expander_toggled), data);
+
+		// The expander only has one child, so it has to contain a box
+		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+		gtk_expander_set_child(GTK_EXPANDER(expander), box);
+	} else {
+		// gtk_list_item_set_child(list_item, NULL);
+		// If the node is a property, a box with the name and content are created
+        GtkWidget *name = gtk_label_new(data->name);
+        GtkWidget *content = gtk_label_new(data->content);
+		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+
+		gtk_widget_set_margin_start(name, 20);
+
+		gtk_box_append(GTK_BOX(box), name);
+		gtk_box_append(GTK_BOX(box), content);
+
+		// A pointer to the box inside of the expander is obtained
+		GtkWidget *expander_box = gtk_expander_get_child(GTK_EXPANDER(data->parent->expander));
+
+		// If there is a property that has that name already, it gets removed
+		GtkWidget *next_child = gtk_widget_get_first_child(expander_box);
+		while (next_child != NULL ) {
+			GtkWidget *name_label = gtk_widget_get_first_child(next_child);
+
+			// If the strings are the same, the box gets removed
+			if (g_strcmp0(gtk_label_get_text(GTK_LABEL(name_label)), data->name) == 0) {
+				gtk_box_remove(GTK_BOX(expander_box), next_child);
+				break;
+			}
+			next_child = gtk_widget_get_next_sibling(expander_box);
+		}
+
+		// The new box is appended
+		gtk_box_append(GTK_BOX(expander_box), box);
+    }
+}
+
+static void on_expander_toggled(GtkExpander *expander, GParamSpec *pspec, StatsNode *data) {
+    // gboolean is_expanded = gtk_expander_get_expanded(expander);
+    data->isExpanded = !data->isExpanded;
+}
 
 /**
  * @brief Executes until a breakpoint is found or the simulation is finished.

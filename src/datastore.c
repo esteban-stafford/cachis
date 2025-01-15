@@ -53,6 +53,8 @@ static void stats_node_init(StatsNode *node) {
 	node->name = NULL;
 	node->content = NULL;
 	node->children = g_list_store_new(STATS_NODE_TYPE);
+	node->isComponent = FALSE;
+	node->isExpanded = TRUE;
 }
 
 
@@ -65,10 +67,12 @@ static void stats_node_class_init(StatsNodeClass *class) { }
  * @param name Name of the node.
  * @param content Content of the node.
  */
-void stats_node_set(StatsNode *node, gchar *name, gchar *content) {
+void stats_node_set(StatsNode *node, gchar *name, gchar *content, StatsNode *parent, gboolean isComponent) {
 	// The node gets initiated no children gets created and returned
 	node->name = name;
 	node->content = content;
+	node->parent = parent;
+	node->isComponent = isComponent;
 }
 
 
@@ -185,8 +189,8 @@ void *create_model_statistics(Computer *computer) {
 	CacheLine *cache_line = g_object_new(CACHE_LINE_TYPE, NULL);
 	cpu = g_object_new(STATS_NODE_TYPE, NULL);
 	mem = g_object_new(STATS_NODE_TYPE, NULL);
-	stats_node_set(cpu, S_CPU, NULL);
-	stats_node_set(mem, S_MEM, NULL);
+	stats_node_set(cpu, S_CPU, NULL, NULL, TRUE);
+	stats_node_set(mem, S_MEM, NULL, NULL, TRUE);
 	g_list_store_append(root_store, cpu);
 	g_list_store_append(root_store, mem);
 
@@ -197,37 +201,32 @@ void *create_model_statistics(Computer *computer) {
 		caches[i] = g_object_new(STATS_NODE_TYPE, NULL);
 		char *name = (char *)malloc(sizeof(char)*20);
 		sprintf(name, "Cache L%d", i + 1);
-		stats_node_set(caches[i], name, NULL);
+		stats_node_set(caches[i], name, NULL, NULL, TRUE);
 		g_list_store_append(root_store, caches[i]);
 
 	}
 
 	// A "Totals" section gets created
 	totals = g_object_new(STATS_NODE_TYPE, NULL);
-	stats_node_set(totals, S_TOTALS, NULL);
+	stats_node_set(totals, S_TOTALS, NULL, NULL, TRUE);
 	g_list_store_append(root_store, totals);
 
 
 	// The properties of the CPU get assigned
 	cpu_accesses = g_object_new(STATS_NODE_TYPE, NULL);
-	stats_node_set(cpu_accesses, S_ACCESSES, "");
+	stats_node_set(cpu_accesses, S_ACCESSES, "", cpu, FALSE);
 	g_list_store_append(cpu->children, cpu_accesses);
 	// g_object_unref(cpu_accesses);
 
 	// The properties of the memory get assigned
 	mem_accesses = g_object_new(STATS_NODE_TYPE, NULL);
-	stats_node_set(mem_accesses, S_ACCESSES, "");
+	stats_node_set(mem_accesses, S_ACCESSES, "", mem, FALSE);
 	g_list_store_append(mem->children, mem_accesses);
 	// g_object_unref(mem_accesses);
 
 	// The properties of the caches get assigned
 	// StatsNode *c_accesses, *c_misses, *c_hits, *c_missrate, *c_hitrate;
 	for (int i = 0; i < computer->num_caches; i++) {
-		// StatsNode *c_accesses = malloc(sizeof(StatsNode));
-		// StatsNode *c_misses = malloc(sizeof(StatsNode));
-		// StatsNode *c_hits = malloc(sizeof(StatsNode));
-		// StatsNode *c_missrate = malloc(sizeof(StatsNode));
-		// StatsNode *c_hitrate = malloc(sizeof(StatsNode));
 		StatsNode *c_accesses, *c_misses, *c_hits, *c_missrate, *c_hitrate;
 		c_accesses = g_object_new(STATS_NODE_TYPE, NULL);
 		c_misses = g_object_new(STATS_NODE_TYPE, NULL);
@@ -235,11 +234,11 @@ void *create_model_statistics(Computer *computer) {
 		c_missrate = g_object_new(STATS_NODE_TYPE, NULL);
 		c_hitrate = g_object_new(STATS_NODE_TYPE, NULL);
 
-		stats_node_set(c_accesses, S_ACCESSES, "");
-		stats_node_set(c_misses, S_MISSES, "");
-		stats_node_set(c_hits, S_HITS, "");
-		stats_node_set(c_missrate, S_MRATE, "");
-		stats_node_set(c_hitrate, S_HRATE, "");
+		stats_node_set(c_accesses, S_ACCESSES, "", caches[i], FALSE);
+		stats_node_set(c_misses, S_MISSES, "", caches[i], FALSE);
+		stats_node_set(c_hits, S_HITS, "", caches[i], FALSE);
+		stats_node_set(c_missrate, S_MRATE, "", caches[i], FALSE);
+		stats_node_set(c_hitrate, S_HRATE, "", caches[i], FALSE);
 
 		g_list_store_append(caches[i]->children, c_accesses);
 		g_list_store_append(caches[i]->children, c_misses);
@@ -251,7 +250,7 @@ void *create_model_statistics(Computer *computer) {
 	}
 	// The properties of the totals get assigned
 	totals_atime = g_object_new(STATS_NODE_TYPE, NULL);
-	stats_node_set(totals_atime, S_ATIME, "");
+	stats_node_set(totals_atime, S_ATIME, "", totals, FALSE);
 	g_list_store_append(totals->children, totals_atime);
 	// g_object_unref(totals_atime);
 

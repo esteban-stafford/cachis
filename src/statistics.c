@@ -81,37 +81,54 @@ void set_statistics(char* component, char* property, char* value){
 			num_properties = g_list_model_get_n_items(G_LIST_MODEL(comp_node->children));
 
 			// Check if any of the properties match with the one that was provided as an argument
-			for (guint i = 0; i < num_properties; i++) {
-				prop_node = g_list_model_get_item(G_LIST_MODEL(comp_node->children), i);
+			for (guint j = 0; j < num_properties; j++) {
+				prop_node = g_list_model_get_item(G_LIST_MODEL(comp_node->children), j);
 
 				// If they match, update the value and exit.
 				if (g_strcmp0(property, prop_node->name) == 0) {
+					// The position of the previous value is stored
+					guint position;
+					g_list_store_find(comp_node->children, prop_node, &position);
+
 					// The memory of the previous value is freed (If there was a value previously)
 					if (g_strcmp0(prop_node->content, "") != 0) {
 						free(prop_node->content);
-
 					}
 
-					// Memory for a new pointer is allocated
+					// The previous node is removed
+					g_list_store_remove(comp_node->children, position);
+
+					// Memory for a value is allocated
 					char *new_value = (char *)malloc(sizeof(char)*20);
 					sprintf(new_value, "%s", value);
-					prop_node->content = new_value;
+
+					// A new node is initiated
+					StatsNode *new = g_object_new(STATS_NODE_TYPE, NULL);
+					stats_node_set(new, property, new_value, comp_node, FALSE);
+
+					// And it is inserted into the model
+					g_list_store_insert(comp_node->children, position, new);
+
 					return;
 				}
 			}
 
 			// If the component matches but the property has not been found, create it and attach it.
+			// TODO ADD MALLOC TO THIS
 			StatsNode *new = g_object_new(STATS_NODE_TYPE, NULL);
-			stats_node_set(new, property, value);
+			stats_node_set(new, property, value, comp_node, FALSE);
 			g_list_store_append(comp_node->children, new);
+
+			return;
 		}
 	}
 
 	// If there are no components with that name, create one and attach the property to that component
+	// TODO ADD MALLOC TO THIS
 	StatsNode *new_c = g_object_new(STATS_NODE_TYPE, NULL);
 	StatsNode *new_p = g_object_new(STATS_NODE_TYPE, NULL);
-	stats_node_set(new_c, component, NULL);
-	stats_node_set(new_p, component, NULL);
+	stats_node_set(new_c, component, NULL, NULL, TRUE);
+	stats_node_set(new_p, component, NULL, new_c, FALSE);
 	g_list_store_append(new_c->children, new_p);
 	g_list_store_append(G_LIST_STORE(model), new_c);
 }
