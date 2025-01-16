@@ -1,7 +1,7 @@
 #include "writepolicy.h"
 #include "datamanipulation.h"
 
-void write_back(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response, int cacheLine) {
+void write_back(Computer *computer, MemoryOperation *operation, ResponseType *response, int cacheLine) {
     printf("\n-> Applying WriteBack in cache\n");
 
     // The contents of the line get read
@@ -19,7 +19,7 @@ void write_back(Computer *computer, MemoryOperation *operation, Stats *stats, Re
     write_line_to_cache(computer, operation->instructionOrData, 0, &content, cacheLine);
 }
 
-void write_through(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response) {
+void write_through(Computer *computer, MemoryOperation *operation, ResponseType *response) {
     printf("\n-> Applying WriteThrough in memory\n");
     MemoryPosition pos;
 	FILE *file;
@@ -37,9 +37,6 @@ void write_through(Computer *computer, MemoryOperation *operation, Stats *stats,
     pos.address = operation->address;
     pos.content = operation->data;
 
-    // The access to memory gets noted
-    stats->numAccesses[MAX_CACHES] += response->size;
-
     // Write data from request into memory
     // After every iteration the address gets incremented by computer->cpu.word_width / 8 (Converts the word size to bytes)
     // After every iteration, the address increases one word
@@ -54,11 +51,6 @@ void write_through(Computer *computer, MemoryOperation *operation, Stats *stats,
 		// If the DRAMSys trace has been requested, append a write for the current address
 		if (generate_dramsys_trace) {
 			write_to_dramsys_file(&file, lastNumber + i, 1, address);
-		}
-
-        // If it's not the first access, it gets noted as a burst access
-        if (i != 0) {
-			stats->numBurstAccesses++;
 		}
     }
 

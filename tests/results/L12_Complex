@@ -490,7 +490,7 @@ Finished simulation.
 CPU
           Accesses: 11
 Memory
-          Accesses: 48
+          Accesses: 44
 Cache L1
           Accesses: 11
           Misses: 11
@@ -504,7 +504,7 @@ Cache L2
           Miss Rate: 1.00
           Hit Rate: 0.00
 Totals
-          Access Time: 21.825000
+          Access Time: 20.075000
 
 
 <<----------------------------------------------->>
@@ -530,7 +530,7 @@ Finished simulation, the response contains: 0x0
 CPU
           Accesses: 12
 Memory
-          Accesses: 48
+          Accesses: 44
 Cache L1
           Accesses: 12
           Misses: 12
@@ -544,7 +544,7 @@ Cache L2
           Miss Rate: 0.92
           Hit Rate: 0.08
 Totals
-          Access Time: 21.900000
+          Access Time: 20.150000
 
 
 <<----------------------------------------------->>
@@ -584,7 +584,7 @@ Finished simulation, the response contains: 0x0
 CPU
           Accesses: 13
 Memory
-          Accesses: 52
+          Accesses: 44
 Cache L1
           Accesses: 13
           Misses: 13
@@ -598,7 +598,7 @@ Cache L2
           Miss Rate: 0.85
           Hit Rate: 0.15
 Totals
-          Access Time: 23.725000
+          Access Time: 20.225000
 
 
 <<----------------------------------------------->>

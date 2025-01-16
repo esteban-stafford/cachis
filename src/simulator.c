@@ -14,8 +14,8 @@ unsigned long cycle = 0;
 /* Private functions */
 void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response, int topLevel);
 void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response);
-void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response, int topLevel);
-void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData, int cacheLevel, int line);
+void populate_cache(Computer *computer, MemoryOperation *operation, ResponseType *response, int topLevel);
+void move_to_lower_level(Computer *computer, int instructionOrData, int cacheLevel, int line);
 void upgrade_response_to_full_line(Computer *computer, int cacheLevel, ResponseType *response);
 void get_mapping(Computer *computer, int cacheLevel, MemoryOperation *operation, MappingResult *mappingResult);
 
@@ -94,11 +94,11 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
 				response.size = write_response.size;
 
 				// The last level gets updated with the operation's data and the number of accesses gets incremented by 1
-				write_back(computer, operation, &stats, &response, response.cacheLineDest[0]);
+				write_back(computer, operation, &response, response.cacheLineDest[0]);
 				break;
 			case WRITE_THROUGH:
 				// The content gets directly written to memory and the memory gets accessed once
-				write_through(computer, operation, &stats, &response);
+				write_through(computer, operation, &response);
 
 				// The response gets upgraded to house an entire cache line of data
 				upgrade_response_to_full_line(computer, computer->num_caches - 1, &response);
@@ -265,11 +265,10 @@ void read_from_memory(Computer *computer, MemoryOperation *operation, Stats *sta
  * @brief Populates all caches above the line that resolved the request
  * @param computer The computer.
  * @param operation The operation to perform on the caches.
- * @param stats The statistics TODO Deprecate this if stats are correct.
  * @param response Contains the data that will get propagated to the upper levels.
  * @param topLevel The last level to be populated.
  */
-void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats, ResponseType *response, int topLevel) {
+void populate_cache(Computer *computer, MemoryOperation *operation, ResponseType *response, int topLevel) {
     // If the level that resolved the response is below the top one, the caches get populated
     if (response->resolved > 0) {
         printf("\n-> Populating caches\n");
@@ -313,7 +312,7 @@ void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats
 			read_flags_from_cache(computer, operation->instructionOrData, cacheLevel, &existingData, line);
 
 			if (existingData.dirty == 1) {
-				move_to_lower_level(computer, stats, operation->instructionOrData, cacheLevel, line);
+				move_to_lower_level(computer, operation->instructionOrData, cacheLevel, line);
 			}
 			write_line_to_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
 
@@ -327,12 +326,11 @@ void populate_cache(Computer *computer, MemoryOperation *operation, Stats *stats
 /**
  * @brief Moves data to lower levels of the hierarchy. Called when there is a collision.
  * @param computer The computer.
- * @param stats Statistics TODO deprecate these if not necessary
  * @param instructionOrData If the data is located in an instruction or data cache.
  * @param cacheLevel The cache level that contains the data that has to be moved.
  * @param line The line that has to be moved.
  */
-void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData, int cacheLevel, int line) {
+void move_to_lower_level(Computer *computer, int instructionOrData, int cacheLevel, int line) {
 	CacheLineContent existingData;
 	read_line_from_cache(computer, instructionOrData, cacheLevel, &existingData, line);
 
@@ -368,14 +366,14 @@ void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData
 	if (computer->num_caches - 1 <= cacheLevel) {
 		printf("Reached memory, writing directly.\n\n");
 		printf("-> Starting move to lower levels:\n");
-		write_through(computer, &moveOp, stats, &moveResponse);
+		write_through(computer, &moveOp, &moveResponse);
 	} else {
 		switch (computer->cache[cacheLevel + 1].write_policy) {
 			case WRITE_THROUGH:
 				// The contents get written to memory and propagated up to cacheLevel - 1
 				printf("Moving existing data to memory (Lower level is WT)\n\n");
 				printf("-> Starting move to lower levels:\n");
-				write_through(computer, &moveOp, stats, &moveResponse);
+				write_through(computer, &moveOp, &moveResponse);
 
 				// Read the data and populate all caches with it
 				read_from_memory(computer, &moveOp, &fillerStats, &moveResponse);
@@ -398,7 +396,7 @@ void move_to_lower_level(Computer *computer, Stats *stats, int instructionOrData
 				populate_cache(computer, &moveOp, &fillerStats, &moveResponse, cacheLevel - 1);
 
 				// The last level gets updated with the moveOp's data and the number of accesses gets incremented by 1
-				write_back(computer, &moveOp, stats, &moveResponse, moveResponse.cacheLineDest[cacheLevel - 1]);
+				write_back(computer, &moveOp, &moveResponse, moveResponse.cacheLineDest[cacheLevel - 1]);
 				break;
 		}
 	}
