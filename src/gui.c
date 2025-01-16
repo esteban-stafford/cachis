@@ -118,8 +118,14 @@ static void activate(GtkApplication *app, gpointer user_data) {
 	gtk_paned_set_start_child (GTK_PANED(right_paned),middle_section);
 	gtk_paned_set_end_child (GTK_PANED(right_paned),right_column);
 
+
 	// By default the leftmost separator gets positioned at 1/4th of the width of the window.
 	gtk_paned_set_position (GTK_PANED (left_paned), (WINDOW_WIDTH / 4));
+
+	// Some formatting is done to ensure that handles are grabbable even when collapsed all the way
+	gtk_widget_set_margin_end(middle_section, MARGIN_MED);
+	gtk_paned_set_wide_handle(GTK_PANED(left_paned), TRUE);
+	gtk_paned_set_wide_handle(GTK_PANED(right_paned), TRUE);
 
 	// And the left paned gets added to the main box
 	gtk_box_append(GTK_BOX(main_box), left_paned);
@@ -208,15 +214,17 @@ static GtkWidget *create_left_column(Computer *computer) {
  * @return A pointer to the created widget.
  */
 static GtkWidget *create_middle_section(Computer *computer) {
-	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-	gtk_widget_set_margin_all(box, MARGIN_MED);
+	// GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, MARGIN_SMALL);
 	GtkWidget *scrolled_window = gtk_scrolled_window_new();
-    gtk_widget_set_size_request (scrolled_window, (WINDOW_WIDTH / 3), -1);
+	GtkWidget *paned[MAX_CACHES];
 
 	// For every cache in the hierarchy
 	for (int i = 0; i < computer->num_caches; i++) {
+		// A paned for this cache gets created
+		paned[i] = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+
 		// A box gets created
-		GtkWidget *cache_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+		GtkWidget *cache_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, MARGIN_SMALL);
 		gtk_widget_set_margin_all(cache_box, MARGIN_SMALL);
 
 		// A title gets assigned to the box
@@ -227,15 +235,26 @@ static GtkWidget *create_middle_section(Computer *computer) {
 
 		// And a widget showing the cache table is put inside of the box
 		GtkWidget *cache_widget = create_cache_widget(&computer->cache[i]);
-		gtk_widget_set_size_request(cache_widget, CACHE_WIDGET_MIN_WIDTH, 400);
 		gtk_widget_set_hexpand(cache_widget, TRUE);
 		gtk_widget_set_vexpand(cache_widget, TRUE);
 		gtk_box_append(GTK_BOX(cache_box), cache_widget);
 
-		gtk_box_append(GTK_BOX(box), cache_box);
+		// The cache is attached to the first element of the paned
+		gtk_paned_set_start_child(GTK_PANED(paned[i]), cache_box);
+
+		// Each cache is assigned the proportional part of the middle section, depending on the number of total caches
+		gtk_paned_set_position (GTK_PANED(paned[i]), (WINDOW_WIDTH / 2) / (computer->num_caches));
+
+		// If there is more than one cache, this paned has to get attached to the second element of the previous paned
+		if (i != 0) {
+			gtk_paned_set_end_child(GTK_PANED(paned[i - 1]), paned[i]);
+			// gtk_widget_set_margin_start(paned[i], MARGIN_MED);
+			gtk_paned_set_wide_handle(GTK_PANED(paned[i - 1]), TRUE);
+		}
 	}
 
-	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scrolled_window), box);
+    gtk_widget_set_size_request (scrolled_window, (WINDOW_WIDTH / 3), -1);
+	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scrolled_window), paned[0]);
 	return scrolled_window;
 }
 
@@ -305,27 +324,32 @@ static GtkWidget *create_cache_widget(Cache *cache) {
 
 	// If the caches are separated, two tables have to be created on the same box
 	if (cache->separated) {
-		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+		// Two boxes (One for each cache) and a paned are created
+		GtkWidget *top_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+		GtkWidget *bottom_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+		GtkWidget *paned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
 
 		// A label is added for the data and instruction caches
 		cache_label = gtk_label_new(C_SEP_DATA);
-		gtk_box_append(GTK_BOX(box), cache_label);
+		gtk_box_append(GTK_BOX(top_box), cache_label);
 
 		// The tables are created based on the data model that is provided and the view gets stored in the view_data pointer
 		GtkWidget *data_table = create_cache_table(G_LIST_STORE(cache->model_data));
 		cache->view_data = data_table;
 		gtk_widget_set_vexpand(data_table, TRUE);
-		gtk_box_append(GTK_BOX(box), data_table);
+		gtk_box_append(GTK_BOX(top_box), data_table);
 
 		// Same for the instruction cache
 		cache_label = gtk_label_new(C_SEP_INST);
-		gtk_box_append(GTK_BOX(box), cache_label);
+		gtk_box_append(GTK_BOX(bottom_box), cache_label);
 		GtkWidget *instruction_table = create_cache_table(G_LIST_STORE(cache->model_instruction));
 		cache->view_instruction = instruction_table;
 		gtk_widget_set_vexpand(instruction_table, TRUE);
-		gtk_box_append(GTK_BOX(box), instruction_table);
+		gtk_box_append(GTK_BOX(bottom_box), instruction_table);
 
-		return box;
+		gtk_paned_set_start_child(GTK_PANED(paned), top_box);
+		gtk_paned_set_end_child(GTK_PANED(paned), bottom_box);
+		return paned;
 	} else {
 		GtkWidget *unified_table = create_cache_table(G_LIST_STORE(cache->model_data));
 		cache->view_data = unified_table;
