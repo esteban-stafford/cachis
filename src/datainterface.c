@@ -181,7 +181,8 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
     cache_line->last_accessed = cycle;
 
 	// Notify the model that the item has changed TODO This is broken, the model doesn't auto update anymore
-    g_list_model_items_changed(model, lineNumber, 1, 1);
+    // g_list_model_items_changed(model, lineNumber, 1, 1);
+
 
     // Scroll to the updated row
     //scroll_to_row(view, lineNumber * 100 / g_list_model_get_n_items(model));
@@ -279,15 +280,20 @@ void write_flags_to_cache(Computer *computer, int instructionOrData, int level, 
  */
 void write_line_to_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, unsigned lineNumber) {
     GListModel *model;
-    GtkColumnView *view;
+	GtkWidget *view;
     char contentString[2000];
     
     if (!computer->cache[level].separated || instructionOrData == DATA) {
         model = G_LIST_MODEL(computer->cache[level].model_data);
-        // view = GTK_COLUMN_VIEW(computer->cache[level].view_data);
-    } else {
+		if (useGUI) {
+			view = gtk_scrolled_window_get_child(GTK_SCROLLED_WINDOW(computer->cache[level].view_data));
+		}
+
+	} else {
         model = G_LIST_MODEL(computer->cache[level].model_instruction);
-        // view = GTK_COLUMN_VIEW(computer->cache[level].view_instruction);
+		if (useGUI) {
+			view = gtk_scrolled_window_get_child(GTK_SCROLLED_WINDOW(computer->cache[level].view_instruction));
+		}
     }
 
     contentArrayToString(line->content, contentString, (computer->cache[level].line_size*8)/computer->cpu.word_width, computer->cpu.word_width/4);
@@ -318,10 +324,15 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
 	cache_line->startingAddress = line->startingAddress;
 
     // Notify the model that the item has changed
-    g_list_model_items_changed(model, lineNumber, 1, 1);
+	g_list_store_remove(G_LIST_STORE(model), lineNumber);
+	g_list_store_insert(G_LIST_STORE(model), lineNumber, cache_line);
 
-    // Scroll to the updated row
-    // scroll_to_row(GTK_WIDGET(view), lineNumber * 100 / g_list_model_get_n_items(model));
+    // Select and scroll to the updated row
+	// gtk_single_selection_set_selected(GTK_SINGLE_SELECTION(gtk_column_view_get_model(GTK_COLUMN_VIEW(view))), lineNumber);
+	if (useGUI) {
+		gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), lineNumber, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
+	}
+
 
     g_object_unref(item);
 }
@@ -400,8 +411,12 @@ int read_from_memory_address(Computer *computer, MemoryPosition *pos, long addre
     pos->address = memory_line->address;
     pos->content = memory_line->content;
 
+	if (useGUI) {
+		long int row = (pos->address - computer->memory.page_base_address) / 4;	//-3 is necessary or else GTK will select the last one of the set
+		gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), row, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
+	}
+
     set_row_color(computer, index, "#90a955");
-    //scroll_to_row(computer->memory.view, index * 100 / max_index);
 
     g_object_unref(item);
     return 0;
@@ -441,10 +456,11 @@ int write_to_memory_address(Computer *computer, MemoryPosition *pos, long addres
     memory_line->content = pos->content;
 
     // Notify the model that the item has changed
-    g_list_model_items_changed(model, index, 1, 1);
+    // g_list_model_items_changed(model, index, 1, 1);
+	g_list_store_remove(G_LIST_STORE(model), index);
+	g_list_store_insert(G_LIST_STORE(model), index, memory_line);
 
     set_row_color(computer, index, "#ff9b54");
-    //scroll_to_row(computer->memory.view, index * 100 / max_index);
 
     g_object_unref(item);
     return 0;

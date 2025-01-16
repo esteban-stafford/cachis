@@ -369,7 +369,7 @@ static GtkWidget *create_cache_table(GListStore *model) {
 	GtkWidget *scrolled_window = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-	// A single selection and a column view gets created
+	// A single selection and a column view gets created and a pointer to the single selection is also kept
 	GtkSingleSelection *selection = gtk_single_selection_new(G_LIST_MODEL(model));
 	GtkWidget *column_view = gtk_column_view_new(GTK_SELECTION_MODEL(selection));
 
