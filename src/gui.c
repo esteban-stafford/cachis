@@ -687,7 +687,7 @@ static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) 
 	// Retrieve the StatsNode associated with this list item
     StatsNode *data = gtk_list_item_get_item(GTK_LIST_ITEM(list_item));
 
-	if (!data) {
+	if (data == NULL) {
         return;
     }
 
@@ -698,7 +698,7 @@ static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) 
 		gtk_list_item_set_child(list_item, expander);
 
 		// The pointer to the expander is saved
-		data->expander = expander;
+		data->container = expander;
 
 		// The state of the expander is updated.
 		gtk_expander_set_expanded(GTK_EXPANDER(expander), data->isExpanded);
@@ -706,41 +706,32 @@ static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) 
 		// A the expand signal is connected to on_expander_toggled. It keeps the state of the extender after updating the model.
 		// This avoids the expander closing if it has been previously opened
         g_signal_connect(expander, "notify::expanded", G_CALLBACK(on_expander_toggled), data);
-
-		// The expander only has one child, so it has to contain a box
-		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, MARGIN_SMALL);
-		gtk_expander_set_child(GTK_EXPANDER(expander), box);
 	} else {
 		// If the node is a property, a box with the name and content are created
         GtkWidget *name = gtk_label_new(data->name);
         GtkWidget *content = gtk_label_new(data->content);
 		GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, MARGIN_SMALL);
 
+		// The pointer to the box is saved
+		data->container = box;
+
 		// A large left margin gets applied and the labels are appended to the box
 		gtk_widget_set_margin_start(name, MARGIN_LARGE);
 		gtk_box_append(GTK_BOX(box), name);
 		gtk_box_append(GTK_BOX(box), content);
 
-		// A pointer to the box inside of the expander is obtained
-		GtkWidget *expander_box = gtk_expander_get_child(GTK_EXPANDER(data->parent->expander));
-
-		// If there is a property that has that name already, it gets removed
-		GtkWidget *next_child = gtk_widget_get_first_child(expander_box);
-		while (next_child != NULL ) {
-			GtkWidget *name_label = gtk_widget_get_first_child(next_child);
-
-			// If the label in the box and the name of the data are the same, the box gets removed
-			if (g_strcmp0(gtk_label_get_text(GTK_LABEL(name_label)), data->name) == 0) {
-				gtk_box_remove(GTK_BOX(expander_box), next_child);
-				break;
-			}
-			next_child = gtk_widget_get_next_sibling(expander_box);
-		}
 
 		// The new box is appended
-		gtk_box_append(GTK_BOX(expander_box), box);
+		gtk_list_item_set_child(list_item, box);
+
+		if (!data->isExpanded) {
+			g_object_set(box, "visible", FALSE, NULL);
+		} else {
+			g_object_set(box, "visible", TRUE, NULL);
+		}
     }
 }
+
 
 /**
  * @brief Toggles the state of the node in the model after the expander gets clicked.
@@ -749,8 +740,37 @@ static void bind_stats_row(GtkListItemFactory *factory, GtkListItem *list_item) 
  * @param data Pointer to the StatsNode that has the expander.
  */
 static void on_expander_toggled(GtkExpander *expander, GParamSpec *pspec, StatsNode *data) {
-    // gboolean is_expanded = gtk_expander_get_expanded(expander);
+	// The state is toggled
     data->isExpanded = !data->isExpanded;
+
+	// The model is fetched
+    GListModel *model = gtk_tree_list_model_get_model(statistics_model);
+	guint num_children = g_list_model_get_n_items(model);
+	StatsNode *comp_node, *prop_node;
+
+	// All the components are iterated
+	for (guint i = 0; i < num_children; i++) {
+		comp_node = g_list_model_get_item(model, i);
+
+		// If the is the same as the one that has been expanded
+		if (g_strcmp0(comp_node->name, data->name) == 0) {
+			int num_properties = g_list_model_get_n_items(G_LIST_MODEL(comp_node->children));
+
+			// All the children are collapsed
+			for (guint j = 0; j < num_properties; j++) {
+				prop_node = g_list_model_get_item(G_LIST_MODEL(comp_node->children), j);
+
+				prop_node->isExpanded = !prop_node->isExpanded;
+
+				// The visibility of the children is changed
+				if (prop_node->isExpanded) {
+					g_object_set(prop_node->container, "visible", TRUE, NULL);
+				} else {
+					g_object_set(prop_node->container, "visible", FALSE, NULL);
+				}
+			}
+		}
+	}
 }
 
 /**
@@ -926,6 +946,14 @@ static void on_reset_button_clicked(GtkButton *button, Computer *computer) {
 	GtkTextIter start;
 	gtk_text_buffer_get_start_iter(buffer, &start);
 	gtk_text_view_scroll_to_iter(computer->cpu.view, &start, 0.0, TRUE, 0.0, 0.5);
+
+	// The memory, cache and statistics models are reset
+	reset_memory_model(computer);
+	reset_cache_model(computer);
+	reset_statistics_model(computer);
+
+	// The cycle is reset to 0
+	cycle = 0;
 }
 
 

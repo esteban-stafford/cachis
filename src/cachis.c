@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Create simulator data structures
-    generateDataStorage(&computer);
+    generate_data_storage(&computer);
 
     // Override trace file if there is a filename on the command line.
     if(optind+1 < argc) {

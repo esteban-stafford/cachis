@@ -49,7 +49,7 @@ struct _StatsNode {
 
 	gboolean isComponent;	// If the stats node is a component or a property
 	gboolean isExpanded;	// Handles collapsing of the GUI, by default all component tags are expanded.
-	GtkWidget *expander;	// If the object is a component, this will contain a expander
+	GtkWidget *container;	// Pointer to the GtkWidget that is contained by the element (Expander / Box)
 };
 
 
@@ -59,12 +59,13 @@ enum {
   NUM_COLS=2
 };
 
-void createMemoryModel(Computer *computer);
-void createCacheModel(Cache *cache, int level);
-void writeBlankLine(int level, long line);
-void insertTextInBuffer(char* text, GtkTextBuffer *buffer);
-void *create_model_statistics(Computer *computer);
+void generate_data_storage(Computer *computer);
+void create_memory_model(Computer *computer);
+void create_cache_model(Cache *cache, int level);
+void create_statistics_model(Computer *computer);
+void reset_memory_model(Computer *computer);
+void reset_cache_model(Computer *computer);
+void reset_statistics_model(Computer *computer);
 void stats_node_set(StatsNode *node, gchar *name, gchar *content, StatsNode *parent, gboolean isComponent);
-void generateDataStorage(Computer *computer);
 
 #endif

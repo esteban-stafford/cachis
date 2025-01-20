@@ -95,9 +95,6 @@ void set_statistics(char* component, char* property, char* value){
 						free(prop_node->content);
 					}
 
-					// The previous node is removed
-					g_list_store_remove(comp_node->children, position);
-
 					// Memory for a value is allocated
 					char *new_value = (char *)malloc(sizeof(char)*20);
 					sprintf(new_value, "%s", value);
@@ -106,15 +103,19 @@ void set_statistics(char* component, char* property, char* value){
 					StatsNode *new = g_object_new(STATS_NODE_TYPE, NULL);
 					stats_node_set(new, property, new_value, comp_node, FALSE);
 
+					// The state of the previous component is kept
+					new->isExpanded = prop_node->isExpanded;
+
+					// The previous node is removed
+					g_list_store_remove(comp_node->children, position);
+
 					// And it is inserted into the model
 					g_list_store_insert(comp_node->children, position, new);
+					g_object_ref(new);
 
 					return;
 				}
 			}
-
-			// If the component matches but the property has not been found, create it and attach it.
-			// TODO ADD MALLOC TO THIS
 			StatsNode *new = g_object_new(STATS_NODE_TYPE, NULL);
 			stats_node_set(new, property, value, comp_node, FALSE);
 			g_list_store_append(comp_node->children, new);
@@ -122,9 +123,7 @@ void set_statistics(char* component, char* property, char* value){
 			return;
 		}
 	}
-
 	// If there are no components with that name, create one and attach the property to that component
-	// TODO ADD MALLOC TO THIS
 	StatsNode *new_c = g_object_new(STATS_NODE_TYPE, NULL);
 	StatsNode *new_p = g_object_new(STATS_NODE_TYPE, NULL);
 	stats_node_set(new_c, component, NULL, NULL, TRUE);

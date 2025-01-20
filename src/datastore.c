@@ -3,12 +3,14 @@
 #include "datamanipulation.h"
 #include "datastore.h"
 
-
-// Private functions
-GListModel *get_stats_node_children(GObject *item, gpointer user_data);
-
 GtkTreeListModel *statistics_model;
 
+// Private functions
+void create_cache_list_store(Cache *cache, int data_or_instruction);
+void reset_cache_level(Cache *cache, int data_or_instruction);
+
+// GObject functions
+GListModel *get_stats_node_children(GObject *item, gpointer user_data);
 G_DEFINE_TYPE(MemoryLine, memory_line, G_TYPE_OBJECT)
 
 static void memory_line_init(MemoryLine *memory_line) {
@@ -19,7 +21,6 @@ static void memory_line_init(MemoryLine *memory_line) {
 }
 
 static void memory_line_class_init(MemoryLineClass *class) { }
-
 G_DEFINE_TYPE(CacheLine, cache_line, G_TYPE_OBJECT)
 
 static void cache_line_init(CacheLine *cache_line) {
@@ -38,8 +39,6 @@ static void cache_line_init(CacheLine *cache_line) {
 
 // This is required
 static void cache_line_class_init(CacheLineClass *class) { }
-
-
 G_DEFINE_TYPE(StatsNode, stats_node, G_TYPE_OBJECT)
 
 /**
@@ -76,11 +75,28 @@ void stats_node_set(StatsNode *node, gchar *name, gchar *content, StatsNode *par
 }
 
 
+
 /**
- * @brief Creates and populates the memory model
+ * Generates and initiates all the data structures.
+ * @param computer The computer that will contain the structures
+ */
+void generate_data_storage(Computer* computer) {
+   computer->cpu.buffer = NULL;
+
+   create_memory_model(computer);
+
+   for (int i=0; i< computer->num_caches; i++){
+      create_cache_model(&computer->cache[i], i);
+   }
+
+   create_statistics_model(computer);
+}
+
+/**
+ * @brief Creates and populates the memory model.
  * @param computer The computer that contains the memory and the model structure
  */
-void createMemoryModel(Computer *computer) {
+void create_memory_model(Computer *computer) {
     // The model gets created
     GListStore *model = g_list_store_new(MEMORY_TYPE_LINE);
     int j = 0;
@@ -102,7 +118,20 @@ void createMemoryModel(Computer *computer) {
 
     // A pointer to the model gets saved in the memory struct
     computer->memory.model = model;
-    //g_object_unref(model);
+}
+
+void create_cache_model(Cache *cache, int level) {
+    create_cache_list_store(cache, 0);
+
+    if (cache->separated) {
+        create_cache_list_store(cache, 1);
+    }
+
+#if DEBUG
+    fprintf(stderr, "cache level %d: %s lines: %d, associativity: %ld, sets: %d, words line: %d\n", 
+            level + 1, cache->separated ? "separated" : "unified", cache->num_lines,
+            cache->associativity, cache->num_sets, cache->num_words);
+#endif
 }
 
 /**
@@ -134,50 +163,12 @@ void create_cache_list_store(Cache *cache, int data_or_instruction) {
     }
 }
 
-void createCacheModel(Cache *cache, int level) {
-    create_cache_list_store(cache, 0);
-
-    if (cache->separated) {
-        create_cache_list_store(cache, 1);
-    }
-
-#if DEBUG
-    fprintf(stderr, "cache level %d: %s lines: %d, associativity: %ld, sets: %d, words line: %d\n", 
-            level + 1, cache->separated ? "separated" : "unified", cache->num_lines,
-            cache->associativity, cache->num_sets, cache->num_words);
-#endif
-}
-
-void generateDataStorage(Computer *computer){
-   computer->cpu.buffer = NULL;
-   createMemoryModel(computer);
-   for(int i=0; i< computer->num_caches; i++){
-      createCacheModel(&computer->cache[i], i);
-      //reset_cache(i);
-   }
-   create_model_statistics(computer);
-}
-
-/**
- * Function that inserts text into the buffer.
- * @param text to be inserted.
- * @param buffer in which th etext will be inserted.
- */
-void insertTextInBuffer(char* text, GtkTextBuffer *buffer){
-   GtkTextMark *mark;
-   GtkTextIter iter;
-   mark = gtk_text_buffer_get_insert (buffer);
-   gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
-   gtk_text_buffer_insert (buffer, &iter, text, -1);
-}
-
-
 
 /**
  * @brief Creates the tree structure of the statistics and stores the pointer in the statistics_model global variable.
  * @param computer The computer.
  */
-void *create_model_statistics(Computer *computer) {
+void create_statistics_model(Computer *computer) {
 	// All the nodes get declared
 	StatsNode *cpu, *mem, *caches[MAX_CACHES], *totals;
 	StatsNode *cpu_accesses, *mem_accesses, *totals_atime;
@@ -195,7 +186,6 @@ void *create_model_statistics(Computer *computer) {
 	g_list_store_append(root_store, mem);
 
 
-
 	// For each level of cache, a new node gets appended
 	for (int i = 0; i < computer->num_caches; i++) {
 		caches[i] = g_object_new(STATS_NODE_TYPE, NULL);
@@ -211,18 +201,17 @@ void *create_model_statistics(Computer *computer) {
 	stats_node_set(totals, S_TOTALS, NULL, NULL, TRUE);
 	g_list_store_append(root_store, totals);
 
-
 	// The properties of the CPU get assigned
 	cpu_accesses = g_object_new(STATS_NODE_TYPE, NULL);
 	stats_node_set(cpu_accesses, S_ACCESSES, "", cpu, FALSE);
 	g_list_store_append(cpu->children, cpu_accesses);
-	// g_object_unref(cpu_accesses);
+	g_object_unref(cpu_accesses);
 
 	// The properties of the memory get assigned
 	mem_accesses = g_object_new(STATS_NODE_TYPE, NULL);
 	stats_node_set(mem_accesses, S_ACCESSES, "", mem, FALSE);
 	g_list_store_append(mem->children, mem_accesses);
-	// g_object_unref(mem_accesses);
+	g_object_unref(mem_accesses);
 
 	// The properties of the caches get assigned
 	// StatsNode *c_accesses, *c_misses, *c_hits, *c_missrate, *c_hitrate;
@@ -246,13 +235,19 @@ void *create_model_statistics(Computer *computer) {
 		g_list_store_append(caches[i]->children, c_missrate);
 		g_list_store_append(caches[i]->children, c_hitrate);
 
-		// g_object_unref(caches[i]);
+		g_object_unref(c_accesses);
+		g_object_unref(c_misses);
+		g_object_unref(c_hits);
+		g_object_unref(c_missrate);
+		g_object_unref(c_hitrate);
+
+		g_object_unref(caches[i]);
 	}
 	// The properties of the totals get assigned
 	totals_atime = g_object_new(STATS_NODE_TYPE, NULL);
 	stats_node_set(totals_atime, S_ATIME, "", totals, FALSE);
 	g_list_store_append(totals->children, totals_atime);
-	// g_object_unref(totals_atime);
+	g_object_unref(totals_atime);
 
 	// A GtkTreeListModel gets created
 	statistics_model = gtk_tree_list_model_new(
@@ -263,12 +258,126 @@ void *create_model_statistics(Computer *computer) {
 		NULL,
 		NULL);
 
-	// g_object_unref(cpu);
-	// g_object_unref(mem);
-	// g_object_unref(totals);
+	g_object_unref(cpu);
+	g_object_unref(mem);
+	g_object_unref(totals);
 
-	return 0;
+	return;
 }
+
+/**
+ * Given an already created memory model, it resets the contents to the default values.
+ * @param computer The computer that contains the memory structure
+ */
+void reset_memory_model(Computer *computer) {
+	// Todo do the prototype
+	GListStore *model = computer->memory.model;
+    int j = 0;
+
+    // From the first to the last memory address in the trace
+    for (unsigned long i = computer->memory.page_base_address;
+         i < computer->memory.page_base_address + computer->memory.page_size;
+         i += (computer->cpu.word_width / 8), j++) {
+        // A new memory line gets created
+        MemoryLine *memory_line = g_object_new(MEMORY_TYPE_LINE,NULL);
+        memory_line->address = i;
+        memory_line->content = j;
+
+        // The new line gets added to the end of the model
+        g_list_store_append(model, memory_line);
+    }
+
+    // The first j rows get deleted
+    g_list_store_splice(model, 0, j, NULL, 0);
+}
+
+/**
+ * Resets all the caches inside of a computer.
+ * @param computer The computer that contains the caches
+ */
+void reset_cache_model(Computer *computer) {
+	// All the caches are iterated
+	for (int i = 0; i < computer->num_caches; i++) {
+		reset_cache_level(&computer->cache[i], 0);
+
+		// If the cache is separated, the instruction cache is also reset
+		if (computer->cache[i].separated) {
+			reset_cache_level(&computer->cache[i], 1);
+		}
+	}
+}
+
+void reset_cache_level(Cache *cache, int data_or_instruction) {
+	GListStore *model;
+	int i;
+
+    // The pointer to the model is fetched
+    if (data_or_instruction == 0) {
+        model = cache->model_data;
+    } else {
+        model = cache->model_instruction;
+    }
+
+	// All the lines in the cache are iterated
+    for (i = 0; i < cache->num_lines; i++) {
+		// The item in the first position is removed
+
+		// A new cache line is created
+        CacheLine *cache_line = g_object_new(CACHE_LINE_TYPE, NULL);
+        cache_line->line = i;
+        cache_line->set = (int) (i / cache->associativity);
+
+        // The cache line is appended to the model
+        g_list_store_append(model, cache_line);
+        g_object_unref(cache_line);
+    }
+
+    // The first j rows get deleted
+    g_list_store_splice(model, 0, i, NULL, 0);
+
+}
+
+void reset_statistics_model(Computer *computer) {
+	// A pointer to the stats model and an iterator are created
+    GListModel *model = gtk_tree_list_model_get_model(statistics_model);
+	guint num_children = g_list_model_get_n_items(model);
+	guint num_properties;
+	StatsNode *comp_node, *prop_node;
+
+	// All the components are iterated
+	for (guint i = 0; i < num_children; i++) {
+		comp_node = g_list_model_get_item(model, i);
+
+		// The number of properties of each component is stored
+		num_properties = g_list_model_get_n_items(G_LIST_MODEL(comp_node->children));
+
+		// For every property
+		for (guint j = 0; j < num_properties; j++) {
+			prop_node = g_list_model_get_item(G_LIST_MODEL(comp_node->children), 0);
+
+			// The memory of the previous value is freed (If there was a value previously)
+			if (g_strcmp0(prop_node->content, "") != 0) {
+				free(prop_node->content);
+			}
+
+			// The previous node is removed
+			g_list_store_remove(comp_node->children, 0);
+
+			// Memory for a value is allocated
+			char *new_value = (char *)malloc(sizeof(char)*20);
+			sprintf(new_value, "%s", "");
+
+			// A new node is initiated
+			StatsNode *new = g_object_new(STATS_NODE_TYPE, NULL);
+			stats_node_set(new, prop_node->name, new_value, comp_node, FALSE);
+
+			// And it is inserted into the model
+			g_list_store_append(comp_node->children, new);
+			g_object_ref(new);
+		}
+	}
+}
+
 
 
 
