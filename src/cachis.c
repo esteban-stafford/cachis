@@ -143,6 +143,8 @@ int main(int argc, char *argv[]) {
        return 1;
     }
 
+    free(ini);
+
     // Start GUI...
     if(useGUI) {
        printf("Operations to be simulated: %d\n", numberOfOperations);

@@ -13,6 +13,9 @@
 
 // Colors
 #define HIGHLIGHT_COLOR "#219ebc"
+#define READ_COLOR "#90a955"
+#define WRITE_COLOR "#ff9b54"
+
 
 // Text fields
 #define WINDOW_NAME "Cache Simulation"
@@ -21,11 +24,11 @@
 
 #define C_SEP_DATA "Data"
 #define C_SEP_INST "Instructions"
-#define C_LINE "Line"
-#define C_SET "Set"
+#define C_LINE "L"
+#define C_SET "S"
 #define C_VALID "V"
 #define C_DIRTY "D"
-#define C_ACC "Accesses"
+#define C_ACC "Acc."
 #define C_LASTACC "Last Acc."
 #define C_FIRSTACC "First Acc."
 #define C_TAG "Tag"
@@ -44,6 +47,20 @@
 #define S_HRATE "Hit Rate"
 #define S_TOTALS "Totals"
 #define S_ATIME "Access Time"
+
+
+// Custom CSS
+#define CSS_COMPACT "compact"
+#define CSS_COMPACT_R ".compact { margin: -9px 5px -9px 5px;}"
+
+#define CSS_READ "bg-color-read"
+#define CSS_READ_R ".bg-color-read { background-color: %s }"
+
+#define CSS_WRITE "bg-color-write"
+#define CSS_WRITE_R ".bg-color-write { background-color: %s }"
+
+#define CSS_NONE "bg-color-none"
+#define CSS_NONE_R ".bg-color-none { background-color: transparent}"
 
 
 

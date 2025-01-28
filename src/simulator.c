@@ -188,6 +188,9 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
 			}
 			printf("\n");
 
+            // The cache data is freed
+            free(cacheData.content);
+
             // Remember cache level and line that resolved the request
             response->resolved = cacheLevel;
             response->cacheLineDest[cacheLevel] = line;
@@ -202,7 +205,6 @@ void find_in_cache(Computer *computer, MemoryOperation *operation, Stats *stats,
 			if (stats != NULL) {
 				stats->numMisses[cacheLevel]++;
 			}
-
 
             // Upgrade request to a full cache line
 			upgrade_response_to_full_line(computer, cacheLevel, response);
@@ -325,10 +327,14 @@ void populate_cache(Computer *computer, MemoryOperation *operation, ResponseType
 			if (existingData.dirty == 1) {
 				move_to_lower_level(computer, operation->instructionOrData, cacheLevel, line);
 			}
+
 			write_line_to_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
 
 			// The line that contains the data on the current level gets noted
 			response->cacheLineDest[cacheLevel] = line;
+
+			// The existing data content is freed
+			free_cache_data(&existingData);
 		}
     }
 }
@@ -367,6 +373,9 @@ void move_to_lower_level(Computer *computer, int instructionOrData, int cacheLev
 	// The line is unmarked as dirty
 	existingData.dirty = 0;
 	write_flags_to_cache(computer, instructionOrData, cacheLevel, &existingData, line);
+
+    // The cache data is freed
+    free_cache_data(&existingData);
 
 	printf("\t Collision detected, moving to lower level. ");
 
@@ -441,4 +450,12 @@ void get_mapping(Computer* computer, int cacheLevel, MemoryOperation* operation,
      } else {                                                                           //Fully associative
           fully_associative(&cache, operation, mappingResult);
      }
+}
+
+/**
+ * Frees data allocated by find_in_cache.
+ * @param line The line that contains the data
+ */
+void free_response_data(ResponseType *response) {
+    free(response->data);
 }

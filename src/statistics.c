@@ -111,7 +111,8 @@ void set_statistics(char* component, char* property, char* value){
 
 					// And it is inserted into the model
 					g_list_store_insert(comp_node->children, position, new);
-					g_object_ref(new);
+					g_object_unref(new);
+					g_free(prop_node);
 
 					return;
 				}

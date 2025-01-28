@@ -3,6 +3,13 @@
 
 extern GtkTreeListModel *statistics_model;
 
+enum {
+    ADDRESS = 0,
+    CONTENT = 1
+};
+
+#define MEMORY_NUM_COLUMNS 2
+
 #define MEMORY_TYPE_LINE (memory_line_get_type())
 G_DECLARE_FINAL_TYPE(MemoryLine, memory_line, MEMORY, LINE, GObject)
 struct _MemoryLine {
@@ -10,6 +17,9 @@ struct _MemoryLine {
     unsigned int address;
     unsigned int content;
     const char *color;
+    gboolean color_changed[MEMORY_NUM_COLUMNS];
+    GtkWidget *widget[MEMORY_NUM_COLUMNS];
+    // GtkCssProvider *provider[MEMORY_NUM_COLUMNS];
     gpointer user_data;
 };
 
@@ -55,8 +65,8 @@ struct _StatsNode {
 
 enum {
   COMPONET_OR_PROPERTY = 0,
-  VALUE=1,
-  NUM_COLS=2
+  VALUE = 1,
+  NUM_COLS = 2
 };
 
 void generate_data_storage(Computer *computer);

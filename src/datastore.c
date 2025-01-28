@@ -17,7 +17,16 @@ static void memory_line_init(MemoryLine *memory_line) {
     memory_line->address = 0;
     memory_line->content = 0;
     memory_line->color = NULL;
-    memory_line->user_data = NULL;
+	memory_line->user_data = NULL;
+
+	for (int i = 0; i < MEMORY_NUM_COLUMNS; i++) {
+		memory_line->color_changed[i] = FALSE;
+	}
+
+	// The widgets are set to null
+	for (int i = 0; i < MEMORY_NUM_COLUMNS; i++) {
+		memory_line->widget[i] = NULL;
+	}
 }
 
 static void memory_line_class_init(MemoryLineClass *class) { }
@@ -74,8 +83,6 @@ void stats_node_set(StatsNode *node, gchar *name, gchar *content, StatsNode *par
 	node->isComponent = isComponent;
 }
 
-
-
 /**
  * Generates and initiates all the data structures.
  * @param computer The computer that will contain the structures
@@ -113,7 +120,7 @@ void create_memory_model(Computer *computer) {
 
         // The line gets added to the model
         g_list_store_append(model, memory_line);
-        g_object_unref(memory_line);
+        // g_object_unref(memory_line);
     }
 
     // A pointer to the model gets saved in the memory struct
@@ -177,7 +184,6 @@ void create_statistics_model(Computer *computer) {
     GListStore *root_store = g_list_store_new(STATS_NODE_TYPE);
 
 	// CPU and Memory nodes get created, initiated and appended to the root node
-	CacheLine *cache_line = g_object_new(CACHE_LINE_TYPE, NULL);
 	cpu = g_object_new(STATS_NODE_TYPE, NULL);
 	mem = g_object_new(STATS_NODE_TYPE, NULL);
 	stats_node_set(cpu, S_CPU, NULL, NULL, TRUE);
@@ -270,7 +276,7 @@ void create_statistics_model(Computer *computer) {
  * @param computer The computer that contains the memory structure
  */
 void reset_memory_model(Computer *computer) {
-	// Todo do the prototype
+	// The model is fetched
 	GListStore *model = computer->memory.model;
     int j = 0;
 
@@ -278,17 +284,31 @@ void reset_memory_model(Computer *computer) {
     for (unsigned long i = computer->memory.page_base_address;
          i < computer->memory.page_base_address + computer->memory.page_size;
          i += (computer->cpu.word_width / 8), j++) {
-        // A new memory line gets created
-        MemoryLine *memory_line = g_object_new(MEMORY_TYPE_LINE,NULL);
-        memory_line->address = i;
-        memory_line->content = j;
+		// The memory line is fetched
+		MemoryLine *memory_line = MEMORY_LINE(g_list_model_get_item(G_LIST_MODEL(model), j));
 
-        // The new line gets added to the end of the model
-        g_list_store_append(model, memory_line);
+		// Each column's CSS is removed
+		for (int k = 0; k < MEMORY_NUM_COLUMNS; k++) {
+			// The class is removed from the cell (if it has been initiated)
+			if (GTK_IS_WIDGET(memory_line->widget[k])) {
+				gtk_widget_remove_css_class(GTK_WIDGET(memory_line->widget[k]), CSS_READ);
+				gtk_widget_remove_css_class(GTK_WIDGET(memory_line->widget[k]), CSS_WRITE);
+				gtk_widget_add_css_class(memory_line->widget[k], CSS_NONE);
+			}
+
+			// The pointers are set to NULL again
+			memory_line->color_changed[k] = FALSE;
+		}
+		memory_line->color = NULL;
+
+		// If the contents of the memory have been modified, it is reset and reinserted into the model
+		if (memory_line->content != j) {
+			memory_line->content = j;
+			gpointer items[] = { memory_line };
+			g_list_store_remove(G_LIST_STORE(model), j);
+			g_list_store_insert(G_LIST_STORE(model), j, memory_line);
+		}
     }
-
-    // The first j rows get deleted
-    g_list_store_splice(model, 0, j, NULL, 0);
 }
 
 /**
@@ -320,21 +340,16 @@ void reset_cache_level(Cache *cache, int data_or_instruction) {
 
 	// All the lines in the cache are iterated
     for (i = 0; i < cache->num_lines; i++) {
-		// The item in the first position is removed
-
 		// A new cache line is created
         CacheLine *cache_line = g_object_new(CACHE_LINE_TYPE, NULL);
         cache_line->line = i;
         cache_line->set = (int) (i / cache->associativity);
 
-        // The cache line is appended to the model
-        g_list_store_append(model, cache_line);
+        // The cache line is replaced in the model
+		gpointer items[] = { cache_line };
+		g_list_store_splice(G_LIST_STORE(model), i, 1, items, 1);
         g_object_unref(cache_line);
     }
-
-    // The first j rows get deleted
-    g_list_store_splice(model, 0, i, NULL, 0);
-
 }
 
 void reset_statistics_model(Computer *computer) {
@@ -353,15 +368,13 @@ void reset_statistics_model(Computer *computer) {
 
 		// For every property
 		for (guint j = 0; j < num_properties; j++) {
+			num_properties = g_list_model_get_n_items(G_LIST_MODEL(comp_node->children));
 			prop_node = g_list_model_get_item(G_LIST_MODEL(comp_node->children), 0);
 
 			// The memory of the previous value is freed (If there was a value previously)
 			if (g_strcmp0(prop_node->content, "") != 0) {
 				free(prop_node->content);
 			}
-
-			// The previous node is removed
-			g_list_store_remove(comp_node->children, 0);
 
 			// Memory for a value is allocated
 			char *new_value = (char *)malloc(sizeof(char)*20);
@@ -371,9 +384,12 @@ void reset_statistics_model(Computer *computer) {
 			StatsNode *new = g_object_new(STATS_NODE_TYPE, NULL);
 			stats_node_set(new, prop_node->name, new_value, comp_node, FALSE);
 
-			// And it is inserted into the model
-			g_list_store_append(comp_node->children, new);
-			g_object_ref(new);
+			// And it replaces the old one
+			g_list_store_append(G_LIST_STORE(comp_node->children), new);
+			g_list_store_remove(G_LIST_STORE(comp_node->children), 0);
+
+			g_object_unref(new);
+			g_free(prop_node);
 		}
 	}
 }

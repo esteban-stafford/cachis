@@ -17,6 +17,7 @@ void write_back(Computer *computer, MemoryOperation *operation, ResponseType *re
 
     // The line is written back to the cache
     write_line_to_cache(computer, operation->instructionOrData, 0, &content, cacheLine);
+    free_cache_data(&content);
 }
 
 void write_through(Computer *computer, MemoryOperation *operation, ResponseType *response) {

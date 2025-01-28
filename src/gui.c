@@ -10,6 +10,9 @@
 static GtkTextTag *highlight_tag = NULL;
 static GtkTextMark *previous_highlight_mark = NULL;
 
+// Global CSS providers for read, write and no style
+GtkCssProvider *read_provider, *write_provider, *none_provider;
+
 
 // Private functions
 int launch_gui(int argc, char **argv, Computer *computer);
@@ -50,7 +53,7 @@ static void on_reset_button_clicked(GtkButton *button, Computer *computer);
 // Misc
 int step_trace_line(char *line, Computer *computer);
 int has_breakpoint(const char *line);
-static void set_widget_background_color(GtkWidget *widget, const char *color);
+static void set_memory_widget_background_color(GtkWidget *widget, MemoryLine *item, int column);
 static void apply_css(GtkWidget *widget, const char *class_name, const char *style);
 static void gtk_widget_set_margin_all(GtkWidget *widget, int margin);
 
@@ -373,6 +376,9 @@ static GtkWidget *create_cache_table(GListStore *model) {
 	GtkSingleSelection *selection = gtk_single_selection_new(G_LIST_MODEL(model));
 	GtkWidget *column_view = gtk_column_view_new(GTK_SELECTION_MODEL(selection));
 
+	// The compact CSS style is applied to the table globally
+	apply_css(column_view, CSS_COMPACT, CSS_COMPACT_R);
+
 	// A list item factory is created. This will manage the visual representation of the data.
 	GtkListItemFactory *factory;
 
@@ -452,7 +458,6 @@ static GtkWidget *create_cache_table(GListStore *model) {
 	column = gtk_column_view_column_new(C_CONTENT, factory);
 	gtk_column_view_append_column(GTK_COLUMN_VIEW(column_view), column);
 	g_object_unref(column);
-
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), column_view);
 	return scrolled_window;
 }
@@ -478,6 +483,7 @@ static GtkWidget *create_memory_table(Computer *computer) {
 	GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
 	g_signal_connect(factory, "setup", G_CALLBACK(setup_cb),NULL);
 	g_signal_connect(factory, "bind", G_CALLBACK(bind_address_cb),NULL);
+	// g_signal_connect(factory, "unbind", G_CALLBACK(unbind_address_cb),NULL);
 	GtkColumnViewColumn *column = gtk_column_view_column_new(M_ADDR, factory);
 	gtk_column_view_append_column (GTK_COLUMN_VIEW (column_view), column);
 	g_object_unref (column);
@@ -488,6 +494,34 @@ static GtkWidget *create_memory_table(Computer *computer) {
 	column = gtk_column_view_column_new(M_CONT, factory);
 	gtk_column_view_append_column (GTK_COLUMN_VIEW (column_view), column);
 	g_object_unref (column);
+
+	// The CSS providers for updating the background color upon read/writes are created
+	char *css = g_strdup_printf(CSS_READ_R, READ_COLOR);		// The color is calculated
+	read_provider = gtk_css_provider_new();
+	gtk_css_provider_load_from_string(read_provider, css);
+	css = g_strdup_printf(CSS_WRITE_R, WRITE_COLOR);
+	write_provider = gtk_css_provider_new();
+	gtk_css_provider_load_from_string(write_provider, css);
+	none_provider = gtk_css_provider_new();
+	gtk_css_provider_load_from_string(none_provider, CSS_NONE_R);
+
+	// The display is assigned both style providers (Read and Write)
+	GdkDisplay *display = gtk_widget_get_display(column_view);
+	gtk_style_context_add_provider_for_display(
+		display,
+		GTK_STYLE_PROVIDER(write_provider),
+		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+	);
+	gtk_style_context_add_provider_for_display(
+		display,
+		GTK_STYLE_PROVIDER(read_provider),
+		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+	);
+	gtk_style_context_add_provider_for_display(
+		display,
+		GTK_STYLE_PROVIDER(none_provider),
+		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+	);
 
 	// The column view is appended to the scrolled view, a pointer to the view is saved and returned
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), column_view);
@@ -509,6 +543,11 @@ static GtkWidget *create_memory_table(Computer *computer) {
 static void setup_cb(GtkSignalListItemFactory *factory, GObject *listitem) {
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	GtkWidget *label = gtk_label_new(NULL);
+
+	// The box is compacted with some CSS
+	g_object_set(label,"height-request", 5, NULL);
+	apply_css(box, CSS_COMPACT, CSS_COMPACT_R);
+
 	gtk_box_append(GTK_BOX(box), label);
 	gtk_list_item_set_child(GTK_LIST_ITEM(listitem), box);
 }
@@ -524,14 +563,21 @@ static void bind_address_cb(GtkSignalListItemFactory *factory, GtkListItem *list
 	GtkWidget *label = gtk_widget_get_first_child(box);
 	MemoryLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
 
+	// A pointer to the widget is saved
+	item->widget[ADDRESS] = box;
+
 	// A string with the address gets created
 	char *string = g_strdup_printf("0x%x", item->address);
 	gtk_label_set_text(GTK_LABEL(label), string);
 	g_free(string);
 
-	// The color of the background is set to be the same as the item's.
-	if (item->color) {
-		set_widget_background_color(box, item->color);
+	// If the item has no color yet, it gets assigned a transparent bg.
+	// This is required or else some rows at the bottom of large tables will also get styled (GTK reutilizes elements)
+	if (item->color == NULL) {
+		gtk_widget_add_css_class(box, CSS_NONE);
+	} else {
+		// The color of the background is set to be the same as the item's.
+		set_memory_widget_background_color(box, item, ADDRESS);
 	}
 }
 
@@ -546,17 +592,23 @@ static void bind_content_cb(GtkSignalListItemFactory *factory, GtkListItem *list
 	GtkWidget *label = gtk_widget_get_first_child(box);
 	MemoryLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
 
+	// A pointer to the widget is saved if there is none
+	item->widget[CONTENT] = box;
+
 	// The content is converted to hex and displayed
 	char *string = g_strdup_printf("0x%x", item->content);
 	gtk_label_set_text(GTK_LABEL(label), string);
 	g_free(string);
 
-	// The color of the background is set to be the same as the item's.
-	if (item->color) {
-		set_widget_background_color(box, item->color);
+	// If the item has no color yet, it gets assigned a transparent bg.
+	// This is required or else some rows at the bottom of large tables will also get styled (GTK reutilizes elements)
+	if (item->color == NULL) {
+		gtk_widget_add_css_class(box, CSS_NONE);
+	} else {
+		// The color of the background is set to be the same as the item's.
+		set_memory_widget_background_color(box, item, CONTENT);
 	}
 }
-
 
 /**
  * @brief Setup for the cache view.
@@ -566,6 +618,10 @@ static void bind_content_cb(GtkSignalListItemFactory *factory, GtkListItem *list
 static void setup_cache_cb(GtkSignalListItemFactory *factory, GObject *listitem) {
 	GtkWidget *label = gtk_label_new(NULL);
 	gtk_list_item_set_child(GTK_LIST_ITEM(listitem), label);
+
+	// The compact CSS style is applied to the table globally
+	g_object_set(label,"height-request", 5, NULL);
+	apply_css(label, CSS_COMPACT, CSS_COMPACT_R);
 }
 
 /**
@@ -581,6 +637,7 @@ static void bind_line_cb(GtkSignalListItemFactory *factory, GtkListItem *listite
 	// The line is displayed as an unsigned integer and set
 	char *string = g_strdup_printf("%u", item->line);
 	gtk_label_set_text(GTK_LABEL(label), string);
+	g_free(string);
 }
 
 /**
@@ -593,6 +650,7 @@ static void bind_set_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem
 	CacheLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
 	char *string = g_strdup_printf("%u", item->set);
 	gtk_label_set_text(GTK_LABEL(label), string);
+	g_free(string);
 }
 
 /**
@@ -605,6 +663,7 @@ static void bind_valid_cb(GtkSignalListItemFactory *factory, GtkListItem *listit
 	CacheLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
 	char *string = g_strdup_printf("%u", item->valid);
 	gtk_label_set_text(GTK_LABEL(label), string);
+	g_free(string);
 }
 
 /**
@@ -617,6 +676,7 @@ static void bind_dirty_cb(GtkSignalListItemFactory *factory, GtkListItem *listit
 	CacheLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
 	char *string = g_strdup_printf("%u", item->dirty);
 	gtk_label_set_text(GTK_LABEL(label), string);
+	g_free(string);
 }
 
 /**
@@ -629,6 +689,7 @@ static void bind_accessed_cb(GtkSignalListItemFactory *factory, GtkListItem *lis
 	CacheLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
 	char *string = g_strdup_printf("%u", item->times_accessed);
 	gtk_label_set_text(GTK_LABEL(label), string);
+	g_free(string);
 }
 
 /**
@@ -641,6 +702,7 @@ static void bind_last_access_cb(GtkSignalListItemFactory *factory, GtkListItem *
 	CacheLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
 	char *string = g_strdup_printf("%u", item->last_accessed);
 	gtk_label_set_text(GTK_LABEL(label), string);
+	g_free(string);
 }
 
 /**
@@ -653,6 +715,7 @@ static void bind_first_access_cb(GtkSignalListItemFactory *factory, GtkListItem 
 	CacheLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
 	char *string = g_strdup_printf("%u", item->first_accessed);
 	gtk_label_set_text(GTK_LABEL(label), string);
+	g_free(string);
 }
 
 /**
@@ -665,6 +728,7 @@ static void bind_tag_cb(GtkSignalListItemFactory *factory, GtkListItem *listitem
 	CacheLine *item = gtk_list_item_get_item(GTK_LIST_ITEM(listitem));
 	char *string = g_strdup_printf("0x%x", item->tag);
 	gtk_label_set_text(GTK_LABEL(label), string);
+	g_free(string);
 }
 
 /**
@@ -1009,17 +1073,24 @@ int has_breakpoint(const char *line) {
  * @brief Changes the background color of a widget.
  * @param widget Pointer to the widget that should get the style applied
  * @param color The color that should be used
+ * @param column If the color should be applied to the ADDRESS or CONTENT columns
  */
-static void set_widget_background_color(GtkWidget *widget, const char *color) {
-	// A CSS provider is created
-	GtkCssProvider *provider = gtk_css_provider_new();
+static void set_memory_widget_background_color(GtkWidget *widget, MemoryLine *item, int column) {
+	// If some color has to get set, the previous classes get removed
+	gtk_widget_remove_css_class(widget, CSS_NONE);
+	gtk_widget_remove_css_class(widget, CSS_READ);
+	gtk_widget_remove_css_class(widget, CSS_WRITE);
 
-	// A CSS class is defined and applied
-	char *css = g_strdup_printf(".bg-color { background-color: %s; }", color);
-	apply_css(widget, "bg-color", css);
+	// If the item has been read
+	if (g_strcmp0(item->color, READ_COLOR) == 0) {
+		// The read selector is assigned to the widget
+		gtk_widget_add_css_class(widget, CSS_READ);
+	} else if (g_strcmp0(item->color, WRITE_COLOR) == 0) {
+		// The write selector is assigned to the widget
+		gtk_widget_add_css_class(widget, CSS_WRITE);
+	}
 
-	g_free(css);
-	g_object_unref(provider);
+	item->color_changed[column] = FALSE;
 }
 
 /**
@@ -1045,6 +1116,7 @@ static void apply_css(GtkWidget *widget, const char *class_name, const char *sty
 
 	// The widget is assigned the previously created widget class
 	gtk_widget_add_css_class(widget, class_name);
+	g_object_unref(provider);
 }
 
 

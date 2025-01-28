@@ -51,7 +51,6 @@ int select_line_to_replace(Computer *computer, int instructionOrData, int cacheL
  * @return The line that has been picked to be replaced
  */
 int replacement_lru(Computer *computer, int instructionOrData, int cacheLevel, int first_line, int last_line) {
-    Cache *cache = &computer->cache[cacheLevel];
     CacheLineContent cacheData;
 
     int lruLine = -1;
@@ -73,6 +72,9 @@ int replacement_lru(Computer *computer, int instructionOrData, int cacheLevel, i
             lruTime = cacheData.lastAccess;
         }
     }
+
+    // The cache data is freed
+    free_cache_data(&cacheData);
     return lruLine;
 }
 
@@ -84,7 +86,6 @@ int replacement_lru(Computer *computer, int instructionOrData, int cacheLevel, i
  * @return The line that has been picked to be replaced
  */
 int replacement_lfu(Computer *computer, int instructionOrData, int cacheLevel, int first_line, int last_line) {
-    Cache *cache = &computer->cache[cacheLevel];
     CacheLineContent cacheData;
 
     int lfuLine = -1;
@@ -106,6 +107,10 @@ int replacement_lfu(Computer *computer, int instructionOrData, int cacheLevel, i
             lfuCount = cacheData.accessCount;
         }
     }
+
+    // The cache data is freed
+    free_cache_data(&cacheData);
+
     return lfuLine;
 }
 
@@ -129,7 +134,6 @@ int replacement_random(int first_line, int last_line) {
  * @return The line that has been picked to be replaced
  */
 int replacement_fifo(Computer *computer, int instructionOrData, int cacheLevel, int first_line, int last_line) {
-    Cache *cache = &computer->cache[cacheLevel];
     CacheLineContent cacheData;
 
     int fifoLine = -1;
