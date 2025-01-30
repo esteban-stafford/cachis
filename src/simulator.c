@@ -296,46 +296,42 @@ void populate_cache(Computer *computer, MemoryOperation *operation, ResponseType
         get_mapping(computer, cacheLevel, operation, &mappingResult);
 
         // Find tag in cache
-        line = find_tag_in_cache(computer, operation->instructionOrData, cacheLevel, mappingResult.tag, mappingResult.set);
+        line = find_tag_in_cache(computer, operation->instructionOrData, cacheLevel, mappingResult.set, mappingResult.tag);
 
         // If there was an error, print it and return without making changes
-        if(line == -2){
+        if (line == -2){
             printf("Error: The level of the cache was lower than 0 or exceeded the maximum.\n");
             return;
+        } else if (line == -1 ) {
+            // If the cache does not have the data, a new line to replace is found
+            printf("\t < Miss in L%d cache. Populating.\n", cacheLevel + 1);
+            line = select_line_to_replace(computer, operation->instructionOrData, cacheLevel, mappingResult.set);
+        } else {
+            // If the cache has the data, it is stale and should be replaced
+            printf("\t < Hit in L%d cache. Line %ld has stale data. Populating.\n", cacheLevel + 1, line);
+        }
+        // Load operation
+        CacheLineContent cacheData, existingData;
+        cacheData.dirty = 0;
+        cacheData.valid = 1;
+        cacheData.tag = mappingResult.tag;
+        cacheData.content = response->data;
+        cacheData.startingAddress = response->address;
+
+        // If the line contains data and is dirty, it gets written to the level below
+        read_flags_from_cache(computer, operation->instructionOrData, cacheLevel, &existingData, line);
+
+        if (existingData.dirty == 1) {
+            move_to_lower_level(computer, operation->instructionOrData, cacheLevel, line);
         }
 
-        // If the line was found in cache, there's a hit
-        if (line > 0) {
-            // Hit
-            printf("\t < Hit in L%d cache. Line %ld has the data.\n", cacheLevel + 1, line);
-        } else {         //If not, miss
-            printf("\t < Miss in L%d cache. Populating.\n", cacheLevel + 1);
-            // Load operation
-            CacheLineContent cacheData, existingData;
-            cacheData.dirty = 0;
-            cacheData.valid = 1;
-            cacheData.tag = mappingResult.tag;
-            cacheData.content = response->data;
-			cacheData.startingAddress = response->address;
+        write_line_to_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
 
-            // The via gets located and populated with the data
-            int line = select_line_to_replace(computer, operation->instructionOrData, cacheLevel, mappingResult.set);
+        // The line that contains the data on the current level gets noted
+        response->cacheLineDest[cacheLevel] = line;
 
-			// If the line contains data and is dirty, it gets written to the level below
-			read_flags_from_cache(computer, operation->instructionOrData, cacheLevel, &existingData, line);
-
-			if (existingData.dirty == 1) {
-				move_to_lower_level(computer, operation->instructionOrData, cacheLevel, line);
-			}
-
-			write_line_to_cache(computer, operation->instructionOrData, cacheLevel, &cacheData, line);
-
-			// The line that contains the data on the current level gets noted
-			response->cacheLineDest[cacheLevel] = line;
-
-			// The existing data content is freed
-			free_cache_data(&existingData);
-		}
+        // The existing data content is freed
+        free_cache_data(&existingData);
     }
 }
 

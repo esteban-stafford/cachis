@@ -274,6 +274,7 @@ static GtkWidget *create_right_column(Computer *computer) {
 
 	// A memory table gets created
 	GtkWidget *memory_table = create_memory_table(computer);
+	gtk_widget_set_margin_all(box, MARGIN_MED);
 	gtk_widget_set_size_request(memory_table, 200, 400);
 	gtk_widget_set_hexpand(memory_table, TRUE);
 	gtk_widget_set_vexpand(memory_table, TRUE);
@@ -292,9 +293,9 @@ static GtkWidget *create_toolbar(Computer *computer) {
 	GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 	gtk_widget_add_css_class(toolbar, "toolbar");
 
-	GtkWidget *open_button = gtk_button_new_from_icon_name("document-open");
-	gtk_widget_set_tooltip_text(open_button, "Open Trace File");
-	gtk_box_append(GTK_BOX(toolbar), open_button);
+	// GtkWidget *open_button = gtk_button_new_from_icon_name("document-open");
+	// gtk_widget_set_tooltip_text(open_button, "Open Trace File");
+	// gtk_box_append(GTK_BOX(toolbar), open_button);
 
 	GtkWidget *run_button = gtk_button_new_from_icon_name("media-playback-start");
 	gtk_widget_set_tooltip_text(run_button, "Run Simulation");
@@ -342,6 +343,8 @@ static GtkWidget *create_cache_widget(Cache *cache) {
 		gtk_widget_set_vexpand(data_table, TRUE);
 		gtk_box_append(GTK_BOX(top_box), data_table);
 
+		gtk_widget_set_margin_bottom(data_table, MARGIN_MED);
+
 		// Same for the instruction cache
 		cache_label = gtk_label_new(C_SEP_INST);
 		gtk_box_append(GTK_BOX(bottom_box), cache_label);
@@ -357,6 +360,7 @@ static GtkWidget *create_cache_widget(Cache *cache) {
 		GtkWidget *unified_table = create_cache_table(G_LIST_STORE(cache->model_data));
 		cache->view_data = unified_table;
 		gtk_widget_set_vexpand(unified_table, TRUE);
+		gtk_widget_set_margin_bottom(unified_table, MARGIN_MED);
 		return unified_table;
 	}
 }
@@ -375,6 +379,8 @@ static GtkWidget *create_cache_table(GListStore *model) {
 	// A single selection and a column view gets created and a pointer to the single selection is also kept
 	GtkSingleSelection *selection = gtk_single_selection_new(G_LIST_MODEL(model));
 	GtkWidget *column_view = gtk_column_view_new(GTK_SELECTION_MODEL(selection));
+
+	gtk_widget_set_margin_top(column_view, MARGIN_MED);
 
 	// The compact CSS style is applied to the table globally
 	apply_css(column_view, CSS_COMPACT, CSS_COMPACT_R);
@@ -477,7 +483,7 @@ static GtkWidget *create_memory_table(Computer *computer) {
 	GtkSingleSelection *selection = gtk_single_selection_new(G_LIST_MODEL(computer->memory.model));
 	gtk_single_selection_set_autoselect(selection,TRUE);
 	GtkWidget *column_view = gtk_column_view_new(GTK_SELECTION_MODEL (selection));
-	gtk_widget_set_margin_all(column_view, MARGIN_MED);
+
 
 	// Like in the caches, a factory is created to maintain the view and binds for the address and content are called upon creation
 	GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
@@ -1089,8 +1095,6 @@ static void set_memory_widget_background_color(GtkWidget *widget, MemoryLine *it
 		// The write selector is assigned to the widget
 		gtk_widget_add_css_class(widget, CSS_WRITE);
 	}
-
-	item->color_changed[column] = FALSE;
 }
 
 /**

@@ -152,7 +152,7 @@ Simulating operation:   S 08000000 D  4 12
 -> Reading memory
 
 -> Populating caches
-	 < Miss in L1 cache. Populating.
+	 < Hit in L1 cache. Line 0 has stale data. Populating.
 	 Writing content in line 0 of cache L1: 0xc 0x1 0x2 0x3  ---> 0000000c 00000001 00000002 00000003
 
 Finished simulation.
@@ -185,7 +185,7 @@ Simulating operation:   S 08000044 D  4 34
 -> Reading memory
 
 -> Populating caches
-	 < Miss in L1 cache. Populating.
+	 < Hit in L1 cache. Line 1 has stale data. Populating.
 	 Writing content in line 1 of cache L1: 0x10 0x22 0x12 0x13  ---> 00000010 00000022 00000012 00000013
 
 Finished simulation.
@@ -218,7 +218,7 @@ Simulating operation:   S 08000088 D  4 56
 -> Reading memory
 
 -> Populating caches
-	 < Miss in L1 cache. Populating.
+	 < Hit in L1 cache. Line 2 has stale data. Populating.
 	 Writing content in line 2 of cache L1: 0x20 0x21 0x38 0x23  ---> 00000020 00000021 00000038 00000023
 
 Finished simulation.
@@ -251,7 +251,7 @@ Simulating operation:   S 080000cc D  4 78
 -> Reading memory
 
 -> Populating caches
-	 < Miss in L1 cache. Populating.
+	 < Hit in L1 cache. Line 3 has stale data. Populating.
 	 Writing content in line 3 of cache L1: 0x30 0x31 0x32 0x4e  ---> 00000030 00000031 00000032 0000004e
 
 Finished simulation.

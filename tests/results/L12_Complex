@@ -473,7 +473,7 @@ Simulating operation:   S 08000124 D  4 2345
 -> Reading memory
 
 -> Populating caches
-	 < Miss in L2 cache. Populating.
+	 < Hit in L2 cache. Line 10 has stale data. Populating.
 	 Writing content in line 10 of cache L2: 0x0 0xa9 0xaa 0xab  ---> 00000000 000000a9 000000aa 000000ab
 
 -> Finishing move to lower levels
@@ -570,7 +570,7 @@ Simulating operation:   L 08000000 D  4 0
 -> Reading memory
 
 -> Populating caches
-	 < Miss in L2 cache. Populating.
+	 < Hit in L2 cache. Line 16 has stale data. Populating.
 	 Writing content in line 16 of cache L2: 0x929 0x41 0x42 0x43  ---> 00000929 00000041 00000042 00000043
 
 -> Finishing move to lower levels

@@ -20,7 +20,7 @@ static void memory_line_init(MemoryLine *memory_line) {
 	memory_line->user_data = NULL;
 
 	for (int i = 0; i < MEMORY_NUM_COLUMNS; i++) {
-		memory_line->color_changed[i] = FALSE;
+		memory_line->color_changed[i] = -1;
 	}
 
 	// The widgets are set to null
@@ -297,7 +297,7 @@ void reset_memory_model(Computer *computer) {
 			}
 
 			// The pointers are set to NULL again
-			memory_line->color_changed[k] = FALSE;
+			memory_line->color_changed[k] = -1;
 		}
 		memory_line->color = NULL;
 

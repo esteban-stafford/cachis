@@ -17,9 +17,8 @@ struct _MemoryLine {
     unsigned int address;
     unsigned int content;
     const char *color;
-    gboolean color_changed[MEMORY_NUM_COLUMNS];
-    GtkWidget *widget[MEMORY_NUM_COLUMNS];
-    // GtkCssProvider *provider[MEMORY_NUM_COLUMNS];
+    int color_changed[MEMORY_NUM_COLUMNS];      // Cycle in which the color has been changed
+    GtkWidget *widget[MEMORY_NUM_COLUMNS];      // Widgets that contain the address and content (For clearing CSS)
     gpointer user_data;
 };
 

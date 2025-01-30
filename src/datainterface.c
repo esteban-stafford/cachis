@@ -264,8 +264,10 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
 	cache_line->startingAddress = line->startingAddress;
 
     // Notify the model that the item has changed
-    gpointer items[] = { cache_line };
-    g_list_store_splice(G_LIST_STORE(model), lineNumber, 1, items, 1);
+    g_list_store_remove(G_LIST_STORE(model), lineNumber);
+    g_list_store_insert(G_LIST_STORE(model), lineNumber, cache_line);
+    // gpointer items[] = { cache_line };
+    // g_list_store_splice(G_LIST_STORE(model), lineNumber, 1, items, 1);
 
     // Select and scroll to the updated row
 	if (useGUI) {
@@ -344,15 +346,15 @@ int read_from_memory_address(Computer *computer, MemoryPosition *pos, long addre
 
     // Only if the line has not been marked as written in the same cycle, is the background color updated
     // Change only if it has not been set to WRITE on the same cycle already
-	if (!(g_strcmp0(memory_line->color, WRITE_COLOR) == 0 && memory_line->color_changed[ADDRESS])) {
+	if (!(g_strcmp0(memory_line->color, WRITE_COLOR) == 0 && memory_line->color_changed[ADDRESS] == cycle)) {
         memory_line->color = READ_COLOR;
         for (int i = 0; i < MEMORY_NUM_COLUMNS; i++) {
-            memory_line->color_changed[i] = TRUE;
+            memory_line->color_changed[i] = cycle;
         }
     }
 
     if (useGUI) {
-        long int row = (pos->address - computer->memory.page_base_address) / 4;	//-3 is necessary or else GTK will select the last one of the set
+        long int row = (pos->address - computer->memory.page_base_address) / 4;
         gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), row, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
     }
 
@@ -394,12 +396,14 @@ int write_to_memory_address(Computer *computer, MemoryPosition *pos, long addres
     memory_line->color = WRITE_COLOR;
 
 	for (int i = 0; i < MEMORY_NUM_COLUMNS; i++) {
-		memory_line->color_changed[i] = TRUE;
+		memory_line->color_changed[i] = cycle;
 	}
 
     // Notify the model that the item has changed
-    gpointer items[] = { item };
-    g_list_store_splice(G_LIST_STORE(model), index, 1, items, 1);
+    // g_list_store_remove(G_LIST_STORE(model), index);
+    // g_list_store_insert(G_LIST_STORE(model), index, item);
+    // gpointer items[] = { item };
+    // g_list_store_splice(G_LIST_STORE(model), index, 1, items, 1);
 
     g_object_unref(item);
     return 0;
