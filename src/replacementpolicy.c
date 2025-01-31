@@ -1,3 +1,8 @@
+/**
+ * @file replacementpolicy.c
+ * @brief Replacement policy related functions. LRU, FRU, Random and FIFO.
+ */
+
 #include "computer.h"
 #include "datainterface.h"
 #include "datamanipulation.h"

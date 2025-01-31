@@ -1,3 +1,10 @@
+/**
+ * @file statistics.h
+ * @brief Headers and constants related to statistics.c
+ */
+
+
+
 #ifndef STATISTICS_H
 #define STATISTICS_H
 

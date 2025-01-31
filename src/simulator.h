@@ -1,3 +1,8 @@
+/**
+ * @file simulator.h
+ * @brief Headers and constants related to simulator.c
+ */
+
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 

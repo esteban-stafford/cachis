@@ -1,3 +1,8 @@
+/**
+ * @file traceparser.c
+ * @brief Parses the trace (.vca) file.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,7 +10,6 @@
 #include "gui.h"
 #include "datamanipulation.h"
 #include "traceparser.h"
-//#include "datastore.h"
 
 MemoryOperation* memoryOperations = NULL;
 int numberOfOperations = 0;

@@ -1,5 +1,9 @@
-#include <ctype.h>
+/**
+ * @file datastore.c
+ * @brief Data structure initiation (memory_line, cache_line and stats_node), computer structure initiation (Memory, cache and statistics) and reset related functions.
+ */
 
+#include <ctype.h>
 #include "datamanipulation.h"
 #include "datastore.h"
 

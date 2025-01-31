@@ -1,3 +1,8 @@
+/**
+ * @file simulator.c
+ * @brief Simulation functions, single step and continue. Populating memory, cache management data propagation and glue logic.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <math.h>

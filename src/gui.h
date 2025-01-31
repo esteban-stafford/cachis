@@ -1,3 +1,9 @@
+/**
+ * @file gui.h
+ * @brief Headers and constants related to gui.c. Contains styles, GUI constants and texts.
+ */
+
+
 #ifndef GUI_H
 #define GUI_H
 

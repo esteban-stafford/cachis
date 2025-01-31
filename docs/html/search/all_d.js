@@ -1,0 +1,18 @@
+var searchData=
+[
+  ['select_5fline_5fto_5freplace_0',['select_line_to_replace',['../replacementpolicy_8c.html#aa5fe49b053eaa9dc7a286be0b422445f',1,'select_line_to_replace(Computer *computer, int instructionOrData, int cacheLevel, int set):&#160;replacementpolicy.c'],['../replacementpolicy_8h.html#aa5fe49b053eaa9dc7a286be0b422445f',1,'select_line_to_replace(Computer *computer, int instructionOrData, int cacheLevel, int set):&#160;replacementpolicy.c']]],
+  ['set_5fassociative_1',['set_associative',['../mappingpolicy_8c.html#a24662c62ca4af3876d11bc676da7b70c',1,'set_associative(Cache *cache, MemoryOperation *operation, MappingResult *result):&#160;mappingpolicy.c'],['../mappingpolicy_8h.html#a24662c62ca4af3876d11bc676da7b70c',1,'set_associative(Cache *cache, MemoryOperation *operation, MappingResult *result):&#160;mappingpolicy.c']]],
+  ['set_5fstatistics_2',['set_statistics',['../statistics_8c.html#aa3d860aff24bb1ff456829f3be740635',1,'set_statistics(char *component, char *property, char *value):&#160;statistics.c'],['../statistics_8h.html#aa3d860aff24bb1ff456829f3be740635',1,'set_statistics(char *component, char *property, char *value):&#160;statistics.c']]],
+  ['show_5fmemory_5faddress_3',['show_memory_address',['../datainterface_8c.html#a979537964b7d4f8487c53b8ea22548ec',1,'show_memory_address(Computer *computer, long address):&#160;datainterface.c'],['../datainterface_8h.html#a979537964b7d4f8487c53b8ea22548ec',1,'show_memory_address(Computer *computer, long address):&#160;datainterface.c']]],
+  ['showoperations_4',['showOperations',['../traceparser_8c.html#ad7b1f30655f72724ce6c2bac68fefaf6',1,'showOperations(Cpu *cpu):&#160;traceparser.c'],['../traceparser_8h.html#ad7b1f30655f72724ce6c2bac68fefaf6',1,'showOperations(Cpu *cpu):&#160;traceparser.c']]],
+  ['simulate_5',['simulate',['../simulator_8c.html#aa3d168edc1be015be5ac8ec450593b91',1,'simulate(Computer *computer):&#160;simulator.c'],['../simulator_8h.html#aa3d168edc1be015be5ac8ec450593b91',1,'simulate(Computer *computer):&#160;simulator.c']]],
+  ['simulate_5fstep_6',['simulate_step',['../simulator_8c.html#a486d2914d81b42ef235fb018e3ad3360',1,'simulate_step(Computer *computer, MemoryOperation *operation):&#160;simulator.c'],['../simulator_8h.html#a486d2914d81b42ef235fb018e3ad3360',1,'simulate_step(Computer *computer, MemoryOperation *operation):&#160;simulator.c']]],
+  ['simulator_2ec_7',['simulator.c',['../simulator_8c.html',1,'']]],
+  ['simulator_2eh_8',['simulator.h',['../simulator_8h.html',1,'']]],
+  ['size_9',['size',['../struct__dictionary__.html#a8be0f96d0b5a75d61775306d5e908867',1,'_dictionary_']]],
+  ['statistics_2ec_10',['statistics.c',['../statistics_8c.html',1,'']]],
+  ['statistics_2eh_11',['statistics.h',['../statistics_8h.html',1,'']]],
+  ['stats_12',['Stats',['../structStats.html',1,'']]],
+  ['stats_5fnode_5fset_13',['stats_node_set',['../datastore_8c.html#a2760060a9dfe78be98d7ff5859721407',1,'stats_node_set(StatsNode *node, gchar *name, gchar *content, StatsNode *parent, gboolean isComponent):&#160;datastore.c'],['../datastore_8h.html#a2760060a9dfe78be98d7ff5859721407',1,'stats_node_set(StatsNode *node, gchar *name, gchar *content, StatsNode *parent, gboolean isComponent):&#160;datastore.c']]],
+  ['step_5ftrace_5fline_14',['step_trace_line',['../gui_8c.html#a603533f135b92d70eadf17c14d22f510',1,'gui.c']]]
+];

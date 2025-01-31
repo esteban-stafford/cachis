@@ -1,3 +1,8 @@
+/**
+ * @file mappingpolicy.h
+ * @brief Headers and constants related to mappingpolicy.c
+ */
+
 #ifndef MAPPINGPOLICY_H
 #define MAPPINGPOLICY_H
 

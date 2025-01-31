@@ -1,4 +1,9 @@
-﻿#include <stdio.h>
+﻿/**
+ * @file datamanipulation.c
+ * @brief Data conversion, checking and other miscelaneous functions.
+ */
+
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>

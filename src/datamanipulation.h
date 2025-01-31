@@ -1,3 +1,9 @@
+/**
+ * @file datamanipulation.h
+ * @brief Headers and constants related to datamanipulation.c
+ */
+
+
 #ifndef DATAMANIPULATION_H
 #define DATAMANIPULATION_H
 

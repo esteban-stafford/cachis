@@ -1,3 +1,8 @@
+/**
+ * @file traceparser.h
+ * @brief Headers and constants related to traceparser.c
+ */
+
 #ifndef TRACEPARSER_H
 #define TRACEPARSER_H
 

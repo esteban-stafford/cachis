@@ -1,6 +1,11 @@
+/**
+ * @file gui.c
+ * @brief GUI creation functions, callbacks and styling related functions.
+ */
+
+
 #include <ctype.h>
 #include <gtk/gtk.h>
-
 #include "gui.h"
 #include "datastore.h"
 #include "traceparser.h"

@@ -1,3 +1,9 @@
+/**
+ * @file cachis.c
+ * @brief Main project file. Contains the main() function, parses arguments, initiates the computer's structures and launches the gui or simulation.
+ */
+
+
 #include <stdio.h>
 #include <ctype.h>
 #include <getopt.h>
@@ -14,8 +20,8 @@
 #include "simulator.h"
 #include "statistics.h"
 
-#define PROGRAM_NAME "cachis"
-#define VERSION "0.1"
+#define PROGRAM_NAME "Cachis"
+#define VERSION "1.0"
 
 #define DEFAULT_FILENAME "cachis.stl"
 
@@ -25,6 +31,9 @@ char *dramsys_file = NULL;
 int generate_dramsys_trace = 0;
 
 
+/**
+ * Prints the usage of the program when the -h flag is used.
+ */
 void printUsage() {
    printf(
       "Usage: %s [OPTION]... <file>.ini [<file>.vca]\n"
@@ -45,6 +54,11 @@ void printUsage() {
       "\n", PROGRAM_NAME);
 }
 
+/**
+ * Main function.
+ * @param argc
+ * @param argv
+ */
 int main(int argc, char *argv[]) {
    int arg;
 

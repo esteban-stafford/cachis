@@ -1,3 +1,8 @@
+/**
+ * @file writepolicy.h
+ * @brief Headers and constants related to writepolicy.c
+ */
+
 #ifndef WRITEPOLICY_H
 #define WRITEPOLICY_H
 

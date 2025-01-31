@@ -8,7 +8,7 @@ main(){
 }
 '''
 
-n = 4                   # The number of iterations of the loop
+n = 2                  # The number of iterations of the loop
 top_addr = "0x08"
 addr_length = 8 + 2     #The 2 corresponds to the 0x
 current_address = 0
@@ -83,13 +83,13 @@ print("L", dirmax,"D")
 # On each iteration of the C for loop
 for i in range(n):
     # x and y are fetched and the result is stored
-	print("\n# x[i] = x[i] + y[i]")
+	print("\n# x[", i, "] = x[", i, "] + y[", i, "]")
 	print("L", dirx[i],"D")
 	print("L", diry[i],"D")
 	print("S", dirx[i],"D 4", values[diry[i]] + values[dirx[i]])
 
-    # same for X
-	print("\n# x[i] = x[i] + y[i]")
+    # same for z
+	print("\n# z[", i, "] = z[", i, "] + y[", i, "]")
 	print("L", dirz[i],"D")
 	print("L", diry[i],"D")
 	print("S", dirz[i],"D 4", values[diry[i]] + values[dirz[i]])

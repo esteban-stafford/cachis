@@ -1,3 +1,8 @@
+/**
+ * @file mappingpolicy.c
+ * @brief Mapping policy related functions. Set, full and firect associative.
+ */
+
 #include "mappingpolicy.h"
 #include "simulator.h"
 

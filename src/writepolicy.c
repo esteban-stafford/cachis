@@ -1,3 +1,8 @@
+/**
+ * @file writepolicy.c
+ * @brief Write policy related functions. Write-Back and Write-Through.
+ */
+
 #include "writepolicy.h"
 #include "datamanipulation.h"
 

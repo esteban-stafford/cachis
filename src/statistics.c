@@ -1,3 +1,8 @@
+/**
+ * @file statistics.c
+ * @brief Statistics management, update, creation and fetching functions.
+ */
+
 #include "statistics.h"
 #include "gui.h"
 

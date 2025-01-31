@@ -1,3 +1,8 @@
+/**
+ * @file datainterface.h
+ * @brief Headers and constants related to datainterface.c
+ */
+
 #ifndef DATAINTERFACE_H
 #define DATAINTERFACE_H
 

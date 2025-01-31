@@ -1,3 +1,8 @@
+/**
+ * @file datainterface.c
+ * @brief Interacts with the data structures at a high level. Contains cache and memory query/manipulation functions.
+ */
+
 #include <math.h>
 #include "datamanipulation.h"
 #include "gui.h"
