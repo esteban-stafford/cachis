@@ -14,6 +14,6 @@
 
 enum write_policy {WRITE_THROUGH=0, WRITE_BACK=1};
 
-void write_back(Computer *computer, MemoryOperation *operation, ResponseType *response, int cacheLine);
+void write_back(Computer *computer, MemoryOperation *operation, ResponseType *response, int cacheLevel, int cacheLine);
 void write_through(Computer *computer, MemoryOperation *operation, ResponseType *response);
 #endif

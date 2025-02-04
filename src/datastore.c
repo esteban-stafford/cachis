@@ -124,7 +124,7 @@ void create_memory_model(Computer *computer) {
 
         // The line gets added to the model
         g_list_store_append(model, memory_line);
-        // g_object_unref(memory_line);
+        g_object_unref(memory_line);
     }
 
     // A pointer to the model gets saved in the memory struct
@@ -290,6 +290,7 @@ void reset_memory_model(Computer *computer) {
          i += (computer->cpu.word_width / 8), j++) {
 		// The memory line is fetched
 		MemoryLine *memory_line = MEMORY_LINE(g_list_model_get_item(G_LIST_MODEL(model), j));
+		g_list_store_remove(G_LIST_STORE(model), j);
 
 		// Each column's CSS is removed
 		for (int k = 0; k < MEMORY_NUM_COLUMNS; k++) {
@@ -308,10 +309,8 @@ void reset_memory_model(Computer *computer) {
 		// If the contents of the memory have been modified, it is reset and reinserted into the model
 		if (memory_line->content != j) {
 			memory_line->content = j;
-			gpointer items[] = { memory_line };
-			g_list_store_remove(G_LIST_STORE(model), j);
-			g_list_store_insert(G_LIST_STORE(model), j, memory_line);
 		}
+		g_list_store_insert(G_LIST_STORE(model), j, memory_line);
     }
 }
 
@@ -350,8 +349,9 @@ void reset_cache_level(Cache *cache, int data_or_instruction) {
         cache_line->set = (int) (i / cache->associativity);
 
         // The cache line is replaced in the model
-		gpointer items[] = { cache_line };
-		g_list_store_splice(G_LIST_STORE(model), i, 1, items, 1);
+		g_list_store_remove(G_LIST_STORE(model), i);
+		g_list_store_insert(G_LIST_STORE(model), i, cache_line);
+
         g_object_unref(cache_line);
     }
 }

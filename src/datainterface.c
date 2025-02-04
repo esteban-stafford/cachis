@@ -50,6 +50,7 @@ long find_tag_in_cache(Computer *computer, int instructionOrData, int level, uns
                 return start_index + i;  // Return the index of the matching line
             }
         }
+        g_object_unref(line);
     }
 
     // Tag not found
@@ -89,6 +90,7 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
     }
 
     CacheLine *cache_line = CACHE_LINE(item);
+    g_list_store_remove(G_LIST_STORE(model), lineNumber);
 
     // Copy data from the model to the provided line struct
     line->line = cache_line->line;
@@ -102,12 +104,12 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
 	line->startingAddress = cache_line->startingAddress;
     
     // Update the model
-    cache_line->color_cache = g_strdup(colors[READ]);
+    // cache_line->color_cache = g_strdup(colors[READ]);
     cache_line->last_accessed = cycle;
 
 	// Since the stats get updated, the model needs to be modified as well
-    gpointer items[] = { cache_line };
-    g_list_store_splice(G_LIST_STORE(model), lineNumber, 1, items, 1);
+    g_list_store_insert(G_LIST_STORE(model), lineNumber, cache_line);
+
 
     // Select and scroll to the updated row
 	if (useGUI) {
@@ -195,6 +197,7 @@ void write_flags_to_cache(Computer *computer, int instructionOrData, int level, 
     }
 
     CacheLine *cache_line = CACHE_LINE(item);
+    g_list_store_remove(G_LIST_STORE(model), lineNumber);
     cache_line->valid = line->valid;
     cache_line->dirty = line->dirty;
     cache_line->tag = line->tag;
@@ -205,8 +208,8 @@ void write_flags_to_cache(Computer *computer, int instructionOrData, int level, 
 	cache_line->startingAddress = line->startingAddress;
 
     // Notify the model that the item has changed
-    gpointer items[] = { cache_line };
-    g_list_store_splice(G_LIST_STORE(model), lineNumber, 1, items, 1);
+
+    g_list_store_insert(G_LIST_STORE(model), lineNumber, cache_line);
 
     // Select and scroll to the updated row
 	if (useGUI) {
@@ -256,23 +259,20 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
     }
 
     CacheLine *cache_line = CACHE_LINE(item);
+    g_list_store_remove(G_LIST_STORE(model), lineNumber);
     cache_line->valid = line->valid;
     cache_line->dirty = line->dirty;
     cache_line->tag = line->tag;
     g_free(cache_line->content_cache);
     cache_line->content_cache = g_strdup(contentString);
 
-    cache_line->color_cache = g_strdup(colors[WRITE]);
     cache_line->times_accessed = 1;
     cache_line->last_accessed = cycle;
     cache_line->first_accessed = cycle;
 	cache_line->startingAddress = line->startingAddress;
 
     // Notify the model that the item has changed
-    g_list_store_remove(G_LIST_STORE(model), lineNumber);
     g_list_store_insert(G_LIST_STORE(model), lineNumber, cache_line);
-    // gpointer items[] = { cache_line };
-    // g_list_store_splice(G_LIST_STORE(model), lineNumber, 1, items, 1);
 
     // Select and scroll to the updated row
 	if (useGUI) {
@@ -405,8 +405,8 @@ int write_to_memory_address(Computer *computer, MemoryPosition *pos, long addres
 	}
 
     // Notify the model that the item has changed
-    // g_list_store_remove(G_LIST_STORE(model), index);
-    // g_list_store_insert(G_LIST_STORE(model), index, item);
+    g_list_store_remove(G_LIST_STORE(model), index);
+    g_list_store_insert(G_LIST_STORE(model), index, item);
     // gpointer items[] = { item };
     // g_list_store_splice(G_LIST_STORE(model), index, 1, items, 1);
 

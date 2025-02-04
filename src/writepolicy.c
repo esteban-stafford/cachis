@@ -6,22 +6,22 @@
 #include "writepolicy.h"
 #include "datamanipulation.h"
 
-void write_back(Computer *computer, MemoryOperation *operation, ResponseType *response, int cacheLine) {
+void write_back(Computer *computer, MemoryOperation *operation, ResponseType *response, int cacheLevel, int cacheLine) {
     printf("\n-> Applying WriteBack in cache\n");
 
     // The contents of the line get read
     CacheLineContent content;
-    read_line_from_cache(computer, operation->instructionOrData, 0, &content, cacheLine);
+    read_line_from_cache(computer, operation->instructionOrData, cacheLevel, &content, cacheLine);
 
-    int position = operation->address % (computer->cache[0].num_words * 4) / 4;
+    int position = operation->address % (computer->cache[cacheLevel].num_words * 4) / 4;
     for (unsigned i = 0; i < response->size; i++) {
-		content.content[position + i] = operation->data;
+		content.content[position + i] = response->data[i];
 	}
 
 	content.dirty = 1;
 
     // The line is written back to the cache
-    write_line_to_cache(computer, operation->instructionOrData, 0, &content, cacheLine);
+    write_line_to_cache(computer, operation->instructionOrData, cacheLevel, &content, cacheLine);
     free_cache_data(&content);
 }
 

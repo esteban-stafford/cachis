@@ -15,3 +15,4 @@ cd traces
 ../../cachis -i L1_AssocSet4.ini -g 2>/dev/null > ../results/L1_AssocSet4
 
 ../../cachis -i L12_Complex.ini -g 2>/dev/null > ../results/L12_Complex
+../../cachis -i L12_WriteBack.ini -g 2>/dev/null > ../results/L12_WriteBack

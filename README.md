@@ -1,4 +1,4 @@
-<div style="text-align: center;">
+<div align="center">
   <img src="./docs/cachis.png" width="200" alt="Cachis" />
 </div>
 <h1 align="center">Cachis</h1>

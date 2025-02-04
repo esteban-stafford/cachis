@@ -464,16 +464,18 @@ Simulating operation:   S 08000124 D  4 2345
 	 < Miss in L2 cache. Populating.
 	 Writing content in line 18 of cache L2: 0x48 0x49 0x4a 0x4b  ---> 00000048 00000049 0000004a 0000004b
 	 < Miss in L1 cache. Populating.
-	 Collision detected, moving to lower level. Moving existing data to memory (Lower level is WT)
+	 Collision detected, moving to lower level. Moving existing data to L2 (Lower level is WB)
 
+---------------
 -> Starting move to lower levels:
 
--> Applying WriteThrough in memory
-
--> Reading memory
+-> Looking in cache
+	 > Hit in L2 cache. Line 10 has the data.
+	 The cache line contains: 0xa8 0xa9 0xaa 0xab 
 
 -> Populating caches
-	 < Hit in L2 cache. Line 10 has stale data. Populating.
+
+-> Applying WriteBack in cache
 	 Writing content in line 10 of cache L2: 0x0 0xa9 0xaa 0xab  ---> 00000000 000000a9 000000aa 000000ab
 
 -> Finishing move to lower levels
@@ -562,16 +564,18 @@ Simulating operation:   L 08000000 D  4 0
 
 -> Populating caches
 	 < Miss in L1 cache. Populating.
-	 Collision detected, moving to lower level. Moving existing data to memory (Lower level is WT)
+	 Collision detected, moving to lower level. Moving existing data to L2 (Lower level is WB)
 
+---------------
 -> Starting move to lower levels:
 
--> Applying WriteThrough in memory
-
--> Reading memory
+-> Looking in cache
+	 > Hit in L2 cache. Line 16 has the data.
+	 The cache line contains: 0x40 0x41 0x42 0x43 
 
 -> Populating caches
-	 < Hit in L2 cache. Line 16 has stale data. Populating.
+
+-> Applying WriteBack in cache
 	 Writing content in line 16 of cache L2: 0x929 0x41 0x42 0x43  ---> 00000929 00000041 00000042 00000043
 
 -> Finishing move to lower levels
@@ -672,7 +676,7 @@ Address: 0x80000f0 	 Content: 0x3c
 Address: 0x80000f4 	 Content: 0x3d
 Address: 0x80000f8 	 Content: 0x3e
 Address: 0x80000fc 	 Content: 0x3f
-Address: 0x8000100 	 Content: 0x929
+Address: 0x8000100 	 Content: 0x40
 Address: 0x8000104 	 Content: 0x41
 Address: 0x8000108 	 Content: 0x42
 Address: 0x800010c 	 Content: 0x43
@@ -776,7 +780,7 @@ Address: 0x8000290 	 Content: 0xa4
 Address: 0x8000294 	 Content: 0xa5
 Address: 0x8000298 	 Content: 0xa6
 Address: 0x800029c 	 Content: 0xa7
-Address: 0x80002a0 	 Content: 0x0
+Address: 0x80002a0 	 Content: 0xa8
 Address: 0x80002a4 	 Content: 0xa9
 Address: 0x80002a8 	 Content: 0xaa
 Address: 0x80002ac 	 Content: 0xab

@@ -95,15 +95,13 @@ long parseLongK1024(const char * cadena) {
 
     // if something not numeric or multiplier. error return -1
     for(long i=0; i<len-1; i++) {
-
         if(cadena[i]>'9'||cadena[i]<'0') {
             return -1;
         }
     }
 
     if(len==1){
-         return multiplicador;
-
+         return atoi(cadena);
     }
 
     return atoi(cadena)*multiplicador;

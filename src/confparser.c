@@ -373,9 +373,11 @@ int parseConfiguration(dictionary *ini, Computer *computer) {
         sprintf(param, "cache%d:associativity", cacheNumber+1);
         //this is the number of lines. For error check
         int num_lines=computer->cache[cacheNumber].size/computer->cache[cacheNumber].line_size;
-        if(computer->cache[cacheNumber].separated){
+
+        if (computer->cache[cacheNumber].separated) {
              num_lines/=2;
-	}
+        }
+
         const char * cache_asociativity=iniparser_getstring(ini, param, NULL);
         // si es F es de compleatamente asociativa. Un solo set. Tantas lines/set como lines totales.
         if(cache_asociativity!=NULL&&strcmp(cache_asociativity, "F")==0) {

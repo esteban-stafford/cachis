@@ -23,7 +23,7 @@
 #define PROGRAM_NAME "Cachis"
 #define VERSION "1.0"
 
-#define DEFAULT_FILENAME "cachis.stl"
+#define DEFAULT_DRAMSYS_FILENAME "cachis.stl"
 
 int useGUI = 1;
 char *ini_file = NULL;
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
    opterr = 0;
 
    // Parse command line arguments
-   while ((arg = getopt (argc, argv, "ghvi:e:")) != -1)
+   while ((arg = getopt (argc, argv, "ghvi:e:")) != -1) {
     switch (arg)
       {
 	  case 'i':
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
 
 		// If the file has not been specified, it gets set to DEFAULT_FILENAME
 		if (dramsys_file == NULL) {
-			dramsys_file = DEFAULT_FILENAME;
+			dramsys_file = DEFAULT_DRAMSYS_FILENAME;
 			printf("No filename has been specified, using the default %s\n", dramsys_file);
 		} else {
 			printf("Saving trace to %s\n", dramsys_file);
@@ -130,6 +130,13 @@ int main(int argc, char *argv[]) {
       default:
         abort();
       }
+   }
+
+    // If no configuration file has been provided print error and exit
+    if (ini_file == NULL) {
+        fprintf (stderr, "No .ini file has been specified.\n");
+        return 1;
+    }
 
     // Read configuration file
     dictionary *ini;

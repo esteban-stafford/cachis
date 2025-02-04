@@ -903,6 +903,7 @@ static void on_run_to_breakpoint_clicked(GtkButton *button, Computer *computer) 
 			// Check for breakpoints
 			if(has_breakpoint(line_text)) {
 				breakpoint_found = TRUE;
+				step_trace_line(line_text, computer);
 			} else {
 				// If there are no breakpoints, move on to the next line
 				step_trace_line(line_text, computer);

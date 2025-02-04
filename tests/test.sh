@@ -73,6 +73,10 @@ echo -e "----> Testing 2 Level Separated Cache:"
 ../../cachis -i L12_Complex.ini -g 2>/dev/null > ../results/L12_Complex.tmp
 check_output "$(diff  ../results/L12_Complex ../results/L12_Complex.tmp)"
 
+echo -e "----> Testing 2 Level Separated Cache + Collision:"
+../../cachis -i L12_WriteBack.ini -g 2>/dev/null > ../results/L12_WriteBack.tmp
+check_output "$(diff  ../results/L12_WriteBack ../results/L12_WriteBack.tmp)"
+
 echo -e "------------- Results -------------\n"
 if [ $allPassed -eq 1 ]; then
     echo "All tests passed"

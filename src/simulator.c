@@ -95,15 +95,20 @@ void simulate_step(Computer *computer, MemoryOperation *operation) {
 				// The top levels get populated
 				populate_cache(computer, operation, &response, 0);
 
-				// The response gets set to the original size
+				// The response gets set to the original size and the operation's data is copied
 				response.size = write_response.size;
+                response.data[0] = operation->data;
 
 				// The last level gets updated with the operation's data and the number of accesses gets incremented by 1
-				write_back(computer, operation, &response, response.cacheLineDest[0]);
+				write_back(computer, operation, &response, 0, response.cacheLineDest[0]);
 				break;
 			case WRITE_THROUGH:
 				// The content gets directly written to memory and the memory gets accessed once
 				write_through(computer, operation, &response);
+
+                // The access is marked as a miss
+                stats.numAccesses[0] += 1;
+                stats.numMisses[0] += 1;
 
 				// The response gets upgraded to house an entire cache line of data
 				upgrade_response_to_full_line(computer, computer->num_caches - 1, &response);
@@ -399,8 +404,13 @@ void move_to_lower_level(Computer *computer, int instructionOrData, int cacheLev
 				break;
 
 			case WRITE_BACK:
-				printf("Moving existing data to L%d (Lower level is WB)\n\n", cacheLevel + 1);
+				printf("Moving existing data to L%d (Lower level is WB)\n\n", cacheLevel + 2);
+                printf("---------------\n");
 				printf("-> Starting move to lower levels:\n");
+
+                // A pointer to the previously read data is stored
+                unsigned int *move_data = moveResponse.data;
+                moveResponse.data = malloc((sizeof(unsigned)));
 
 				// The whole cache gets checked to see if the data is available
 				find_in_cache(computer, &moveOp, NULL, &moveResponse, cacheLevel + 1);
@@ -411,14 +421,20 @@ void move_to_lower_level(Computer *computer, int instructionOrData, int cacheLev
 				}
 
 				// The top levels get populated
-				populate_cache(computer, &moveOp, &moveResponse, cacheLevel - 1);
+				populate_cache(computer, &moveOp, &moveResponse, cacheLevel + 1);
+
+
+                // And the previous values are restored
+                free(moveResponse.data);
+                moveResponse.data = move_data;
 
 				// The last level gets updated with the moveOp's data and the number of accesses gets incremented by 1
-				write_back(computer, &moveOp, &moveResponse, moveResponse.cacheLineDest[cacheLevel - 1]);
+				write_back(computer, &moveOp, &moveResponse, moveResponse.resolved, moveResponse.cacheLineDest[moveResponse.resolved]);
 				break;
 		}
 	}
-	printf("\n-> Finishing move to lower levels\n\n");
+	printf("\n-> Finishing move to lower levels\n");
+    printf("---------------\n\n");
 }
 
 /**
