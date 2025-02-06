@@ -274,7 +274,15 @@ int parseConfiguration(dictionary *ini, Computer *computer) {
     }
 
     parseConfInt(ini,"cpu:rand_seed",&rand_seed,&errors);
-	srand(rand_seed);
+
+    // If the rand seed is 0, a truly random seed is used
+    if (rand_seed == 0){
+        srand(time(NULL));
+    } else {
+        srand(rand_seed);
+    }
+
+
 
     // READING MEMORY CONFIGURATION//////////////////////////////////////
 
