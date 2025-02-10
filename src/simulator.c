@@ -35,7 +35,7 @@ void simulate(Computer *computer) {
     }
 
     // Print the memory at the end of the simulation
-    print_memory_contents(computer);
+    print_modified_memory_content(computer);
 }
 
 
@@ -388,6 +388,7 @@ void move_to_lower_level(Computer *computer, int instructionOrData, int cacheLev
 	// Move to memory if the last level has been reached
 	if (computer->num_caches - 1 <= cacheLevel) {
 		printf("Reached memory, writing directly.\n\n");
+        printf("---------------\n");
 		printf("-> Starting move to lower levels:\n");
 		write_through(computer, &moveOp, &moveResponse);
 	} else {
@@ -395,6 +396,7 @@ void move_to_lower_level(Computer *computer, int instructionOrData, int cacheLev
 			case WRITE_THROUGH:
 				// The contents get written to memory and propagated up to cacheLevel - 1
 				printf("Moving existing data to memory (Lower level is WT)\n\n");
+                printf("---------------\n");
 				printf("-> Starting move to lower levels:\n");
 				write_through(computer, &moveOp, &moveResponse);
 

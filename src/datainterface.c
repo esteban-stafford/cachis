@@ -283,36 +283,46 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
 }
 
 
-/**
- * This function shows a memory position
- * @param address is the memory address
- * @return 0 if correct -1 if not word address error, -2 if out of page error
- */
-int show_memory_address(Computer *computer, long address){
-    MemoryPosition pos;
-	// Read the memory position
-   int returned = read_from_memory_address(computer, &pos, address);
-   if (returned != 0){
-      return returned;
-   }
-   // printf("Address: 0x%lx \t Content: 0x%lx\t User content: %s\n", pos.address, pos.content, (char*)pos.user_content);
-   printf("Address: 0x%lx \t Content: 0x%lx\n", pos.address, pos.content);
-   return 0;
-}
 
 /**
- * Prints the entire contents of the memory
+ * Prints the entire content of the memory.
  * @param computer The computer
  */
-void print_memory_contents(Computer *computer) {
-	printf("\n------MEMORY CONTENTS------\n\n");
+void print_memory_content(Computer *computer) {
+	MemoryPosition pos;
+	printf("\n------MEMORY CONTENT------\n\n");
 
 	for (int i = computer->memory.page_base_address;
 		i < computer->memory.page_base_address + computer->memory.page_size;
 		i+=4) {
-		show_memory_address(computer, i);
+		int returned = read_from_memory_address(computer, &pos, i);
+		if (returned == 0){
+			printf("Address: 0x%lx \t Content: 0x%lx\n", pos.address, pos.content);
+		}
 	}
+}
 
+
+/**
+ * Prints the modified content of the memory.
+ * @param computer The computer
+ */
+void print_modified_memory_content(Computer *computer) {
+	MemoryPosition pos;
+	long int expected_content = 0;
+
+	printf("\n------MODIFIED MEMORY CONTENT------\n\n");
+    printf("Address \t Expected \t Actual Value\n");
+
+	for (int i = computer->memory.page_base_address;
+		i < computer->memory.page_base_address + computer->memory.page_size;
+		i+=4) {
+		int returned = read_from_memory_address(computer, &pos, i);
+		if (returned == 0 && pos.content != expected_content){
+			printf("0x%lx \t 0x%lx \t\t 0x%lx\n", pos.address, expected_content, pos.content);
+		}
+		expected_content++;
+	}
 }
 
 
@@ -324,7 +334,11 @@ void print_memory_contents(Computer *computer) {
  */
 int read_from_memory_address(Computer *computer, MemoryPosition *pos, long address) {
     GListModel *model = G_LIST_MODEL(computer->memory.model);
-    GtkColumnView *view = GTK_COLUMN_VIEW(computer->memory.view);
+    GtkColumnView *view;
+
+    if (useGUI) {
+        view = GTK_COLUMN_VIEW(computer->memory.view);
+    }
 
     // if not word address return error
     if (address % (computer->cpu.word_width / 8) != 0) {
@@ -407,8 +421,6 @@ int write_to_memory_address(Computer *computer, MemoryPosition *pos, long addres
     // Notify the model that the item has changed
     g_list_store_remove(G_LIST_STORE(model), index);
     g_list_store_insert(G_LIST_STORE(model), index, item);
-    // gpointer items[] = { item };
-    // g_list_store_splice(G_LIST_STORE(model), index, 1, items, 1);
 
     g_object_unref(item);
     return 0;

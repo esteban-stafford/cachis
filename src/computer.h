@@ -7,10 +7,10 @@ typedef struct
 {
     long address_width;
     long word_width;            // Número de bits en la word del procesador
-    long frequency;             // Frecuencia en herzios. Ver Nota 1.
-    long bus_frequency;         // Frecuencia en herzios del bus longerno. Ver Nota 1.
-    long mem_bus_frequency;     // Frecuencia en herzios del bus. Ver Nota 1.
-    const char* trace_file;     // File de trace
+    long frequency;             // Frecuencia en herzios. Ver Nota 1. TODO Deprecate this
+    long bus_frequency;         // Frecuencia en herzios del bus longerno. Ver Nota 1. TODO
+    long mem_bus_frequency;     // Frecuencia en herzios del bus. Ver Nota 1. TODO
+    const char* trace_file;
 
     GtkTextBuffer *buffer;
     GtkTextView *view;
@@ -18,12 +18,12 @@ typedef struct
 
 typedef struct
 {
-    long size;                  // Tamaño de la memory en bytes. Ver Nota 2.
-    long bus_width;             // Tamaño del bus extremo en bits.
-    long bus_frequency;         // Frecuencia en herzios del bus. Ver Nota 1.
-    double access_time_1;       // Timepo de acceso en nanosegundos.
-    double access_time_burst;
-    long page_size;				// Size of the memory from the starting address
+    long size;                  // Size of the memory in Bytes
+    long bus_width;             // Size of the bus in bits. TODO Deprecate this.
+    long bus_frequency;         // Frequency of the bus in hertz. TODO
+    double access_time_1;       // Access time in ns.
+    double access_time_burst;   // Burst access time in ns. Used to calculate the time for the remaining words of an access after thw first one has been accessed.
+    long page_size; 			// Size of the memory from the starting address
     long page_base_address;
 
     GListStore *model; 
@@ -32,21 +32,21 @@ typedef struct
 
 typedef struct
 {
-    long line_size;               // Tamaño de line en bytes. Ver Nota 2, aunque no has mucho sentido prácitco, pero seamos coherentes.
-    long size;                    // Tamaño cache en bytes. Ver Nota 2.
-    long associativity;           // Asociatividad: 1= Mapeo directo, F= totalmente asociatva, cualquier user_use número potencia de dos.    
-    long write_policy;            // Política de escritura: wt = write through, wb = write back
-    long replacement_policy;      // Política de reemplazo: lru, rand
-    int separated;                // Si la memory cache es separada. Nota 3.
+    long line_size;               // Size of a chace line in Bytes.
+    long size;                    // Size of the cache in Bytes.
+    long associativity;           // Associativity. 1 = Direct, F = Fully associative, power of 2 = N-way associative
+    long write_policy;            // Write policy. WT, WB
+    long replacement_policy;      // Replacement policy. LRU, LRU, RANDOM, FIFO
+    int separated;                // If the cache is separated. 0 = False, 1 = True
     double access_time;
-    const char* column_bit_mask;  //Esto indica que columnas se muestran y cuales se ocultan. Mascara en binario
+    const char* column_bit_mask;  // TODO Deprecate this
 
     int num_lines;
     int num_sets;
     int num_words;
-    int hex_digs_set;
-    int hex_digs_line;
-    int hex_digs_tag;
+    int hex_digs_set;       // TODO
+    int hex_digs_line;      // TODO
+    int hex_digs_tag;       // TODO
     int offset_bits;
     int set_bits;
 

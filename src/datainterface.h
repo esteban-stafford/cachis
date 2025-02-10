@@ -61,8 +61,8 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
 void write_flags_to_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, unsigned lineNumber);
 
 //Memory related functions
-void print_memory_contents(Computer *computer);
-int show_memory_address(Computer *computer, long address);
+void print_memory_content(Computer *computer);
+void print_modified_memory_content(Computer *computer);
 int read_from_memory_address(Computer *computer, MemoryPosition *pos, long address);
 int write_to_memory_address(Computer *computer, MemoryPosition *pos, long address);
 void free_cache_data(CacheLineContent *line);

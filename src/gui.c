@@ -15,8 +15,8 @@
 static GtkTextTag *highlight_tag = NULL;
 static GtkTextMark *previous_highlight_mark = NULL;
 
-// Global CSS providers for read, write and no style
-GtkCssProvider *read_provider, *write_provider, *none_provider;
+// Global CSS providers for read, write, no style and compact tables
+GtkCssProvider *read_provider, *write_provider, *none_provider, *compact_table;
 
 
 // Private functions
@@ -59,7 +59,6 @@ static void on_reset_button_clicked(GtkButton *button, Computer *computer);
 int step_trace_line(char *line, Computer *computer);
 int has_breakpoint(const char *line);
 static void set_memory_widget_background_color(GtkWidget *widget, MemoryLine *item, int column);
-static void apply_css(GtkWidget *widget, const char *class_name, const char *style);
 static void gtk_widget_set_margin_all(GtkWidget *widget, int margin);
 
 
@@ -114,6 +113,9 @@ static void activate(GtkApplication *app, gpointer user_data) {
 	GtkWidget *left_paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
 	GtkWidget *right_paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
 
+	// A style provider to compact the rows is created
+	compact_table = gtk_css_provider_new();
+	gtk_css_provider_load_from_string(compact_table, CSS_COMPACT_R);
 
 	// The three columns get created
 	GtkWidget *left_column = create_left_column(computer);
@@ -387,9 +389,6 @@ static GtkWidget *create_cache_table(GListStore *model) {
 
 	gtk_widget_set_margin_top(column_view, MARGIN_MED);
 
-	// The compact CSS style is applied to the table globally
-	apply_css(column_view, CSS_COMPACT, CSS_COMPACT_R);
-
 	// A list item factory is created. This will manage the visual representation of the data.
 	GtkListItemFactory *factory;
 
@@ -557,7 +556,14 @@ static void setup_cb(GtkSignalListItemFactory *factory, GObject *listitem) {
 
 	// The box is compacted with some CSS
 	g_object_set(label,"height-request", 5, NULL);
-	apply_css(box, CSS_COMPACT, CSS_COMPACT_R);
+	GdkDisplay *display = gtk_widget_get_display(box);
+	gtk_style_context_add_provider_for_display(
+		display,
+		GTK_STYLE_PROVIDER(compact_table),
+		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+	);
+	gtk_widget_add_css_class(box, CSS_COMPACT);
+
 
 	gtk_box_append(GTK_BOX(box), label);
 	gtk_list_item_set_child(GTK_LIST_ITEM(listitem), box);
@@ -632,7 +638,14 @@ static void setup_cache_cb(GtkSignalListItemFactory *factory, GObject *listitem)
 
 	// The compact CSS style is applied to the table globally
 	g_object_set(label,"height-request", 5, NULL);
-	apply_css(label, CSS_COMPACT, CSS_COMPACT_R);
+	GdkDisplay *display = gtk_widget_get_display(label);
+	gtk_style_context_add_provider_for_display(
+		display,
+		GTK_STYLE_PROVIDER(compact_table),
+		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+	);
+	gtk_widget_add_css_class(label, CSS_COMPACT);
+
 }
 
 /**
@@ -943,7 +956,7 @@ static void on_step_button_clicked(GtkButton *button, Computer *computer) {
 	// View comments for on_run_to_breakpoint_clicked
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(computer->cpu.view);
 	GtkTextIter start, end;
- 
+
 	if (highlight_tag == NULL) {
 		highlight_tag = gtk_text_buffer_create_tag(buffer, "highlight", "background", HIGHLIGHT_COLOR, NULL);
 	}
@@ -1101,32 +1114,6 @@ static void set_memory_widget_background_color(GtkWidget *widget, MemoryLine *it
 		// The write selector is assigned to the widget
 		gtk_widget_add_css_class(widget, CSS_WRITE);
 	}
-}
-
-/**
- * @brief Applies some CSS class to the specified widget
- * @param widget Pointer to the widget that should get the style applied
- * @param class_name The name of the class to apply to the widget
- * @param style The CSS class definition with the style and the class name ".example { background-color: red; }"
- */
-static void apply_css(GtkWidget *widget, const char *class_name, const char *style) {
-	// A CSS provider is created
-	GtkCssProvider *provider = gtk_css_provider_new();
-
-	// A CSS class is defined and attached to the provider
-	gtk_css_provider_load_from_string(provider, style);
-
-	// A display for the widget is created and the CSS provider is attached
-	GdkDisplay *display = gtk_widget_get_display(widget);
-    gtk_style_context_add_provider_for_display(
-        display,
-        GTK_STYLE_PROVIDER(provider),
-        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
-    );
-
-	// The widget is assigned the previously created widget class
-	gtk_widget_add_css_class(widget, class_name);
-	g_object_unref(provider);
 }
 
 

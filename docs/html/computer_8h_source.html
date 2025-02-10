@@ -116,10 +116,10 @@ $(function(){initNavTree('computer_8h_source.html',''); initResizable(true); });
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span>{</div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>    <span class="keywordtype">long</span> address_width;</div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>    <span class="keywordtype">long</span> word_width;            <span class="comment">// Número de bits en la word del procesador</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    <span class="keywordtype">long</span> frequency;             <span class="comment">// Frecuencia en herzios. Ver Nota 1.</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    <span class="keywordtype">long</span> bus_frequency;         <span class="comment">// Frecuencia en herzios del bus longerno. Ver Nota 1.</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    <span class="keywordtype">long</span> mem_bus_frequency;     <span class="comment">// Frecuencia en herzios del bus. Ver Nota 1.</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    <span class="keyword">const</span> <span class="keywordtype">char</span>* trace_file;     <span class="comment">// File de trace</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    <span class="keywordtype">long</span> frequency;             <span class="comment">// Frecuencia en herzios. Ver Nota 1. TODO Deprecate this</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    <span class="keywordtype">long</span> bus_frequency;         <span class="comment">// Frecuencia en herzios del bus longerno. Ver Nota 1. TODO</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    <span class="keywordtype">long</span> mem_bus_frequency;     <span class="comment">// Frecuencia en herzios del bus. Ver Nota 1. TODO</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    <span class="keyword">const</span> <span class="keywordtype">char</span>* trace_file;</div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    GtkTextBuffer *buffer;</div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    GtkTextView *view;</div>
@@ -129,11 +129,11 @@ $(function(){initNavTree('computer_8h_source.html',''); initResizable(true); });
 <div class="foldopen" id="foldopen00019" data-start="{" data-end="};">
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="structMemory.html">   19</a></span><span class="keyword">typedef</span> <span class="keyword">struct</span></div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>{</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <span class="keywordtype">long</span> size;                  <span class="comment">// Tamaño de la memory en bytes. Ver Nota 2.</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keywordtype">long</span> bus_width;             <span class="comment">// Tamaño del bus extremo en bits.</span></div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordtype">long</span> bus_frequency;         <span class="comment">// Frecuencia en herzios del bus. Ver Nota 1.</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keywordtype">double</span> access_time_1;       <span class="comment">// Timepo de acceso en nanosegundos.</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keywordtype">double</span> access_time_burst;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <span class="keywordtype">long</span> size;                  <span class="comment">// Size of the memory in Bytes</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keywordtype">long</span> bus_width;             <span class="comment">// Size of the bus in bits. TODO Deprecate this.</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordtype">long</span> bus_frequency;         <span class="comment">// Frequency of the bus in hertz. TODO</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keywordtype">double</span> access_time_1;       <span class="comment">// Access time in ns.</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keywordtype">double</span> access_time_burst;   <span class="comment">// Burst access time in ns. Used to calculate the time for the remaining words of an access after thw first one has been accessed.</span></div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keywordtype">long</span> page_size;             <span class="comment">// Size of the memory from the starting address</span></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keywordtype">long</span> page_base_address;</div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
@@ -145,21 +145,21 @@ $(function(){initNavTree('computer_8h_source.html',''); initResizable(true); });
 <div class="foldopen" id="foldopen00033" data-start="{" data-end="};">
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="structCache.html">   33</a></span><span class="keyword">typedef</span> <span class="keyword">struct</span></div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>{</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keywordtype">long</span> line_size;               <span class="comment">// Tamaño de line en bytes. Ver Nota 2, aunque no has mucho sentido prácitco, pero seamos coherentes.</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <span class="keywordtype">long</span> size;                    <span class="comment">// Tamaño cache en bytes. Ver Nota 2.</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keywordtype">long</span> associativity;           <span class="comment">// Asociatividad: 1= Mapeo directo, F= totalmente asociatva, cualquier user_use número potencia de dos.    </span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keywordtype">long</span> write_policy;            <span class="comment">// Política de escritura: wt = write through, wb = write back</span></div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordtype">long</span> replacement_policy;      <span class="comment">// Política de reemplazo: lru, rand</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <span class="keywordtype">int</span> separated;                <span class="comment">// Si la memory cache es separada. Nota 3.</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keywordtype">long</span> line_size;               <span class="comment">// Size of a chace line in Bytes.</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <span class="keywordtype">long</span> size;                    <span class="comment">// Size of the cache in Bytes.</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keywordtype">long</span> associativity;           <span class="comment">// Associativity. 1 = Direct, F = Fully associative, power of 2 = N-way associative</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keywordtype">long</span> write_policy;            <span class="comment">// Write policy. WT, WB</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordtype">long</span> replacement_policy;      <span class="comment">// Replacement policy. LRU, LRU, RANDOM, FIFO</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <span class="keywordtype">int</span> separated;                <span class="comment">// If the cache is separated. 0 = False, 1 = True</span></div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keywordtype">double</span> access_time;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keyword">const</span> <span class="keywordtype">char</span>* column_bit_mask;  <span class="comment">//Esto indica que columnas se muestran y cuales se ocultan. Mascara en binario</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keyword">const</span> <span class="keywordtype">char</span>* column_bit_mask;  <span class="comment">// TODO Deprecate this</span></div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordtype">int</span> num_lines;</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <span class="keywordtype">int</span> num_sets;</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="keywordtype">int</span> num_words;</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordtype">int</span> hex_digs_set;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="keywordtype">int</span> hex_digs_line;</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordtype">int</span> hex_digs_tag;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordtype">int</span> hex_digs_set;       <span class="comment">// TODO</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="keywordtype">int</span> hex_digs_line;      <span class="comment">// TODO</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordtype">int</span> hex_digs_tag;       <span class="comment">// TODO</span></div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keywordtype">int</span> offset_bits;</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keywordtype">int</span> set_bits;</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>

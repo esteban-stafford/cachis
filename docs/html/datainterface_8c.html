@@ -137,10 +137,10 @@ Functions</h2></td></tr>
 <tr class="separator:ad3cb331b9443652c7682e820990fceb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0757f058d02a42d672f3b119af13f6ad" id="r_a0757f058d02a42d672f3b119af13f6ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0757f058d02a42d672f3b119af13f6ad">write_line_to_cache</a> (<a class="el" href="structComputer.html">Computer</a> *computer, int instructionOrData, int level, <a class="el" href="structCacheLineContent.html">CacheLineContent</a> *line, unsigned lineNumber)</td></tr>
 <tr class="separator:a0757f058d02a42d672f3b119af13f6ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a979537964b7d4f8487c53b8ea22548ec" id="r_a979537964b7d4f8487c53b8ea22548ec"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a979537964b7d4f8487c53b8ea22548ec">show_memory_address</a> (<a class="el" href="structComputer.html">Computer</a> *computer, long address)</td></tr>
-<tr class="separator:a979537964b7d4f8487c53b8ea22548ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a246faa48c9ba5c51f5b4e455a4f8d141" id="r_a246faa48c9ba5c51f5b4e455a4f8d141"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a246faa48c9ba5c51f5b4e455a4f8d141">print_memory_contents</a> (<a class="el" href="structComputer.html">Computer</a> *computer)</td></tr>
-<tr class="separator:a246faa48c9ba5c51f5b4e455a4f8d141"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a227c15007a665c07a553de3fe80a4064" id="r_a227c15007a665c07a553de3fe80a4064"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a227c15007a665c07a553de3fe80a4064">print_memory_content</a> (<a class="el" href="structComputer.html">Computer</a> *computer)</td></tr>
+<tr class="separator:a227c15007a665c07a553de3fe80a4064"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7ed1ca7b0c045df89648bae2dce5777" id="r_ae7ed1ca7b0c045df89648bae2dce5777"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae7ed1ca7b0c045df89648bae2dce5777">print_modified_memory_content</a> (<a class="el" href="structComputer.html">Computer</a> *computer)</td></tr>
+<tr class="separator:ae7ed1ca7b0c045df89648bae2dce5777"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb717c65c809994ff7cb8bf762c7bf8a" id="r_acb717c65c809994ff7cb8bf762c7bf8a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acb717c65c809994ff7cb8bf762c7bf8a">read_from_memory_address</a> (<a class="el" href="structComputer.html">Computer</a> *computer, <a class="el" href="structMemoryPosition.html">MemoryPosition</a> *pos, long address)</td></tr>
 <tr class="separator:acb717c65c809994ff7cb8bf762c7bf8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50ebaf04c81e0ea12e31b5a5e7838b77" id="r_a50ebaf04c81e0ea12e31b5a5e7838b77"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a50ebaf04c81e0ea12e31b5a5e7838b77">write_to_memory_address</a> (<a class="el" href="structComputer.html">Computer</a> *computer, <a class="el" href="structMemoryPosition.html">MemoryPosition</a> *pos, long address)</td></tr>
@@ -252,21 +252,44 @@ char *&#160;</td><td class="memItemRight" valign="bottom"><b>interfaceError</b> 
 
 </div>
 </div>
-<a id="a246faa48c9ba5c51f5b4e455a4f8d141" name="a246faa48c9ba5c51f5b4e455a4f8d141"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a246faa48c9ba5c51f5b4e455a4f8d141">&#9670;&#160;</a></span>print_memory_contents()</h2>
+<a id="a227c15007a665c07a553de3fe80a4064" name="a227c15007a665c07a553de3fe80a4064"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a227c15007a665c07a553de3fe80a4064">&#9670;&#160;</a></span>print_memory_content()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void print_memory_contents </td>
+          <td class="memname">void print_memory_content </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structComputer.html">Computer</a> *</td>          <td class="paramname"><span class="paramname"><em>computer</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Prints the entire contents of the memory </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Prints the entire content of the memory. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">computer</td><td>The computer </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae7ed1ca7b0c045df89648bae2dce5777" name="ae7ed1ca7b0c045df89648bae2dce5777"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae7ed1ca7b0c045df89648bae2dce5777">&#9670;&#160;</a></span>print_modified_memory_content()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void print_modified_memory_content </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structComputer.html">Computer</a> *</td>          <td class="paramname"><span class="paramname"><em>computer</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Prints the modified content of the memory. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">computer</td><td>The computer </td></tr>
   </table>
@@ -398,34 +421,6 @@ char *&#160;</td><td class="memItemRight" valign="bottom"><b>interfaceError</b> 
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="a979537964b7d4f8487c53b8ea22548ec" name="a979537964b7d4f8487c53b8ea22548ec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a979537964b7d4f8487c53b8ea22548ec">&#9670;&#160;</a></span>show_memory_address()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int show_memory_address </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structComputer.html">Computer</a> *</td>          <td class="paramname"><span class="paramname"><em>computer</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">long</td>          <td class="paramname"><span class="paramname"><em>address</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>This function shows a memory position </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">address</td><td>is the memory address </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 if correct -1 if not word address error, -2 if out of page error </dd></dl>
 
 </div>
 </div>
