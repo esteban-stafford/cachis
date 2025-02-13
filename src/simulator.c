@@ -329,7 +329,7 @@ void populate_cache(Computer *computer, MemoryOperation *operation, ResponseType
         cacheData.startingAddress = response->address;
 
         // If the line contains data and is dirty, it gets written to the level below
-        read_flags_from_cache(computer, operation->instructionOrData, cacheLevel, &existingData, line);
+        check_line_from_cache(computer, operation->instructionOrData, cacheLevel, &existingData, line);
 
         if (existingData.dirty == 1) {
             move_to_lower_level(computer, operation->instructionOrData, cacheLevel, line);

@@ -125,14 +125,14 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
 
 
 /**
- * Reads the data (including content) without updating the model. free_cache_data MUST be used after calling this function.
+ * Checks a line's content and flags without updating the model and statistics. free_cache_data MUST be used after calling this function.
  * @param computer The computer.
  * @param instructionOrData If the cache is an instruction or data cache
  * @param level The level of the cache
  * @param line Pointer to a CacheLineContent struct to store the results
  * @param lineNumber Number of the cache line to fetch.
  */
-void read_flags_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, int lineNumber) {
+void check_line_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, int lineNumber) {
     GListModel *model;
 
     if (!computer->cache[level].separated || instructionOrData == DATA) {
@@ -428,7 +428,7 @@ int write_to_memory_address(Computer *computer, MemoryPosition *pos, long addres
 
 
 /**
- * Frees data allocated by read_flags_from_cache and read_line_from_cache.
+ * Frees data allocated by check_line_from_cache and read_line_from_cache.
  * @param line The line that contains the data
  */
 void free_cache_data(CacheLineContent *line) {

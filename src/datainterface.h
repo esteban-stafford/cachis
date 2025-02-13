@@ -56,7 +56,7 @@ void write_word_from_cache_line(Computer *computer, CacheLineContent *line, int 
 void show_line_from_cache(Computer *computer, int instructionOrData, int level, int i);
 long find_tag_in_cache(Computer *computer, int instructionOrData, int level, unsigned requestSet, unsigned requestTag);
 void read_line_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent* line, int lineNumber);
-void read_flags_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent* line, int lineNumber);
+void check_line_from_cache(Computer *computer, int instructionOrData, int level, CacheLineContent* line, int lineNumber);
 void write_line_to_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, unsigned lineNumber);
 void write_flags_to_cache(Computer *computer, int instructionOrData, int level, CacheLineContent *line, unsigned lineNumber);
 

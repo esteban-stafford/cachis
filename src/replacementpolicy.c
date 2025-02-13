@@ -64,7 +64,7 @@ int replacement_lru(Computer *computer, int instructionOrData, int cacheLevel, i
     // The set is iterated to find the line that should be replaced
     for (int line = first_line; line <= last_line; line++){
         // The line is read
-        read_flags_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
+        check_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
 
         // If the line contains invalid data, it gets replaced by default
         if (cacheData.valid == 0){
@@ -99,7 +99,7 @@ int replacement_lfu(Computer *computer, int instructionOrData, int cacheLevel, i
     // The set is iterated to find the line that should be replaced
     for (int line = first_line; line <= last_line; line++){
 			// The line is read
-        read_flags_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
+        check_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
 
 			// If the line contains invalid data, it gets replaced by default
         if (cacheData.valid == 0){
@@ -147,7 +147,7 @@ int replacement_fifo(Computer *computer, int instructionOrData, int cacheLevel, 
     // The set is iterated to find the line that should be replaced
     for (int line = first_line; line <= last_line; line++) {
 			// The line is read
-        read_flags_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
+        check_line_from_cache(computer, instructionOrData, cacheLevel, &cacheData, line);
 
 			// If the line contains invalid data, it gets replaced by default
         if (cacheData.valid == 0){
