@@ -76,7 +76,7 @@ static void gtk_widget_set_margin_all(GtkWidget *widget, int margin);
  */
 int launch_gui(int argc, char **argv, Computer *computer) {
 	// The app gets created
-	GtkApplication *app = gtk_application_new("org.unican.cachis", G_APPLICATION_DEFAULT_FLAGS);
+	GtkApplication *app = gtk_application_new("org.unican.cachis", G_APPLICATION_FLAGS_NONE);
 
 	// The activate callback gets binded
 	g_signal_connect(app, "activate", G_CALLBACK(activate), computer);
@@ -115,7 +115,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
 	// A style provider to compact the rows is created
 	compact_table = gtk_css_provider_new();
-	gtk_css_provider_load_from_string(compact_table, CSS_COMPACT_R);
+	// gtk_css_provider_load_from_string(compact_table, CSS_COMPACT_R);
+	gtk_css_provider_load_from_data(compact_table, CSS_COMPACT_R, strlen(CSS_COMPACT_R));
 
 	// The three columns get created
 	GtkWidget *left_column = create_left_column(computer);
@@ -508,12 +509,15 @@ static GtkWidget *create_memory_table(Computer *computer) {
 	// The CSS providers for updating the background color upon read/writes are created
 	char *css = g_strdup_printf(CSS_READ_R, READ_COLOR);		// The color is calculated
 	read_provider = gtk_css_provider_new();
-	gtk_css_provider_load_from_string(read_provider, css);
+	// gtk_css_provider_load_from_string(read_provider, css);
+	gtk_css_provider_load_from_data(read_provider, css, strlen(css));
 	css = g_strdup_printf(CSS_WRITE_R, WRITE_COLOR);
 	write_provider = gtk_css_provider_new();
-	gtk_css_provider_load_from_string(write_provider, css);
+	// gtk_css_provider_load_from_string(write_provider, css);
+	gtk_css_provider_load_from_data(write_provider, css, strlen(css));
 	none_provider = gtk_css_provider_new();
-	gtk_css_provider_load_from_string(none_provider, CSS_NONE_R);
+	// gtk_css_provider_load_from_string(none_provider, CSS_NONE_R);
+	gtk_css_provider_load_from_data(none_provider, CSS_NONE_R, strlen(CSS_NONE_R));
 
 	// The display is assigned both style providers (Read and Write)
 	GdkDisplay *display = gtk_widget_get_display(column_view);

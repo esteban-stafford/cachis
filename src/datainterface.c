@@ -113,7 +113,7 @@ void read_line_from_cache(Computer *computer, int instructionOrData, int level, 
 
     // Select and scroll to the updated row
 	if (useGUI) {
-		gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), lineNumber, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
+		// gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), lineNumber, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
 	}
 
     // Allocate memory for content and convert from string to array
@@ -213,7 +213,7 @@ void write_flags_to_cache(Computer *computer, int instructionOrData, int level, 
 
     // Select and scroll to the updated row
 	if (useGUI) {
-		gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), lineNumber, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
+		// gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), lineNumber, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
 	}
 
     g_object_unref(item);
@@ -276,7 +276,7 @@ void write_line_to_cache(Computer *computer, int instructionOrData, int level, C
 
     // Select and scroll to the updated row
 	if (useGUI) {
-		gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), lineNumber, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
+		// gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), lineNumber, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
 	}
 
     g_object_unref(item);
@@ -374,7 +374,7 @@ int read_from_memory_address(Computer *computer, MemoryPosition *pos, long addre
 
     if (useGUI) {
         long int row = (pos->address - computer->memory.page_base_address) / 4;
-        gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), row, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
+        // gtk_column_view_scroll_to(GTK_COLUMN_VIEW(view), row, NULL, GTK_LIST_SCROLL_SELECT ,NULL);
     }
 
     g_object_unref(item);
