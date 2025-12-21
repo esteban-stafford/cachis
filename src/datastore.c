@@ -393,7 +393,7 @@ void reset_statistics_model(Computer *computer) {
 			g_list_store_remove(G_LIST_STORE(comp_node->children), 0);
 
 			g_object_unref(new);
-			g_free(prop_node);
+			// g_free(prop_node);
 		}
 	}
 }
